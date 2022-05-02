@@ -1,0 +1,96 @@
+.heritage_page{
+    .hero_type_1{
+        border-bottom: 1px solid #000;
+        .hero_content{
+            color: #fff;
+            .hero_titles{
+                max-width: 50%;
+                margin: auto;
+                @media screen and (max-width: 1024px) {
+                    max-width: 100%;
+                }
+            }
+            .hero_desc{
+                font-size: 18px;
+            }
+        }
+    }
+
+    .heritage_section_wrapper{
+        .row_wrapper{
+            display: flex;
+            border-bottom: 1px solid #000;
+            @media screen and (max-width: 767px) {
+                flex-direction: column-reverse;
+            }
+            &:nth-child(even){
+                flex-direction: row-reverse;
+                @media screen and (max-width: 767px) {
+                    flex-direction: column-reverse;
+                }
+            }
+            .r_side{
+                flex-grow: 0;
+                flex-shrink: 0;
+                flex-basis: 50%;
+                max-width: 50%;
+                display: flex;
+                justify-content: space-between;
+                flex-direction: column;
+                padding: 20px;
+                @media screen and (max-width: 767px) {
+                    flex-basis: 100%;
+                    max-width: 100%;
+                }
+                @media screen and (max-width: 1024px) {
+                    padding: 13px;
+                }
+                .top_txt{
+                    max-width: 70%;
+                    @media screen and (max-width: 767px) {
+                        max-width: 100%;
+                    }
+                    flex: 1;
+                    h3{
+                        font-size: 75px;
+                        line-height: 1;
+                        font-weight: 900;
+                        @media screen and (max-width: 1024px) {
+                            font-size: 45px;
+                        }
+                    }
+                    h4{
+                        font-size: 25px;
+                    }
+                }
+                .bottom_txt{
+                    max-width: 70%;
+                    flex: 1;
+                    @media screen and (max-width: 1024px) {
+                        font-size: 14px;
+                        max-width: 100%;
+                    }
+                    p{
+
+                    }
+                }
+
+            }
+            .l_side{
+                flex-grow: 0;
+                flex-shrink: 0;
+                flex-basis: 50%;
+                max-width: 50%;
+                @media screen and (max-width: 767px) {
+                    flex-basis: 100%;
+                    max-width: 100%;
+                }
+                img{
+                    height: 100%;
+                    width: 100%;
+                    object-fit: cover;
+                }
+            }
+        }
+    }
+}

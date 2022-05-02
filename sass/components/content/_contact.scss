@@ -1,0 +1,86 @@
+.contact_page{
+    .container_w_gutter{
+        padding-right: 88px;
+        padding-left: 88px;
+        @media screen and (max-width: 1920px) {
+            padding-right: 40px;
+            padding-left: 40px;
+        }
+
+        @media screen and (max-width: 1440px) {
+            padding-right: 34px;
+            padding-left: 34px;
+        }
+        @media screen and (max-width: 1023px) {
+            padding-right: 26px;
+            padding-left: 26px;
+            
+        }
+        @media screen and (max-width: 767px) {
+            padding-right: 9px;
+            padding-left: 9px;
+        }
+        .top_txt_contact{
+            padding: 20px 0;
+            h1{
+                font-weight: bold;
+                font-size: 45px;
+                margin-bottom: 20px;
+                @media screen and (max-width: 1023px) {
+                    font-size: 35px;
+                    line-height: 1;
+                }
+            }
+            .top_txt_desc{
+                font-size: 18px;
+                p{
+                    margin-bottom: 10px;
+                }
+                a{
+                    text-decoration: underline;
+                }
+
+            }
+        }
+        .contact_form_wrapper{
+            form{
+                p,div[data-class="wpcf7cf_group"]{
+                    margin-bottom: 20px;
+                }
+                label{
+                    font-size: 18px;
+                    margin-bottom: 10px;
+                    @media screen and (max-width: 1023px) {
+                        font-size: 16px; 
+                    }
+                }
+                input,select,textarea{
+                    height: 56px;
+                    width: 100%;
+                    padding: 14px 20px 14px 20px;
+                    border-radius: 0;
+                    border: 0;
+                    background-color: #fefefb;
+                    box-shadow: 0 0 0 1px #cac3bd inset;
+                    transition: box-shadow 200ms cubic-bezier(.455,.03,.515,.955);
+                    @media screen and (max-width: 1023px) {
+                        height: 45px;
+                    }
+                    &:hover{
+                        box-shadow: 0 0 0 2px #000 inset;
+                    }
+                    &[type="submit"]{
+                        width:auto;
+                        background-color: #000;
+                        color: #fff;
+                        height: auto;
+                        cursor: pointer;
+                    }
+                }
+                textarea{
+                    height: auto;
+                }
+            }
+        }
+    }
+}

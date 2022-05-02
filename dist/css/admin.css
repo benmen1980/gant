@@ -1,0 +1,68 @@
+#edit_cat_wrap input + .form-table{
+    max-width: 800px;
+
+}
+
+.set_pdt_imgs{
+    margin: 200px auto;
+    display: block;
+    text-align: center;
+    font-size: 30px;
+    padding: 10px 30px;
+    cursor: pointer;
+}
+
+@keyframes gant-loader-spin{
+    0%{
+        transform:scaleX(0);
+    }
+    100%{
+        transform:scaleX(1);
+    }
+}
+
+.loader_wrap {
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 101%;
+    height: 100%;
+    -webkit-transition: opacity 200ms ease-out;
+    transition: opacity 200ms ease-out;
+    -webkit-animation: loader-reveal 200ms linear;
+            animation: loader-reveal 200ms linear;
+    -webkit-animation-fill-mode: forwards;
+            animation-fill-mode: forwards;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: none;
+    z-index: 1;
+  }
+  
+.loader_wrap.active {
+    display: block;
+  }
+
+  
+.loader_wrap .loader_spinner {
+    width: 100%;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    height: 100%;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+  }
+  
+  .loader_wrap .loader_spinner img {
+    width: 25px;
+    min-width: 25px;
+    height: 25px;
+    min-height: 25px;
+    -webkit-animation: gant-loader-spin 500ms alternate infinite linear;
+            animation: gant-loader-spin 500ms alternate infinite linear;
+  }
+  
