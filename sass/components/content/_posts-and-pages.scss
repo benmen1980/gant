@@ -84,17 +84,20 @@ a, a:hover, a:focus,a:active{
     margin: 10px 0 20px 0;
     p{
         position: relative;
-        padding-right: 12px;
+        //padding-right: 12px;
         margin-bottom: 8px;
         line-height: 1;
         font-size: 16px;
-        &::before{
-            content: '\25CF';
-            position: absolute;
-            top: 4px;
-            right: 0;
-            font-size: 9px;
-        }
+        // &::before{
+        //     content: '\25CF';
+        //     position: absolute;
+        //     top: 4px;
+        //     right: 0;
+        //     font-size: 9px;
+        // }
+    }
+    ul{
+        padding: 0 20px 0 0;
     }
 } 
 @media screen and (max-width: 1023px) {

@@ -11,7 +11,19 @@
     padding: 10px 30px;
     cursor: pointer;
 }
-
+.btns_wrapper_desc{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 100px auto;
+}
+.btns_wrapper_desc button{
+    padding: 10px;
+    font-size: 15px;
+}
+.btns_wrapper_desc button:first-child{
+    margin-left: 10px;
+}
 @keyframes gant-loader-spin{
     0%{
         transform:scaleX(0);

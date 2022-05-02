@@ -266,11 +266,15 @@ function make_care_id_read_only( $field ) {
 add_filter('acf/load_field/name=icon_id', 'make_care_id_read_only');
 
 
-// on save csv file care icon skue, update sku with matching care
+// on save csv file care icon sku, update sku with matching care
 function my_acf_update_value( $value, $post_id, $field  ) {
     // only do it to certain custom fields
     if( $field['name'] == 'excel_file' ) {
+
+        
         $csv = get_field('excel_file', 'option')['url'];
+
+
         $array_cares_ids = array();
         $array_cares_skus = array();
         if(($handle = fopen($csv, "r")) !== FALSE) {
@@ -304,11 +308,14 @@ function my_acf_update_value( $value, $post_id, $field  ) {
                 wp_reset_postdata(); 
             endforeach;
         }
+        // don't forget to return to be saved in the database
+        return $value;
         
     }
 
-	// don't forget to return to be saved in the database
-    return $value;
+
+
+
     
 }
 
@@ -1401,4 +1408,100 @@ function ml_woocommerce_email_header( $email_heading, $email ) {
             $template = 'emails/email-header.php';
     }
     wc_get_template( $template, array( 'email_heading' => $email_heading ) );
+}
+
+
+
+if ( is_admin() ) {
+    add_action( 'admin_menu', 'add_products_menu_entry_description', 100 );
+}
+
+function add_products_menu_entry_description() {
+    add_submenu_page(
+        'edit.php?post_type=product',
+        __( 'Set product description' ),
+        __( 'Set product description' ),
+        'manage_woocommerce', // Required user capability
+        'set-product-desc',
+        'set_product_desc'
+    );
+}
+
+function set_product_desc(){ ?>
+    <div class="btns_wrapper_desc">
+        <button type='button' class='set_product_long_desc'>הגדר תיאור ארוך של המוצר </button>
+        <button type='button' class='set_product_short_desc'>הגדר תיאור קצר של המוצר </button>
+        <div class="loader_wrap">
+            <div class="loader_spinner">
+                <img src="<?php echo get_template_directory_uri();?>/dist/images/loader.svg" alt="">
+            </div>
+        </div>
+<?php }
+
+
+add_action( 'wp_ajax_set_pdt_long_desc', 'set_pdt_long_desc' );
+// for non-logged in users:
+add_action( 'wp_ajax_nopriv_set_pdt_long_desc', 'set_pdt_long_desc' );
+
+function set_pdt_long_desc(){  
+    $csv = get_field('long_desc_file', 'option')['url'];
+    if(($handle = fopen($csv, "r")) !== FALSE) {
+        $count=0;
+        while(($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+
+            
+            $sku = $data[0];
+            $desc = $data[1];
+            $args = array(
+                "post_type" => "product",
+                'meta_key'=> 'model', 
+                'meta_value'	=> $sku, 
+                
+            );
+            $posts = get_posts( $args );
+            foreach( $posts as $post ) : 
+                setup_postdata( $post );
+                $pdt_id = $post->ID;
+                update_field( 'full_desc',$desc, $pdt_id );
+                wp_reset_postdata();
+            endforeach;
+        }	
+        fclose($handle);
+    }
+}
+
+
+add_action( 'wp_ajax_set_pdt_short_desc', 'set_pdt_short_desc' );
+// for non-logged in users:
+add_action( 'wp_ajax_nopriv_set_pdt_short_desc', 'set_pdt_short_desc' );
+
+function set_pdt_short_desc(){  
+    $csv = get_field('short_desc_file', 'option')['url'];
+    if(($handle = fopen($csv, "r")) !== FALSE) {
+        $count=0;
+        while(($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+
+            
+            $sku = $data[0];
+            $desc = $data[1];
+            $args = array(
+                "post_type" => "product",
+                'meta_key'=> 'model', 
+                'meta_value'	=> $sku, 
+                
+            );
+            $posts = get_posts( $args );
+            foreach( $posts as $post ) : 
+                setup_postdata( $post );
+                $pdt_id = $post->ID;
+                $the_post = array(
+                    'ID'           => $pdt_id,//the ID of the Post
+                    'post_excerpt' => $desc,
+                );
+                wp_update_post( $the_post );
+                wp_reset_postdata();
+            endforeach;
+        }	
+        fclose($handle);
+    }
 }
