@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # gant
 gant theme by Elisheva 
 =======
@@ -72,4 +72,4 @@ $ npm install
 Now you're ready to go! The next step is easy to say, but harder to do: make an awesome WordPress theme. :)
 
 Good luck!
->>>>>>> 73b84d4... gant theme file
+
