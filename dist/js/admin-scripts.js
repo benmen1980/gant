@@ -25,6 +25,26 @@ jQuery(document).ready(function($){
         
     });
 
+    $('.set_product_care_icon').click(function(e) { 
+        var loader = $(this).next('.loader_wrap');
+        loader.addClass('active');
+        $.ajax({
+            url: ajaxurl,
+            method: 'POST',
+            data: {
+            'action': 'set_pdt_care_icon',
+            },
+            success: function (data) {
+                console.log('success');
+                loader.removeClass('active');
+            },
+            error: function (errorThrown) {
+                loader.removeClass('active');
+                console.log(errorThrown);
+            }
+        });
+    });
+
 
     $('.set_product_long_desc').click(function(e) { 
         console.log('click long desc');

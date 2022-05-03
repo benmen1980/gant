@@ -5473,6 +5473,7 @@ body.gallery_open {
 
 .single_product_wrapper .top_details .r_side {
   width: 50%;
+  position: relative;
 }
 
 @media screen and (max-width: 1023px) {
@@ -5487,6 +5488,7 @@ body.gallery_open {
   top: 20px;
   right: 20px;
   z-index: 1;
+  width: calc(100% - 20px);
 }
 
 @media screen and (max-width: 1023px) {

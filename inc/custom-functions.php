@@ -266,61 +266,8 @@ function make_care_id_read_only( $field ) {
 add_filter('acf/load_field/name=icon_id', 'make_care_id_read_only');
 
 
-// on save csv file care icon sku, update sku with matching care
-function my_acf_update_value( $value, $post_id, $field  ) {
-    // only do it to certain custom fields
-    if( $field['name'] == 'excel_file' ) {
-
-        
-        $csv = get_field('excel_file', 'option')['url'];
 
 
-        $array_cares_ids = array();
-        $array_cares_skus = array();
-        if(($handle = fopen($csv, "r")) !== FALSE) {
-            $count=0;
-            while(($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-    
-                $icon_id = $data[0];
-                $icon_sku = $data[1];
-                $array_cares_ids[] = $icon_id;
-                $array_cares_skus[] = $icon_sku;
-    
-            }	
-            fclose($handle);
-        }
-
-        $combine_array = array_combine_($array_cares_skus, $array_cares_ids);
-
-        foreach($combine_array as $key=>$value){
-            $value = implode(",", $value);
-            $args = array(
-                "post_type" => "product",
-                'meta_key'=> 'model', 
-                'meta_value'	=> $key, 
-               
-            );
-            $posts = get_posts( $args );
-            foreach( $posts as $post ) : 
-                setup_postdata( $post );
-                $pdt_id = $post->ID;
-                update_post_meta( $pdt_id, "related_care_sku",  $value );
-                wp_reset_postdata(); 
-            endforeach;
-        }
-        // don't forget to return to be saved in the database
-        return $value;
-        
-    }
-
-
-
-
-    
-}
-
-// acf/update_value - filter for every field
-add_filter('acf/update_value', 'my_acf_update_value', 10, 3);
 
 
 
@@ -1411,9 +1358,19 @@ function ml_woocommerce_email_header( $email_heading, $email ) {
 }
 
 
-
 if ( is_admin() ) {
     add_action( 'admin_menu', 'add_products_menu_entry_description', 100 );
+    add_action( 'admin_menu', 'add_products_menu_entry_care_icon', 100 );
+}
+function add_products_menu_entry_care_icon() {
+    add_submenu_page(
+        'edit.php?post_type=product',
+        __( 'Set product cares icon' ),
+        __( 'Set product cares icon' ),
+        'manage_woocommerce', // Required user capability
+        'set-product-care-icon',
+        'set_product_care_icon'
+    );
 }
 
 function add_products_menu_entry_description() {
@@ -1427,6 +1384,17 @@ function add_products_menu_entry_description() {
     );
 }
 
+function set_product_care_icon(){ ?>
+    <div class="btns_wrapper_desc">
+        <button type='button' class='set_product_care_icon'>הגדר אייקוני הוראות כביסה של המוצר </button>
+        
+        <div class="loader_wrap">
+            <div class="loader_spinner">
+                <img src="<?php echo get_template_directory_uri();?>/dist/images/loader.svg" alt="">
+            </div>
+        </div>
+<?php }
+
 function set_product_desc(){ ?>
     <div class="btns_wrapper_desc">
         <button type='button' class='set_product_long_desc'>הגדר תיאור ארוך של המוצר </button>
@@ -1437,6 +1405,54 @@ function set_product_desc(){ ?>
             </div>
         </div>
 <?php }
+
+add_action( 'wp_ajax_set_pdt_care_icon', 'set_pdt_care_icon' );
+// for non-logged in users:
+add_action( 'wp_ajax_nopriv_set_pdt_care_icon', 'set_pdt_care_icon' );
+
+function set_pdt_care_icon(){  
+    $csv = get_field('excel_file', 'option')['url'];
+
+
+    $array_cares_ids = array();
+    $array_cares_skus = array();
+    if(($handle = fopen($csv, "r")) !== FALSE) {
+        $count=0;
+        while(($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+
+            $icon_id = $data[0];
+            $icon_sku = $data[1];
+            $array_cares_ids[] = $icon_id;
+            $array_cares_skus[] = $icon_sku;
+
+        }	
+        fclose($handle);
+    }
+
+    $combine_array = array_combine_($array_cares_skus, $array_cares_ids);
+    // echo '<pre>';
+    // print_r($combine_array);
+    // echo '</pre>';die;
+    foreach($combine_array as $key=>$value){
+        if(is_array($value))
+            $value = implode(",", $value);
+
+        $args = array(
+            'posts_per_page'	=> -1,
+            "post_type" => "product",
+            'meta_key'=> 'model', 
+            'meta_value'	=> $key, 
+        );
+        $posts = get_posts( $args );
+        foreach( $posts as $post ) : 
+            setup_postdata( $post );
+            $pdt_id = $post->ID;
+            update_post_meta( $pdt_id, "related_care_sku",  $value );
+            //update_field( 'related_care_sku',$value, $pdt_id );
+            wp_reset_postdata(); 
+        endforeach;
+    }
+}
 
 
 add_action( 'wp_ajax_set_pdt_long_desc', 'set_pdt_long_desc' );
