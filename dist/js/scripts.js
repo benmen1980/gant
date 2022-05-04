@@ -644,9 +644,9 @@ jQuery(document).on("ready", function(){
     if($('.hero_type_1').length){
         $('.hero_type_1').css("height", "calc(100vh - "+$('header').height()+"px)");
     }
-    if($('.hero_wrapper').length){
-        $('.hero_wrapper').css("height", "calc(100vh - "+$('header').height()+"px)");
-    }
+    // if($('.hero_wrapper').length){
+    //     $('.hero_wrapper').css("height", "calc(100vh - "+$('header').height()+"px)");
+    // }
 
     if($('.search_popup_wrapper').length){
         if($('.promotion_banner').length){

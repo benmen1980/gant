@@ -30,14 +30,14 @@
 		if(get_field('bg_color','option')){
 			$bg_color = get_field('bg_color','option');
 		}
-		if(get_field('text_color','option')){
-			$text_color = get_field('text_color','option');
+		if(get_field('text_color_top_line','option')){
+			$text_color = get_field('text_color_top_line','option');
 		}
 		if(get_field('border_color','option')){
 			$border_color = get_field('border_color','option');
 		}
 		?>
-		<div class="top_banner_wrapper" style="background-color:<?php echo $bg_color; ?>; color:<?php echo $text_color; ?>; <?php (!empty($border_color)) ? 'border: 1px solid '.$border_color : ''?>">
+		<div class="top_banner_wrapper" style="background-color:<?php echo $bg_color; ?>; color:<?php echo $text_color; ?>; <?php echo (!empty($border_color)) ? 'border: 1px solid '.$border_color : ''?>">
 			<div class="container">
 			<?php $links = get_field('choose_links','option');
 

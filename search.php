@@ -39,17 +39,18 @@ get_header();
 				endwhile;?>
 			</div>
 			<nav class="navigation paging-navigation" role="navigation">
-				<h1 class="screen-reader-text"><?php _e( 'Posts navigation', 'aj' ); ?></h1>
+				<h1 class="screen-reader-text"><?php _e( 'Posts navigation', 'gant' ); ?></h1>
 				<div class="nav-links">
+					<?php if ( get_previous_posts_link() ) : ?>
+						<div class="nav-previous"><?php previous_posts_link( '<span class="button_label">'.__( 'הקודם', 'gant' ).'</span>' ); ?></div>
+					<?php endif; ?>
 					<?php if ( get_next_posts_link() ) : ?>
-						<div class="nav-previous ">
+						<div class="nav-next ">
 							<?php next_posts_link(  '<span class="button_label">'.__( 'הבא', 'gant' ).'</span>' ); ?>
 						</div>
 					<?php endif; ?>
 
-					<?php if ( get_previous_posts_link() ) : ?>
-						<div class="nav-next"><?php previous_posts_link( '<span class="button_label">'.__( 'הקודם', 'gant' ).'</span>' ); ?></div>
-					<?php endif; ?>
+					
 				</div><!-- .nav-links -->
 			</nav>
 

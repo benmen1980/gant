@@ -1083,7 +1083,18 @@ li.menu-item {
     }
 }
 
-
+.navigation.paging-navigation{
+    .nav-links{
+        display: flex;
+        justify-content: center;
+        .nav-previous{
+            margin-left: 10px;
+        }
+        
+            
+        
+    }
+}
 .btns_register_wrapper{
     margin-top: 20px;
     display: flex;

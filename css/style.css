@@ -3080,6 +3080,19 @@ li.menu-item button .btn_icon {
   font-weight: normal;
 }
 
+.navigation.paging-navigation .nav-links {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.navigation.paging-navigation .nav-links .nav-previous {
+  margin-left: 10px;
+}
+
 .btns_register_wrapper {
   margin-top: 20px;
   display: -webkit-box;

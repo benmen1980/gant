@@ -1341,6 +1341,13 @@ function ml_replace_email_header_hook(){
     add_action( 'woocommerce_email_header', 'ml_woocommerce_email_header', 10, 2 );
 }
 
+// replace default WC header action with a custom one
+add_action( 'init', 'ml_replace_email_footer_hook' );    
+function ml_replace_email_footer_hook(){
+    remove_action( 'woocommerce_email_footer', array( WC()->mailer(), 'email_footer' ) );
+    add_action( 'woocommerce_email_footer', 'ml_woocommerce_email_footer', 10, 2 );
+}
+
 // new function that will switch template based on email type
 function ml_woocommerce_email_header( $email_heading, $email ) {
     // var_dump($email); die; // see what variables you have, $email->id contains type
@@ -1356,6 +1363,23 @@ function ml_woocommerce_email_header( $email_heading, $email ) {
     }
     wc_get_template( $template, array( 'email_heading' => $email_heading ) );
 }
+
+// new function that will switch template based on email type
+function ml_woocommerce_email_footer( $email_heading, $email ) {
+    // var_dump($email); die; // see what variables you have, $email->id contains type
+    switch($email->id) {
+        // case 'new_order':
+        //     $template = 'emails/email-header-new-order.php';
+        //     break;
+        case 'customer_new_account':
+            $template = 'emails/email-footer-new-account.php';
+            break;
+        default:
+            $template = 'emails/email-footer.php';
+    }
+    wc_get_template( $template, array( 'email_heading' => $email_heading ) );
+}
+
 
 
 if ( is_admin() ) {
@@ -1444,6 +1468,9 @@ function set_pdt_care_icon(){
             'meta_value'	=> $key, 
         );
         $posts = get_posts( $args );
+        // echo '<pre>';
+        // print_r($posts);
+        // echo '</pre>';die;
         foreach( $posts as $post ) : 
             setup_postdata( $post );
             $pdt_id = $post->ID;
