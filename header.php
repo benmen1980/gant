@@ -162,7 +162,7 @@
 										</button>
 									</div>
 									<div class="popup_content">
-										<a class="button-secondary" style="color:#000;" href="/my-account/">
+										<a class="button-secondary" style="color:#000;" href="<?php echo get_permalink( get_option('woocommerce_myaccount_page_id') ); ?>">
 											<span class="button_label" style=" color:#fff;">להתחבר</span>
 										</a>
 										<span class="login-status__divider">אוֹ</span>

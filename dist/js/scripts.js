@@ -134,17 +134,20 @@ jQuery(document).on("ready", function(){
     });
 
     $( ".modal#modal_address .close" ).on("click", function(event){
-        window.location.href = '/my-account/edit-account';
+        //window.location.href = '/my-account/edit-account';
+        var getUrl = window.location;
+        var baseUrl = getUrl .protocol + "//" + getUrl.host + "/" + getUrl.pathname.split('/')[1];
+        window.location.href= baseUrl+"/my-account/edit-account";
         $('body').removeClass('is_modal_open');
     });
 
 
     $( ".modal .redirect_my_account" ).on("click", function(event){
-        var redirect_url = "/my-account";
-        window.location.href= redirect_url;
-        // window.history.back(-1);
-        // $('.modal#password_reset_modal').removeClass('is_modal_showing');
-        // $('body').removeClass('is_modal_open');
+        //var redirect_url = "/my-account";
+        //window.location.href= redirect_url;
+        var getUrl = window.location;
+        var baseUrl = getUrl .protocol + "//" + getUrl.host + "/" + getUrl.pathname.split('/')[1];
+        window.location.href= baseUrl+"/my-account";
     });
 
 

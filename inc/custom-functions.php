@@ -1341,8 +1341,8 @@ function ml_replace_email_header_hook(){
     add_action( 'woocommerce_email_header', 'ml_woocommerce_email_header', 10, 2 );
 }
 
-// replace default WC header action with a custom one
-add_action( 'init', 'ml_replace_email_footer_hook' );    
+// replace default WC footer action with a custom one
+//add_action( 'init', 'ml_replace_email_footer_hook' );    
 function ml_replace_email_footer_hook(){
     remove_action( 'woocommerce_email_footer', array( WC()->mailer(), 'email_footer' ) );
     add_action( 'woocommerce_email_footer', 'ml_woocommerce_email_footer', 10, 2 );
