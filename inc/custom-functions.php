@@ -589,9 +589,11 @@ function  get_substainable_filter($cat_id){
     while ( $arr_posts->have_posts() ) :
         $arr_posts->the_post();
         $terms = get_the_terms( get_the_ID(), 'product_tag' );
-        foreach($terms as $term){
-            if ($term->term_id == 29){
-                $counter ++;
+        if(!empty($terms)){
+            foreach($terms as $term){
+                if ($term->term_id == 29){
+                    $counter ++;
+                }
             }
         }   
     endwhile; 
