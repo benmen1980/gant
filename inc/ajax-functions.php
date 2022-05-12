@@ -158,17 +158,19 @@ function filter_products(){
     }
     if (isset( $_REQUEST['order'] )  && $_REQUEST['order'] != ''){  
         if($_REQUEST['order'] == 'popularity'){
-            $order = 'DESC';
+            $meta_key= 'total_sales';
             $order_by = 'meta_value_num';
-            $meta_key= "total_sales";
+            $order = 'DESC';
+            
         }
         else{
             $order = $_REQUEST['order'];
             $order_by = 'meta_value_num';
-            $meta_key= "_price";
+            $meta_key= '_price';
         }
 
     }
+
     if (isset( $_REQUEST['prices'] )  && $_REQUEST['prices'] != ''){  
         if($_REQUEST['prices'] == '1000'){
             $meta_qry[] =          array(
@@ -260,22 +262,24 @@ function filter_products(){
     // Load More Query
     if($query_type == 'load_more') {
         $paged = $_REQUEST['paged'] + 1;
+        $offset = $_REQUEST['paged'] * get_option('posts_per_page');
+
     }
     if($query_type == 'filter') {
         $paged = 1;
+        $offset  = 0;
     }
 
     
+    
     $args = array(
         'post_type' =>  array('product', 'product_variation'),
-        'posts_per_page' => get_option('posts_per_page'),
+        'posts_per_page' => (int)get_option('posts_per_page'),
         'post_status' => array('publish'),
         'meta_key' => $meta_key,
-        'orderby' => $order_by,
+        'orderby' => $order_by. ' name',
         'order' => $order,
-       // 'fields'         => 'id=>parent',
-        //'post__in' => $post__in,
-        'post_parent__in' => $post_parent_in,
+        'post_parent__in' => (!empty($post_parent_in)) ? $post_parent_in : null,
         'meta_query'	=> array(
             'relation'		=> 'AND',
             $meta_qry
@@ -284,8 +288,9 @@ function filter_products(){
             'relation'		=> 'AND',
             $tax_qry,
         ),
-        
+
         'paged' => $paged,
+        //'offset' => $offset
     );
     
     $args_without_paged = array(
@@ -293,11 +298,9 @@ function filter_products(){
         'posts_per_page' => -1,
         'post_status' => array('publish'),
         'meta_key' => $meta_key,
-        'orderby' => $order_by,
+        'orderby' => $order_by. ' name',
         'order' => $order,
-       // 'fields'         => 'id=>parent',
-        //'post__in' => $post__in,
-        'post_parent__in' => $post_parent_in,
+        'post_parent__in' => (!empty($post_parent_in)) ? $post_parent_in : null,
         'meta_query'	=> array(
             'relation'		=> 'AND',
             $meta_qry
@@ -309,6 +312,11 @@ function filter_products(){
         
         //'paged' => $paged,
     );
+
+    // echo "<pre>";
+    // print_r($args_without_paged);
+    // echo "</pre>";
+
     if($query_type == 'query' && isset($_REQUEST['paged']) && $_REQUEST['paged'] != '') {
         $paged = $_REQUEST['paged'] + 1;
     }
@@ -319,6 +327,7 @@ function filter_products(){
 
 
     $post_ids = wp_list_pluck( $dl_query->posts, 'ID' );
+    //print_r($post_ids);
     $tot_post_ids = wp_list_pluck( $dl_query_without_paged->posts, 'ID' );
     $tot_pdts_result = array();
     foreach($tot_post_ids as $variation_id){
@@ -333,12 +342,13 @@ function filter_products(){
         //echo $product->get_id().',';
     }
     $tot_pdts_result = array_unique($tot_pdts_result);
+    // echo 'tot_pdts_result';
+    // echo '<pre>';
+    // print_r( $tot_pdts_result);
+    // echo '</pre>';
 
 
-
-
-
-    //print_r($post_ids);die;
+  
     $pdts_result = array();
     foreach($post_ids as $variation_id){
         $variation  = wc_get_product( $variation_id );
@@ -353,7 +363,12 @@ function filter_products(){
     }
     $featured_pdts = array_unique($pdts_result);
 
-    //print_r($featured_pdts); die;
+
+    // echo 'featured_pdts';
+    // echo '<pre>';
+    // print_r( $featured_pdts);
+    // echo '</pre>';
+
 
 
     
@@ -366,17 +381,6 @@ function filter_products(){
     $max_page = $found_posts / get_option( 'posts_per_page' );
 
 
-    // $max_page = $dl_query->max_num_pages;
-	// if( $dl_query->have_posts() ) :
-	// 	// run the loop
-	// 	while( $dl_query->have_posts() ): $dl_query->the_post();
-    //         global $product;
-    //         $id = $product->get_id();
-	// 		get_template_part( 'page-templates/box-product' );
-	// 	endwhile;
-        
-	// endif;
-    //wp_reset_query();
     $html .= ob_get_clean();
     $html .= "";
 
@@ -400,7 +404,6 @@ function filter_products(){
             'max_page'  => ceil($max_page),
             'total_results' => $dl_query->post_count,
             'found_posts' => $found_posts,
-            //'found_posts' => $dl_query->found_posts,
             'paged' => $paged,
             'result' => $html,
             'args' => $args,

@@ -1,7 +1,6 @@
 <?php 
 get_header();
 
-
 $current_term = get_queried_object();
 //print_r($current_term);
 $taxonomy = $current_term->taxonomy;
@@ -10,30 +9,41 @@ $current_term_id = $current_term->term_id;
 $current_term_slug = $current_term->slug;
 $parent_tag_id = $current_term->parent;
 $term = get_term_by( 'id', $parent_tag_id, 'product_cat' );
+
 $parent_term_name = $term->name;
 $parent_term_id = $term->term_id;
 $parent_term_slug = get_term_link ($parent_tag_id, 'product_cat');
 
 
 
-$posts_per_page = get_option('posts_per_page');
+$posts_per_page = (int)get_option('posts_per_page');
 //$posts_per_page  = -1;
 $args_cat = array(
     'post_type' =>  array('product', 'product_variation'),
     'post_status' => array('publish'),
-    'product_cat' => $current_term->slug,
+    //'product_cat' => $current_term->slug,
     'posts_per_page' => $posts_per_page,
     'paged' => 1,
     'meta_key'       => 'total_sales',
-    'orderby'        => 'meta_value_num',
+    'orderby'        => 'meta_value_num name',
     'order'          => 'DESC',
     'meta_query' => array(
+        'relation'		=> 'AND',
         array(
             'key' => '_stock_status',
             'value' => 'instock',
             'compare' => '=',
         )
-    )
+    ), 
+    'tax_query'  => array(
+        'relation'		=> 'AND',
+        array(
+            'taxonomy' => 'product_cat',
+            'field' => 'term_id',
+            'terms' => [$current_term_id],
+            'operator' => 'IN'
+        )
+    ),
 );
 
 
@@ -70,6 +80,7 @@ $seo_description = $seo_group['description'];
 
 $related_categories = get_field('related_categories');
 $categories = $related_categories['enter_category'];
+
  
 ?>
 <div class="container">
@@ -80,6 +91,7 @@ $categories = $related_categories['enter_category'];
     </div>
 </div>
 <div class="child_category_wrapper" id="<?php echo 'term-'.$current_term_id;?>">
+
     <?php 	
     $choose_module = get_field('choose_module');
     if($choose_module[0]['module_list'] != 'sales_banner'):
@@ -182,6 +194,7 @@ $categories = $related_categories['enter_category'];
     <div class="filter_wrapper">
         <?php get_template_part( 'template-parts/content', 'filter' ); ?>
     </div>
+
     <?php else: ?>
         <div class="modal" id="filter_modal">
             <div class="modal_container">

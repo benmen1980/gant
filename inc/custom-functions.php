@@ -619,7 +619,7 @@ function get_sizes_filter($cat_id){
     );
    
     $arr_posts = new WP_Query( $args_cat );
-    $post_ids = wp_list_pluck( $arr_posts->posts, 'ID' );
+    //$post_ids = wp_list_pluck( $arr_posts->posts, 'ID' );
     //print_r($post_ids);
     while ( $arr_posts->have_posts() ) :
         $arr_posts->the_post();
