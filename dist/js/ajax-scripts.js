@@ -211,7 +211,8 @@ jQuery(document).ready(function($){
                 'filters': filters,
                 'query_type': query_type,
                 'order' : order,
-                'substainility' : substainility
+                'substainility' : substainility,
+                'current_pdt_in_page' : current_pdt_in_page
             },
             dataType: "json",
             //type : "POST",
@@ -241,7 +242,9 @@ jQuery(document).ready(function($){
                         var newPaged = parseInt(paged) + 1;
                         $('.search_suggestions_products_wrapper').append(data.result);
                         $('.current_number_pdt_in_page').text(parseInt(current_pdt_in_page) + parseInt(data.total_results));
-                        
+                        // var url = '';
+                        // current_url = url + '?' + 'pdt_to_show' + '=' + parseInt(current_pdt_in_page) + parseInt(data.total_results);
+                        // window.history.replaceState(null, null, current_url);
                     }
                     
                    

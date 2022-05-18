@@ -247,6 +247,10 @@ function filter_products(){
         );
     }
 
+    if(isset($_REQUEST['current_pdt_in_page']) && $_REQUEST['current_pdt_in_page'] != '') {
+        $current_pdt_in_page = $_REQUEST['current_pdt_in_page'];
+    }
+
     $query_type = '';
     if(isset($_REQUEST['query_type']) && $_REQUEST['query_type'] != '') {
         $query_type = $_REQUEST['query_type'];
@@ -274,7 +278,7 @@ function filter_products(){
     
     $args = array(
         'post_type' =>  array('product', 'product_variation'),
-        'posts_per_page' => (int)get_option('posts_per_page'),
+        'posts_per_page' => $current_pdt_in_page,
         'post_status' => array('publish'),
         'meta_key' => $meta_key,
         'orderby' => $order_by. ' name',
