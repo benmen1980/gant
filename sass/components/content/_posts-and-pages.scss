@@ -2306,3 +2306,32 @@ footer{
         display: block;
     }
 }
+
+#pojo-a11y-toolbar{
+    bottom : 0;
+}
+
+// reset password 
+.woocommerce-lost-password{
+    .account_nav_wrapper{
+        display: none;
+    }
+    form.lost_reset_password{
+        .rest_pswd_title{
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 35px;  
+        }
+        .form-row{
+            width: 100%!important;
+            float: none!important;
+            label{
+                text-align: right;
+            }
+            .button-secondary{
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
+    }
+}

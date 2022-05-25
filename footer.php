@@ -124,6 +124,9 @@
 </div><!-- #page -->
 
 <?php wp_footer(); ?>
+<!-- HolyClock.com <BODY> code -->
+<script>document.write(typeof _holyclock_tag=="string"?_holyclock_tag:'HolyClock \x26lt;head\x26gt; tag missing!');</script>
+<!-- HolyClock.com <BODY> code -->
 
 </body>
 </html>

@@ -507,6 +507,7 @@ add_filter('acf/load_field/name=dynamic_product_related', 'acf_load_dynamic_prod
 
 
 
+
 function get_cuts_filter($cat_id){
     $cuts = array();
     $term = get_term_by('id', $cat_id , 'product_cat' );
@@ -634,6 +635,7 @@ function get_sizes_filter($cat_id){
         }
     endwhile; 
     update_term_meta($cat_id, 'size_filter',array_count_values($sizes));
+   
 }
 function get_prices_filter($cat_id){
     $prices = array();
@@ -679,23 +681,30 @@ function get_prices_filter($cat_id){
         switch($price) {
             case in_array($price, range(0,199)): //the range from range of 0-20
                 $counter_range1 ++;
+                $price_ranges['0-199'] = $counter_range1;
             break;
             case in_array($price, range(200,399)): //range of 21-40
                 $counter_range2 ++;
+                $price_ranges['200-399'] = $counter_range2;
                 break;
             case in_array($price, range(400,699)): //range of 21-40
                 $counter_range3 ++;
+                $price_ranges['400-699'] = $counter_range3;
                 break;
             case in_array($price, range(700,999)): //range of 21-40
                 $counter_range4 ++;
+                $price_ranges['700-999'] = $counter_range4;
                 break;
             case $price >= 1000: //range of 21-40
                 $counter_range5 ++;
+                $price_ranges['1000+'] = $counter_range5;
                 break;
         }  
     }
-    $price_ranges = array('0-199' => $counter_range1, '200-399' => $counter_range2, '400-699' => $counter_range3, '700-999' => $counter_range4, '1000+' => $counter_range5,);
+    
+    // $price_ranges = array('0-199' => $counter_range1, '200-399' => $counter_range2, '400-699' => $counter_range3, '700-999' => $counter_range4, '1000+' => $counter_range5,);
     update_term_meta($cat_id, 'price_filter',$price_ranges);
+
 }
 
 
@@ -1359,6 +1368,9 @@ function ml_woocommerce_email_header( $email_heading, $email ) {
         //     break;
         case 'customer_new_account':
             $template = 'emails/email-header-new-account.php';
+            break;
+        case 'customer_reset_password':
+            $template = 'emails/email-header-reset-password.php';
             break;
         default:
             $template = 'emails/email-header.php';

@@ -247,14 +247,15 @@ function filter_products(){
         );
     }
 
-    if(isset($_REQUEST['current_pdt_in_page']) && $_REQUEST['current_pdt_in_page'] != '') {
-        $current_pdt_in_page = $_REQUEST['current_pdt_in_page'];
-    }
 
     $query_type = '';
     if(isset($_REQUEST['query_type']) && $_REQUEST['query_type'] != '') {
         $query_type = $_REQUEST['query_type'];
     }
+    // if(isset($_REQUEST['current_pdt_in_page']) && $_REQUEST['current_pdt_in_page'] != '') {
+    //     $current_pdt_in_page = $_REQUEST['current_pdt_in_page'];
+    // }
+
     $filters = false;
     if(isset($_REQUEST['filters']) && $_REQUEST['filters'] != '') {
         if($_REQUEST['filters'] == 'false') {
@@ -267,18 +268,27 @@ function filter_products(){
     if($query_type == 'load_more') {
         $paged = $_REQUEST['paged'] + 1;
         $offset = $_REQUEST['paged'] * get_option('posts_per_page');
+        $current_pdt_in_page = (int)get_option('posts_per_page');
 
     }
     if($query_type == 'filter') {
         $paged = 1;
         $offset  = 0;
+        $current_pdt_in_page = (int)get_option('posts_per_page');
+        $actual_link = $_SERVER["HTTP_REFERER"];
+        if (strpos($actual_link,'pdts') !== false) {
+            $current_pdt_in_page = (int)ltrim(strstr($actual_link, '='), '='); 
+            //$paged = (int)$_REQUEST['paged'];
+        }
+        
+        
     }
 
     
     
     $args = array(
         'post_type' =>  array('product', 'product_variation'),
-        'posts_per_page' => $current_pdt_in_page,
+        'posts_per_page' =>  $current_pdt_in_page,
         'post_status' => array('publish'),
         'meta_key' => $meta_key,
         'orderby' => $order_by. ' name',

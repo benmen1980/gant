@@ -19,6 +19,7 @@ get_header();
 // in your taxonomy/term template file
 $current_term = get_queried_object();
 $term = get_queried_object();
+//print_r($term);
 $child_template = get_field('display_cat_child_template', $term->taxonomy . '_' . $term->term_id);
 // parent property is either 0 or the parent ID
 if(is_product_category()){

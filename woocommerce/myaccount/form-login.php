@@ -71,7 +71,7 @@ if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) : ?>
 			<?php do_action( 'woocommerce_login_form_end' ); ?>
 
 		</form>
-
+		<?php echo do_shortcode( '[TheChamp-Login title="התחבר דרך גוגל או פייסבוק" redirect_url="'.home_url( '/overview' ).'"]' ); ?>
 		<div class="modal" id="password_reset_modal">
 			<div class="modal_container">
 				

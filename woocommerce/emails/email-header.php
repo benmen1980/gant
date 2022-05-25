@@ -26,26 +26,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<meta http-equiv="Content-Type" content="text/html; charset=<?php bloginfo( 'charset' ); ?>" />
 		<title><?php echo get_bloginfo( 'name', 'display' ); ?></title>
 	</head>
-	<body <?php echo is_rtl() ? 'rightmargin' : 'leftmargin'; ?>="0" marginwidth="0" topmargin="0" marginheight="0" offset="0">
-		<div id="wrapper" dir="<?php echo is_rtl() ? 'rtl' : 'ltr'; ?>">
+	<body  marginwidth="0" topmargin="0" marginheight="0" offset="0">
+		<div id="wrapper" dir="<?//php echo is_rtl() ? 'rtl' : 'ltr'; ?>">
 			<table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
 				<tr>
 					<td align="center" valign="top">
-						<div id="template_header_image">
+						<div id="template_header_image" style="margin:0px auto;max-width:600px">
 							<?php
 							if ( $img = get_option( 'woocommerce_email_header_image' ) ) {
-								echo '<p style="margin-top:0;"><img src="' . esc_url( $img ) . '" alt="' . get_bloginfo( 'name', 'display' ) . '" /></p>';
+								echo '<p style="margin-top:0;"><img style="max-width:250px;display:block; margin: auto;" src="' . esc_url( $img ) . '" alt="' . get_bloginfo( 'name', 'display' ) . '" /></p>';
 							}
 							?>
 						</div>
-						<table border="0" cellpadding="0" cellspacing="0" width="600" id="template_container">
+						<table border="0" cellpadding="0" cellspacing="0" width="100%" id="template_container" style="max-width: 600px;">
 							<tr>
 								<td align="center" valign="top">
 									<!-- Header -->
-									<table border="0" cellpadding="0" cellspacing="0" width="100%" id="template_header">
+									<table border="0" cellpadding="0" cellspacing="0" width="100%" id="template_header"  style="background-color:#732E4A;">
 										<tr>
 											<td id="header_wrapper">
-												<h1><?php echo $email_heading; ?></h1>
+												<h1 style="color: #fff;"><?php echo $email_heading; ?></h1>
 											</td>
 										</tr>
 									</table>
@@ -55,11 +55,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 							<tr>
 								<td align="center" valign="top">
 									<!-- Body -->
-									<table border="0" cellpadding="0" cellspacing="0" width="600" id="template_body">
+									<table border="0" cellpadding="0" cellspacing="0" width="100%" id="template_body" style="max-width:600px;">
 										<tr>
 											<td valign="top" id="body_content">
 												<!-- Content -->
 												<table border="0" cellpadding="20" cellspacing="0" width="100%">
 													<tr>
 														<td valign="top">
-															<div id="body_content_inner">
+															<div id="body_content_inner" dir="<?php echo is_rtl() ? 'rtl' : 'ltr'; ?>">

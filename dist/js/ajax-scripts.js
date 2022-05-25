@@ -64,6 +64,11 @@ jQuery(document).ready(function($){
         console.log(checked_val);
         $('.sort_wrapper .selected_order').text(checked_val);
         $('.sort_wrapper .selected_order').attr('aria-label',checked_val);
+        var pdts_shown = parseInt($('.current_number_pdt_in_page').text());
+        console.log("🚀 ~ file: ajax-scripts.js ~ line 68 ~ $ ~ pdts_shown", pdts_shown);
+        window.history.replaceState(null, null, "?pdts="+pdts_shown);
+
+
     });
     $('.menu_item_checkbox .checkbox_wrapper input[type="checkbox"],.menu_item_checkbox .radio_wrapper input[type="radio"]').on('change', function() {
         if($(this).is(":not(:checked)")){
@@ -212,7 +217,7 @@ jQuery(document).ready(function($){
                 'query_type': query_type,
                 'order' : order,
                 'substainility' : substainility,
-                'current_pdt_in_page' : current_pdt_in_page
+                'current_pdt_in_page' : current_pdt_in_page,
             },
             dataType: "json",
             //type : "POST",
@@ -233,6 +238,14 @@ jQuery(document).ready(function($){
                     $('#back_to_top').show();
                     if(query_type == 'filter' || query_type == 'clean_query') {
                       var newPaged = 1;
+                      var searchParams = new URLSearchParams(window.location.search);
+                      var param = searchParams.get('pdts')
+                      console.log("🚀 ~ file: ajax-scripts.js ~ line 242 ~ filter_product ~ param", param);
+                      if(searchParams.has('pdts')){
+                        var newPaged = parseInt(param/post_per_page);
+                        console.log("🚀 ~ file: ajax-scripts.js ~ line 246 ~ filter_product ~ newPaged", newPaged);
+                        window.history.replaceState(null, null, window.location.href.split('?')[0]);
+                      }
                       $('.count_result').text(parseInt(data.found_posts));
                       $('.count_wrapper #count').text(data.found_posts);
                       $('.search_suggestions_products_wrapper').html(data.result);

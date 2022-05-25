@@ -1,0 +1,101 @@
+.podcast_page{
+    .hero_type_1{
+        margin-bottom: 100px;
+        @media screen and (max-width: 1023px) {
+            height: calc(100vw * 495/1107)!important;
+            margin-bottom: 40px;
+        }
+    }
+    h1.main_title{
+        font-size: 75px;
+        line-height: 1;
+        font-weight: 900;
+        text-align: center;
+        @media screen and (max-width: 1023px) {
+            font-size: 50px;
+        }
+    }
+    h2.sub_title{
+        font-size: 30px;
+        line-height: 1;
+        font-weight: 700;
+        text-align: center;
+        margin-top: 30px;
+        @media screen and (max-width: 1023px) {
+            font-size: 26px;
+            line-height: 1.2;
+        }
+    }
+    .applications_wrapper{
+        display: flex;
+        margin: 60px 115px;
+        @media screen and (max-width: 1023px) {
+            margin: 20px 0;
+        }
+        a.app_item{
+            width: 20%;
+            img{
+
+            }
+        }
+    }
+    .podcast_wrapper{
+        a.podcast_item{
+            display: flex;
+            margin: 0 115px;
+            justify-content: center;
+            padding-bottom: 40px;
+            padding-top: 40px;
+            margin-bottom: 40px;
+            @media screen and (max-width: 1023px) {
+                margin: 0;
+                display: block;
+            }
+            &:hover{
+                box-shadow: 0 0 8px 0 rgba(0,0,0,.4);
+            }
+            .r_side{
+                width: 20%;
+                margin-left: 60px;
+                @media screen and (max-width: 1023px) {
+                    width: 100%;
+                    margin-left: 0;
+                }
+                img{
+                    object-fit: cover;
+                    display: block;
+                    height: 70%;
+                    @media screen and (max-width: 1023px) {
+                        height:100%;
+                    }
+                }
+            }
+            .l_side{
+                width: 50%;
+                @media screen and (max-width: 1023px) {
+                    width: 100%;
+                    padding: 20px 20px 0;
+                }
+                h4{
+                    display: block;
+                    font-size: 26px;
+                    line-height: 1.21;
+                    color: #fd6a68;
+                    margin-bottom: 20px;
+                }
+                p{
+                    font-size: 20px;
+                    line-height: 1.2;
+                    color: #231f20;
+                    text-align: justify;
+                }
+            }
+        }
+    }
+    .bottom_banner{
+        img{
+            display: block;
+            width: 100%;
+        }
+    }
+}

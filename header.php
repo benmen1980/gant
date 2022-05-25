@@ -18,6 +18,10 @@
 	<link rel="profile" href="https://gmpg.org/xfn/11">
 
 	<?php wp_head(); ?>
+
+	<!-- HolyClock.com <HEAD> code for gant.ussl.co.il -->
+	<script>/*<![CDATA[*/_holyclock_id="5afa1b48ce4ac7fe1f18443494e52348";_holyclock_tag='<s'+'cript src\x3d"//www.holyclock.com/holyclock.js?'+Math.floor(+new Date/864E5)+'">\x3c/script>';null!==document.cookie.match(/(?:^|;)\s*_holyclock_qr=\s*\w/)&&null===window.location.hash.match(/#holyclock=qr(?=#|$)/)&&document.write(_holyclock_tag);//]]></script>
+	<!-- HolyClock.com <HEAD> code for gant.ussl.co.il -->
 </head>
 
 <body <?php body_class(); ?>>
