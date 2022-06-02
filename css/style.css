@@ -3634,6 +3634,7 @@ h3.sustainable_choice_title {
   background-color: white;
   color: #000000;
   border: 1px solid #000000;
+  margin-left: 10px;
 }
 
 .woocommerce-account.woocommerce-orders .entry-content .woocommerce .woocommerce-MyAccount-content .wc_order_row_item .r_side .view_order_wrapper a.button-secondary:after, .woocommerce-account.woocommerce-view-order .entry-content .woocommerce .woocommerce-MyAccount-content .wc_order_row_item .r_side .view_order_wrapper a.button-secondary:after {

@@ -364,82 +364,20 @@ function array_combine_($keys, $values)
 }
 
 
+
+
 //add this function for test only 
 //add_action( 'init', 'check_filter' );
 function check_filter() {
 
-    $args = array(
-        'post_type' =>  array('product', 'product_variation'),
-        'posts_per_page' => (int)get_option('posts_per_page'),
-        'post_status' => array('publish'),
-        'meta_key'       => 'total_sales',
-        'orderby'        => 'meta_value_num name',
-        'order'          => 'DESC',
-        'post_parent__in' => null,
-        'meta_query' => array(
-            array(
-                'key' => '_stock_status',
-                'value' => 'instock',
-                'compare' => '=',
-            )
-        ),
-        'tax_query'  => array(
-            'relation'		=> 'AND',
-            array(
-                'taxonomy' => 'product_cat',
-                'field' => 'term_id',
-                'terms' => ["1837"],
-                'operator' => 'IN'
-            )
-        ),
-    
-        'paged' => 2,
-        //'offset' => 4
-    );
+    $size_fiter = get_term_meta(1837, 'size_filter', true);
+   // print_r($size_fiter);
+   echo '<pre>';
+   print_r(getOrderedBySize($size_fiter));
+   echo '</pre>';
+   //print_r(getOrderedBySize($size_fiter));
 
-    $args_cat = array(
-        'post_type' =>  array('product', 'product_variation'),
-        'posts_per_page' => 8,
-        'post_status' => array('publish'),
-        'meta_key'       => 'total_sales',
-        'orderby'        => 'meta_value_num title',
-        'order'          => 'DESC',
-        'post_parent__in' => null,
-        'meta_query' => array(
-            array(
-                'key' => '_stock_status',
-                'value' => 'instock',
-                'compare' => '=',
-            )
-        ),
-        'tax_query'  => array(
-            'relation'		=> 'AND',
-            array(
-                'taxonomy' => 'product_cat',
-                'field' => 'term_id',
-                'terms' => ["1837"],
-                'operator' => 'IN'
-            )
-        ),
-    
-        //'paged' => 2,
-        //'offset' => 4
-    );
-
-$arr_posts = new WP_Query( $args );
-$arr_posts2 = new WP_Query( $args_cat );
-$count = $arr_posts->found_posts; 
-//$count = $arr_posts->post_count;
-$post_ids = wp_list_pluck( $arr_posts->posts, 'ID' );
-$post_ids2 = wp_list_pluck( $arr_posts2->posts, 'ID' );
-echo "<pre>";
-print_r($post_ids);
-echo "</pre>";
-echo "<pre>";
-print_r($post_ids2);
-echo "</pre>";
 }
-
 
 
 

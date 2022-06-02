@@ -197,6 +197,13 @@ $group_values = get_field('dynamic_product_related');
 										
 									<?php endif;?>
 									<?php echo get_field('full_desc',$product->ID); ?>
+									<div class="product_detail_id">
+										<em>
+											<?php echo __('פריט מספר.','gant')?>
+											<?php echo $product->get_sku(); ?>
+										</em>
+									
+									</div>
 									<?php if(has_term( '29', 'product_tag' )){ ?>
 										<div id="sustainable-choice">
 											<?php echo  get_field('full_desc_substainaibility','option');?>
@@ -210,7 +217,6 @@ $group_values = get_field('dynamic_product_related');
 									<p class=""><?php echo get_field('instruction_care_desc'); ?></p>
 									<?php 
 									$related_icon_id  = get_field('related_care_sku',$product->ID);?>
-								
 										<div class="c-icon-list">
 											<?php if( have_rows('instructions', 'option') ):
 												// Loop through rows.

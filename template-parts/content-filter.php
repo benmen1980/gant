@@ -63,7 +63,9 @@ $max_page = $arr_posts->max_num_pages;
                         </button>
                     </div>
                     <div class="dropdown_content">
-                        <?php  $sizes =  get_term_meta($current_term_id, 'size_filter', true); ?>
+                        <?php  $sizes =  get_term_meta($current_term_id, 'size_filter', true); 
+                        $sizes = getOrderedBySize($sizes);
+                        ?>
                         <?php $counter_size = 0;foreach($sizes as $key=>$size): ?>
                         <button role="menuitemcheckbox" class="menu_item_checkbox" aria-checked="false" data-section="size" aria-label="מידה: <?php echo $key;?>">
                             <p class="row_checkbox_wrapper">

@@ -1,5 +1,7 @@
 <?php
 
+use PriorityWoocommerceAPI\WooAPI;
+
 /*
 * Create search form shortcode
 */
@@ -75,7 +77,11 @@ function wooc_validate_extra_register_fields( $username, $email, $validation_err
         $validation_errors->add( 'billing_phone_error', __( 'טלפון הינו שדה חובה', 'gant' ) );
     
     if ( isset($_POST['account_id']) && empty($_POST['account_id']) ){
+        
         $validation_errors->add( 'account_id_error', __( 'ת"ז הינו שדה חובה', 'gant' ) );  
+    }
+    if ( !(preg_match('/^05\d([-]{0,1})\d{7}$/', $username ))){
+        wc_add_notice( "הכנס טלפון נייד תקין" ,"error" );
     }
     return $validation_errors;
 }
@@ -128,6 +134,338 @@ function add_extra_fields( $user )
         <br />
     <?php
 }
+
+
+
+function makeRequestCustomerPos($method, $url_addition = null, $options = [], $log = false){
+    $args = [
+        'headers' => [
+            'Content-Type'  => 'application/json'
+        ],
+        'timeout'   => 45,
+        'method'    => strtoupper('POST'),
+        'sslverify' => WooAPI::instance()->option('sslverify', false)
+    ];
+    if ( ! empty($options)) {
+        $args = array_merge($args, $options);
+    }
+
+    $raw_option = WooAPI::instance()->option('setting-config');
+    $raw_option = str_replace(array("\n", "\t", "\r"), '', $raw_option);
+    $config = json_decode(stripslashes($raw_option));
+    $ip = $config->IP;
+
+    $url = sprintf('http://%s/PrioriPOSTestAPI/api/PosCustomers/%s',
+        $ip,
+        is_null($url_addition) ? '' : stripslashes($url_addition)
+    );
+
+    $response = wp_remote_request($url, $args);
+
+    $body_array = json_decode($response["body"], true);
+    // echo '<pre>';
+    // print_r($body_array);
+    // echo '</pre>';
+
+
+    return $body_array;
+
+
+
+}
+function check_user_by_mobile_phone($mobile_phone){
+    $data = [
+        "MobilePhone" => $mobile_phone, 
+    ];
+
+    $data['UniquePOSIdentifier'] = [
+        "BranchNumber" => "77",
+        "POSNumber" => "1",
+        "UniqueIdentifier" => "PRODGANT77",
+        "ChannelCode" => "",
+        "VendorCode" => "",
+        "ExternalAccountID" => ""
+    ];
+
+    $form_name = 'Search';
+
+    $body_array = makeRequestCustomerPos('POST', $form_name ,  ['body' => json_encode($data)], true);
+
+    return $body_array;
+
+    
+}
+
+function check_user_by_phone($phone){
+    $data = [
+        "PhoneNumber" => $phone, 
+    ];
+
+    $data['UniquePOSIdentifier'] = [
+        "BranchNumber" => "77",
+        "POSNumber" => "1",
+        "UniqueIdentifier" => "PRODGANT77",
+        "ChannelCode" => "",
+        "VendorCode" => "",
+        "ExternalAccountID" => ""
+    ];
+
+    $form_name = 'Search';
+    
+    $body_array = makeRequestCustomerPos('POST', $form_name ,  ['body' => json_encode($data)], true);
+
+    return $body_array;
+}
+
+function check_user_by_id_num($id_num){
+    $data = [
+        "IDNumber" => $id_num, 
+    ];
+
+    $data['UniquePOSIdentifier'] = [
+        "BranchNumber" => "77",
+        "POSNumber" => "1",
+        "UniqueIdentifier" => "PRODGANT77",
+        "ChannelCode" => "",
+        "VendorCode" => "",
+        "ExternalAccountID" => ""
+    ];
+
+    $form_name = 'Search';
+
+    $body_array = makeRequestCustomerPos('POST', $form_name,  ['body' => json_encode($data)], true);
+
+    return $body_array;
+}
+
+
+function check_user_in_priority($user_login, $user_password ) {
+    if(!username_exists($user_login)) {
+       $body_array = check_user_by_mobile_phone($user_login); 
+       $error_code = $body_array["ErrorCode"];
+       if ($error_code == 0) {
+           $PosCustomersResult = $body_array["SearchPosCustomersResult"][0];
+           //if exist in priority, create user
+           if(!empty($PosCustomersResult)){
+               $priority_customer_number = $PosCustomersResult["POSCustomerNumber"];
+               $username = $PosCustomersResult["MobileNumber"];
+               $email = $PosCustomersResult["Email"];
+               $fname = $PosCustomersResult["FirstName"];
+               $lname = $PosCustomersResult["LastName"];
+               $fullname = $PosCustomersResult["FullName"];
+               $displayname = $PosCustomersResult["FirstName"];
+               $user_city = $PosCustomersResult["City"];
+               $user_address_1 = $PosCustomersResult["Address"];
+               $user_address_2 = $PosCustomersResult["Address2"];
+               $user_city = $PosCustomersResult["City"];
+               $user_zipcode = $PosCustomersResult["ZipCode"];
+               $user_birthId = $PosCustomersResult["BirthID"];
+   
+               //check if user exist by user login or email
+               $user_obj = get_user_by('login', $username);
+               if(empty($user_obj)){
+                   $user_obj = get_user_by('email',$email);
+               }
+   
+               $user_id = wp_insert_user(array(
+                   'ID' => isset($user_obj->ID) ? $user_obj->ID : null,
+                   'user_login'  =>  $username,
+                   'user_email'  =>  (!empty($email)) ? $email : $username.'@gmail.com',
+                   'first_name'  =>  $fname,
+                   'last_name'  =>  $lname,
+                   'role' => 'customer',
+                   'user_nicename' => $fullname,
+                   'display_name'  => $fullname,
+               ));
+               if (is_wp_error($user_id)) {
+                   $multiple_recipients = array(
+                       get_bloginfo('admin_email')
+                   );
+                   $subj = 'Error creating user from priority';
+                   $body = $user_id->get_error_message();
+                   wp_mail( $multiple_recipients, $subj, $body );
+               }
+               
+               update_user_meta($user_id, 'priority_customer_number', $priority_customer_number);
+               update_user_meta($user_id, 'billing_address_1', $user_address_1);
+               update_user_meta($user_id, 'billing_address_2', $user_address_2);
+               update_user_meta($user_id, 'billing_city', $user_city);
+               update_user_meta($user_id, 'billing_phone', $username);
+               update_user_meta($user_id, 'billing_postcode', $user_zipcode);
+               update_user_meta($user_id, 'account_id', $user_birthId);
+           }
+       }
+       else {
+            $message = $body_array['EdeaError']['DisplayErrorMessage'];
+            $multiple_recipients = array(
+                get_bloginfo('admin_email')
+            );
+            $subj = 'Error check user exist with mobile phone in priority';
+            wp_mail( $multiple_recipients, $subj, $message );
+       }
+    }
+}
+add_action('wp_authenticate', 'check_user_in_priority', 9999, 2);
+
+
+
+add_action( 'template_redirect', 'get_user_details_after_registration');
+
+function get_user_details_after_registration() {
+    //if ( is_page_template( 'page-templates/overview.php' ) && ($_SERVER['HTTP_REFERER'] == get_site_url().'/register/')){
+    if ( is_page_template( 'page-templates/overview.php' ) && ($_SERVER['HTTP_REFERER'] == get_site_url().'/register/')){
+        if ( is_user_logged_in() ) {
+            $user_id = get_current_user_id();
+            $meta = get_user_meta($user_id);
+            $account_id = get_user_meta($user_id, 'account_id', true);
+            $user_login = $meta['nickname'][0];
+            $fname = $meta['first_name'][0];
+            $lname = $meta['last_name'][0];
+            $phone = $meta['nickname'][0];
+            $billing_address_1 = get_user_meta($user_id, 'billing_address_1', true);
+            $billing_address_2 = get_user_meta($user_id, 'billing_address_2', true);
+            $billing_city = get_user_meta($user_id, 'billing_city', true);
+            $billing_postcode = get_user_meta($user_id, 'billing_postcode', true);
+            $billing_country = get_user_meta($user_id, 'billing_country', true);
+            $billing_email = get_user_meta($user_id, 'billing_email', true);
+            $accept_newsletter = get_user_meta($user_id, 'agree_business_owner', true);
+            if ($accept_newsletter == 'off'){
+                $allow_email = false;
+            }
+            elseif($accept_newsletter == 'on'){
+                $allow_email = true;
+            }
+            $result =  check_user_by_mobile_phone($user_login);
+            //print_r($result); 
+            $error_code = $result["ErrorCode"];
+            if ($error_code == 0) {
+                $PosCustomersResult = $result["SearchPosCustomersResult"][0];
+                //if exist in priority, create user
+                if(empty($PosCustomersResult)){
+                    $result =  check_user_by_phone($user_login);
+                    $error_code = $result["ErrorCode"];
+                    if ($error_code == 0) {
+                        $PosCustomersResult = $result["SearchPosCustomersResult"][0];
+                        if(empty($PosCustomersResult)){
+                            $result =  check_user_by_id_num($account_id);
+                            $error_code = $result["ErrorCode"];
+                            if ($error_code == 0) {
+                                $PosCustomersResult = $result["SearchPosCustomersResult"][0];
+                                if(empty($PosCustomersResult)){
+                                    // sync cust to priorirty
+                                    $priority_customer_number = 'WEB-' . (string)$user_id;
+                                    $data = [
+                                        "CreateCustomer" => true,
+                                    ];
+                                    $data["POSCustomerDetails"] = [
+                                        "POSCustomerNumber" => $priority_customer_number,
+                                        "City" => !empty($billing_city) ? $billing_city : '',
+                                        "StreetAddress" => !empty($billing_address_1) ? $billing_address_1 : '',
+                                        "HouseNumber" => !empty($billing_address_2) ? (int)$billing_address_2 : 0,
+                                        "ApartmentNumber" => 0,
+                                        "ZipCode" => !empty($billing_postcode) ? $billing_postcode : '',
+                                        "FirstName" => !empty($fname) ? $fname : '',
+                                        "LastName" => !empty($lname) ? $lname : '',
+                                        "FullName" => $lname.' '.$fname,
+                                        "PhoneNumber" => '',
+                                        "MobileNumber" => !empty($phone) ? $phone : '',
+                                        "BirthID" => !empty($account_id) ? $account_id : '',
+                                        "BirthDate" => "2022-05-26T21:02:27.413Z",
+                                        "Gender" => "ז",
+                                        "Email" => !empty($billing_email) ? $billing_email : '',
+                                        "IsActive" => true,
+                                        "AllowSMS" => true,
+                                        "AllowEmail" => $allow_email,
+                                        "AllowMail" => true,
+                                        "DefaultClubCode" => "01",
+                                        "Address2" => "string",
+                                        "Address3" => "string",
+                                        "WantsToJoinMobileClub" => true,
+                                        "Entrance" => "string"
+                                    ];
+                                    $data['UniquePOSIdentifier'] = [
+                                        "BranchNumber" => "77",
+                                        "POSNumber" => "1",
+                                        "UniqueIdentifier" => "PRODGANT77",
+                                        "ChannelCode" => "",
+                                        "VendorCode" => "",
+                                        "ExternalAccountID" => ""
+                                    ];
+
+                                    $form_name = 'CreateOrUpdatePOSCustomer';
+
+                                    $body_array = makeRequestCustomerPos('POST', $form_name ,  ['body' => json_encode($data)], true);
+                                    $error_code = $body_array["ErrorCode"];
+                                    if($error_code == 0){
+                                        update_user_meta($user_id, 'priority_customer_number', $priority_customer_number, true);
+                                    }
+                                    else{
+                                        $message = $body_array['EdeaError']['DisplayErrorMessage'];
+                                        $multiple_recipients = array(
+                                            get_bloginfo('admin_email')
+                                        );
+                                        $subj = 'Error sync user in priority';
+                                        wp_mail( $multiple_recipients, $subj, $message );
+                                    }
+                                    //print_r($body_array);
+
+                                    
+                                }
+                                else{
+                                    //update priority number to user
+                                    $priority_customer_number = $PosCustomersResult["POSCustomerNumber"];
+                                    update_user_meta($user_id, 'priority_customer_number', $priority_customer_number);
+                                }
+                            }
+                            else{
+                                $message = $result['EdeaError']['DisplayErrorMessage'];
+                                $multiple_recipients = array(
+                                    get_bloginfo('admin_email')
+                                );
+                                $subj = 'Error check user exist with id number in priority';
+                                wp_mail( $multiple_recipients, $subj, $message );
+                            }
+
+                        }
+                        else{
+                            //update priority number to user
+                            $priority_customer_number = $PosCustomersResult["POSCustomerNumber"];
+                            update_user_meta($user_id, 'priority_customer_number', $priority_customer_number);
+                        }
+                    }
+                    else{
+                        $message = $result['EdeaError']['DisplayErrorMessage'];
+                        $multiple_recipients = array(
+                            get_bloginfo('admin_email')
+                        );
+                        $subj = 'Error check user exist with phone in priority';
+                        wp_mail( $multiple_recipients, $subj, $message );
+                    }
+                    
+                }
+                else{
+                    //update priority number to user
+                    $priority_customer_number = $PosCustomersResult["POSCustomerNumber"];
+                    update_user_meta($user_id, 'priority_customer_number', $priority_customer_number);
+                }
+            }
+            else{
+                $message = $result['EdeaError']['DisplayErrorMessage'];
+                $multiple_recipients = array(
+                    get_bloginfo('admin_email')
+                );
+                $subj = 'Error check user exist with mobile phone in priority';
+                wp_mail( $multiple_recipients, $subj, $message );
+            }
+
+        }
+    }
+}
+
+
+
+
+
 
 //redirect to my account after success registration
 function registration_redirect() {
@@ -600,6 +938,17 @@ function  get_substainable_filter($cat_id){
     endwhile; 
     update_term_meta($cat_id, 'substainable_filter',$counter);
 }
+
+function getOrderedBySize($data) {
+    $result = [];
+    foreach (["xxs", "xs", "s", "m", "l", "xl", "2xl", "3xl", "4xl", "5xl"] as $key) {
+        if (array_key_exists($key, $data)) {
+            $result[$key] = $data[$key];
+        }
+    }
+    return $result;
+}
+
 function get_sizes_filter($cat_id){
     $sizes = array();
     $term = get_term_by('id', $cat_id , 'product_cat' );
@@ -633,8 +982,8 @@ function get_sizes_filter($cat_id){
                 }
             }
         }
-    endwhile; 
-    update_term_meta($cat_id, 'size_filter',array_count_values($sizes));
+    endwhile;
+    update_term_meta($cat_id, 'size_filter', array_count_values($sizes));
    
 }
 function get_prices_filter($cat_id){
@@ -1352,12 +1701,6 @@ function ml_replace_email_header_hook(){
     add_action( 'woocommerce_email_header', 'ml_woocommerce_email_header', 10, 2 );
 }
 
-// replace default WC footer action with a custom one
-//add_action( 'init', 'ml_replace_email_footer_hook' );    
-function ml_replace_email_footer_hook(){
-    remove_action( 'woocommerce_email_footer', array( WC()->mailer(), 'email_footer' ) );
-    add_action( 'woocommerce_email_footer', 'ml_woocommerce_email_footer', 10, 2 );
-}
 
 // new function that will switch template based on email type
 function ml_woocommerce_email_header( $email_heading, $email ) {
@@ -1378,21 +1721,6 @@ function ml_woocommerce_email_header( $email_heading, $email ) {
     wc_get_template( $template, array( 'email_heading' => $email_heading ) );
 }
 
-// new function that will switch template based on email type
-function ml_woocommerce_email_footer( $email_heading, $email ) {
-    // var_dump($email); die; // see what variables you have, $email->id contains type
-    switch($email->id) {
-        // case 'new_order':
-        //     $template = 'emails/email-header-new-order.php';
-        //     break;
-        case 'customer_new_account':
-            $template = 'emails/email-footer-new-account.php';
-            break;
-        default:
-            $template = 'emails/email-footer.php';
-    }
-    wc_get_template( $template, array( 'email_heading' => $email_heading ) );
-}
 
 
 
@@ -1562,3 +1890,34 @@ function set_pdt_short_desc(){
         fclose($handle);
     }
 }
+
+
+/**
+ * Add order again button in my orders actions.
+ *
+ * @param  array $actions
+ * @param  WC_Order $order
+ * @return array
+ */
+function cs_add_order_again_to_my_orders_actions( $actions, $order ) {
+	//if ( $order->has_status( 'completed' )  ) {
+		$actions['order-again'] = array(
+			'url'  => wp_nonce_url( add_query_arg( 'order_again', $order->id ) , 'woocommerce-order_again' ),
+			'name' => __( 'שכפול הזמנה', 'gant' )
+		);
+	//}
+
+	return $actions;
+}
+add_filter( 'woocommerce_my_account_my_orders_actions', 'cs_add_order_again_to_my_orders_actions', 50, 2 );
+
+
+add_filter( 'woocommerce_valid_order_statuses_for_order_again', 'add_order_again_status', 10, 1);
+
+function add_order_again_status($array){
+    $array = array_merge($array, array('on-hold', 'processing', 'pending-payment', 'cancelled', 'refunded'));
+    return $array;
+}
+
+
+
