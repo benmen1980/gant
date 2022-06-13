@@ -21,6 +21,11 @@
         top: 0;
         right: 0;
         z-index: 0;
+        video{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
         .img_wrapper{
             background-position: top center;
             background-size: cover;
@@ -48,6 +53,7 @@
             h1{
                 font-size: 120px;
                 line-height: 1;
+                width: 100%;
                 @media screen and (max-width: 1366px) {
                     font-size: 100px;
                 }
@@ -70,8 +76,11 @@
             display: flex;
             justify-content: center;
             z-index: 1;
-            a:first-child{
+            a{
                 margin-left: 20px;
+                &:last-child{
+                    margin-left: 0;
+                }
             }
         }
     }
@@ -103,6 +112,11 @@
         }
         a{
             display: flex; 
+        }
+        video{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .img_wrapper{
             height: 100%;
@@ -137,7 +151,7 @@
             padding: 10px;
         }
         & > *{
-            max-width: 67.77777%;
+            max-width: 70%;
             @media screen and (max-width: 1023px) {
                 max-width: none;
             }
@@ -1123,7 +1137,7 @@
                         form.edit-account{
                             .form-row{
                                 display: flex;
-                                justify-content: space-between;
+                                //justify-content: space-between;
                                 border-bottom: 1px solid #cac3bd;
                                 padding: 30px 0;
                                 position: relative;
@@ -1132,7 +1146,9 @@
                                 }
                                 label{
                                     margin:0;
-                                    width: 40%;
+                                    //width: 40%;
+                                    width: auto;
+                                    margin-left: 20px;
                                     @media screen and (max-width: 1023px) {
                                         font-size: 14px;
                                         line-height: 1.4;
@@ -1143,7 +1159,9 @@
                                     box-shadow: unset;
                                     padding: 0;
                                     height: auto;
-                                    width: 60%;
+                                    //width: 60%;
+                                    width: auto;
+                                    text-align: right;
                                     @media screen and (max-width: 1023px) {
                                         font-size: 14px;
                                     }
@@ -1789,8 +1807,9 @@ p.row_radio_wrapper{
             }
             .benefit_desc{
                 height: 50px;
+                box-sizing: content-box;
                 @media screen and (max-width: 1023px) {
-                    height: auto;
+                    height: 70px;
                 }
             }
         }

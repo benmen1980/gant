@@ -12,10 +12,13 @@
         $bg_color = !empty(get_sub_field('bg_color'))? get_sub_field('bg_color') :'transparent';
         $bg_color_txt = !empty(get_sub_field('bg_color_txt'))? get_sub_field('bg_color_txt') :'transparent';
         $text_color = get_sub_field('text_color');
-        $border_color = get_sub_field('border_color');
         $separator_line = get_sub_field('sepearator_line');
         $description = get_sub_field('description');
         $sustainability_flag = get_sub_field('sustainability_flag');
+        
+        if(get_sub_field('border_color') && $btn_type == "basic_btn"){
+            $border_color = get_sub_field('border_color');
+        }
         ?>
         <div class="module_50_50_content hero_type_2" style="<?php echo ($img_text_side == "txt_right_img_left") ? 'flex-direction:row-reverse':'flex-direction:row'?>">
             <div class="hero_background">
@@ -28,7 +31,7 @@
                     <a href="<?php echo $url_img; ?>" title="<?php echo $url_img; ?>">
                 <?php endif;?>
                 <?php if($vid_file):?>
-                    <video class="" width="100%" height="auto" autoplay="true" loop="loop" poster="<?php the_sub_field('image') ;?>" > 
+                    <video autoplay loop class="" width="100%" height="auto" poster="<?php !empty(the_sub_field('image')) ? the_sub_field('image') : '' ;?>" > 
                         <source src="<?php echo $vid_file; ?>" type="video/mp4"/>         
                     </video>
                 <?php elseif($vid_url):?>

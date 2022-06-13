@@ -240,69 +240,74 @@ function check_user_by_id_num($id_num){
 
 
 function check_user_in_priority($user_login, $user_password ) {
-    if(!username_exists($user_login)) {
-       $body_array = check_user_by_mobile_phone($user_login); 
-       $error_code = $body_array["ErrorCode"];
-       if ($error_code == 0) {
-           $PosCustomersResult = $body_array["SearchPosCustomersResult"][0];
-           //if exist in priority, create user
-           if(!empty($PosCustomersResult)){
-               $priority_customer_number = $PosCustomersResult["POSCustomerNumber"];
-               $username = $PosCustomersResult["MobileNumber"];
-               $email = $PosCustomersResult["Email"];
-               $fname = $PosCustomersResult["FirstName"];
-               $lname = $PosCustomersResult["LastName"];
-               $fullname = $PosCustomersResult["FullName"];
-               $displayname = $PosCustomersResult["FirstName"];
-               $user_city = $PosCustomersResult["City"];
-               $user_address_1 = $PosCustomersResult["Address"];
-               $user_address_2 = $PosCustomersResult["Address2"];
-               $user_city = $PosCustomersResult["City"];
-               $user_zipcode = $PosCustomersResult["ZipCode"];
-               $user_birthId = $PosCustomersResult["BirthID"];
-   
-               //check if user exist by user login or email
-               $user_obj = get_user_by('login', $username);
-               if(empty($user_obj)){
-                   $user_obj = get_user_by('email',$email);
-               }
-   
-               $user_id = wp_insert_user(array(
-                   'ID' => isset($user_obj->ID) ? $user_obj->ID : null,
-                   'user_login'  =>  $username,
-                   'user_email'  =>  (!empty($email)) ? $email : $username.'@gmail.com',
-                   'first_name'  =>  $fname,
-                   'last_name'  =>  $lname,
-                   'role' => 'customer',
-                   'user_nicename' => $fullname,
-                   'display_name'  => $fullname,
-               ));
-               if (is_wp_error($user_id)) {
-                   $multiple_recipients = array(
-                       get_bloginfo('admin_email')
-                   );
-                   $subj = 'Error creating user from priority';
-                   $body = $user_id->get_error_message();
-                   wp_mail( $multiple_recipients, $subj, $body );
-               }
-               
-               update_user_meta($user_id, 'priority_customer_number', $priority_customer_number);
-               update_user_meta($user_id, 'billing_address_1', $user_address_1);
-               update_user_meta($user_id, 'billing_address_2', $user_address_2);
-               update_user_meta($user_id, 'billing_city', $user_city);
-               update_user_meta($user_id, 'billing_phone', $username);
-               update_user_meta($user_id, 'billing_postcode', $user_zipcode);
-               update_user_meta($user_id, 'account_id', $user_birthId);
-           }
-       }
-       else {
-            $message = $body_array['EdeaError']['DisplayErrorMessage'];
-            $multiple_recipients = array(
-                get_bloginfo('admin_email')
-            );
-            $subj = 'Error check user exist with mobile phone in priority';
-            wp_mail( $multiple_recipients, $subj, $message );
-       }
+    $classes = get_body_class(); 
+    //check if in my account: login page
+  	if($_SERVER['REQUEST_URI'] == "/my-account/"){
+        if(!username_exists($user_login)) {
+            $body_array = check_user_by_mobile_phone($user_login); 
+            $error_code = $body_array["ErrorCode"];
+            if ($error_code == 0) {
+                $PosCustomersResult = $body_array["SearchPosCustomersResult"][0];
+                //if exist in priority, create user
+                if(!empty($PosCustomersResult)){
+                    $priority_customer_number = $PosCustomersResult["POSCustomerNumber"];
+                    $username = $PosCustomersResult["MobileNumber"];
+                    $email = $PosCustomersResult["Email"];
+                    $fname = $PosCustomersResult["FirstName"];
+                    $lname = $PosCustomersResult["LastName"];
+                    $fullname = $PosCustomersResult["FullName"];
+                    $displayname = $PosCustomersResult["FirstName"];
+                    $user_city = $PosCustomersResult["City"];
+                    $user_address_1 = $PosCustomersResult["Address"];
+                    $user_address_2 = $PosCustomersResult["Address2"];
+                    $user_city = $PosCustomersResult["City"];
+                    $user_zipcode = $PosCustomersResult["ZipCode"];
+                    $user_birthId = $PosCustomersResult["BirthID"];
+        
+                    //check if user exist by user login or email
+                    $user_obj = get_user_by('login', $username);
+                    if(empty($user_obj)){
+                        $user_obj = get_user_by('email',$email);
+                    }
+        
+                    $user_id = wp_insert_user(array(
+                        'ID' => isset($user_obj->ID) ? $user_obj->ID : null,
+                        'user_login'  =>  $username,
+                        'user_email'  =>  (!empty($email)) ? $email : $username.'@gmail.com',
+                        'first_name'  =>  $fname,
+                        'last_name'  =>  $lname,
+                        'role' => 'customer',
+                        'user_nicename' => $fullname,
+                        'display_name'  => $fullname,
+                    ));
+                    if (is_wp_error($user_id)) {
+                        $multiple_recipients = array(
+                            get_bloginfo('admin_email')
+                        );
+                        $subj = 'Error creating user from priority';
+                        $body = $user_id->get_error_message().'</br>';
+                        $body.= 'username:'.$username.', first name:'.$fname.',last_name: '.$lname;
+                        wp_mail( $multiple_recipients, $subj, $body );
+                    }
+                    
+                    update_user_meta($user_id, 'priority_customer_number', $priority_customer_number);
+                    update_user_meta($user_id, 'billing_address_1', $user_address_1);
+                    update_user_meta($user_id, 'billing_address_2', $user_address_2);
+                    update_user_meta($user_id, 'billing_city', $user_city);
+                    update_user_meta($user_id, 'billing_phone', $username);
+                    update_user_meta($user_id, 'billing_postcode', $user_zipcode);
+                    update_user_meta($user_id, 'account_id', $user_birthId);
+                }
+            }
+            else {
+                    $message = $body_array['EdeaError']['DisplayErrorMessage'];
+                    $multiple_recipients = array(
+                        get_bloginfo('admin_email')
+                    );
+                    $subj = 'Error check user exist with mobile phone in priority';
+                    wp_mail( $multiple_recipients, $subj, $message );
+            }
+        }
     }
 }
 add_action('wp_authenticate', 'check_user_in_priority', 9999, 2);
@@ -312,7 +317,6 @@ add_action('wp_authenticate', 'check_user_in_priority', 9999, 2);
 add_action( 'template_redirect', 'get_user_details_after_registration');
 
 function get_user_details_after_registration() {
-    //if ( is_page_template( 'page-templates/overview.php' ) && ($_SERVER['HTTP_REFERER'] == get_site_url().'/register/')){
     if ( is_page_template( 'page-templates/overview.php' ) && ($_SERVER['HTTP_REFERER'] == get_site_url().'/register/')){
         if ( is_user_logged_in() ) {
             $user_id = get_current_user_id();
@@ -340,7 +344,7 @@ function get_user_details_after_registration() {
             $error_code = $result["ErrorCode"];
             if ($error_code == 0) {
                 $PosCustomersResult = $result["SearchPosCustomersResult"][0];
-                //if exist in priority, create user
+                //if not exist in priority, create user
                 if(empty($PosCustomersResult)){
                     $result =  check_user_by_phone($user_login);
                     $error_code = $result["ErrorCode"];
@@ -949,6 +953,7 @@ function getOrderedBySize($data) {
     return $result;
 }
 
+
 function get_sizes_filter($cat_id){
     $sizes = array();
     $term = get_term_by('id', $cat_id , 'product_cat' );
@@ -1198,18 +1203,19 @@ function variation_radio_buttons($html, $args) {
     $radios = '<div class="variation-radios">';
   
     if(!empty($options)) {
-      if($product && taxonomy_exists($attribute)) {
-        $terms = wc_get_product_terms($product->get_id(), $attribute, array(
-          'fields' => 'all',
-        ));
-  
-        foreach($terms as $term) {
-          if(in_array($term->slug, $options, true)) {
-            $id = $name.'-'.$term->slug;
-            $radios .= '<input type="radio" id="'.esc_attr($id).'" name="'.esc_attr($name).'" value="'.esc_attr($term->slug).'" '.checked(sanitize_title($args['selected']), $term->slug, false).'><label for="'.esc_attr($id).'">'.esc_html(apply_filters('woocommerce_variation_option_name', $term->name)).'</label>';
-          }
-        }
-      } else {
+        if($product && taxonomy_exists($attribute)) {
+            $terms = wc_get_product_terms($product->get_id(), $attribute, array(
+            'fields' => 'all',
+            ));
+
+            foreach($terms as $term) {
+                if(in_array($term->slug, $options, true)) {
+                    $id = $name.'-'.$term->slug;
+                    $radios .= '<input type="radio" id="'.esc_attr($id).'" name="'.esc_attr($name).'" value="'.esc_attr($term->slug).'" '.checked(sanitize_title($args['selected']), $term->slug, false).'><label for="'.esc_attr($id).'">'.esc_html(apply_filters('woocommerce_variation_option_name', $term->name)).'</label>';
+                }
+            }
+        } 
+        else {
         foreach($options as $option) {
           $id = $name.'-'.$option;
           $checked    = sanitize_title($args['selected']) === $args['selected'] ? checked($args['selected'], sanitize_title($option), false) : checked($args['selected'], $option, false);
@@ -1648,7 +1654,38 @@ add_filter( 'woocommerce_checkout_fields' , 'bbloomer_remove_billing_postcode_ch
  
 function bbloomer_remove_billing_postcode_checkout( $fields ) {
   unset($fields['billing']['billing_postcode']);
+  unset($fields['shipping']['shipping_postcode']);
   return $fields;
+}
+
+
+/**
+ * @snippet       Shipping Phone & Email - WooCommerce
+ * @how-to        Get CustomizeWoo.com FREE
+ * @author        Rodolfo Melogli
+ * @compatible    WooCommerce 6
+ * @donate $9     https://businessbloomer.com/bloomer-armada/
+ */
+ 
+add_filter( 'woocommerce_checkout_fields', 'bbloomer_shipping_phone_checkout' );
+ 
+function bbloomer_shipping_phone_checkout( $fields ) {
+   $fields['shipping']['shipping_phone'] = array(
+      'label' => 'טלפון',
+      'type' => 'tel',
+      'required' => false,
+      'class' => array( 'form-row-wide' ),
+      'validate' => array( 'phone' ),
+      'autocomplete' => 'tel',
+      'priority' => 25,
+   );
+   return $fields;
+}
+  
+add_action( 'woocommerce_admin_order_data_after_shipping_address', 'bbloomer_shipping_phone_checkout_display' );
+ 
+function bbloomer_shipping_phone_checkout_display( $order ){
+    echo '<p><b>טלפון למשלוח</b> ' . get_post_meta( $order->get_id(), '_shipping_phone', true ) . '</p>';
 }
 
 //Remove Coupon Form @ WooCommerce Checkout

@@ -9,14 +9,14 @@
         $btn_type = get_sub_field('btn_type');
         $url_img = get_sub_field('url_img');
 
-        $bg_color = !empty(get_sub_field('bg_color'))? get_sub_field('bg_color') :'transparent';
+        $bg_color = !empty(get_sub_field('bg_color'))? get_sub_field('bg_color') : 'transparent';
         
 
         
         if(get_sub_field('text_color')){
             $text_color = get_sub_field('text_color');
         }
-        if(get_sub_field('border_color')){
+        if(get_sub_field('border_color') && $btn_type == "basic_btn"){
             $border_color = get_sub_field('border_color');
         }
         ?>
@@ -26,7 +26,7 @@
                     <a href="<?php echo $url_img; ?>" title="<?php echo $url_img; ?>">
                 <?php endif;?>
                 <?php if($vid_file):?>
-                    <video controls class="" width="100%" height="auto" autoplay="true" loop="loop" poster="<?php the_sub_field('image') ;?>" > 
+                    <video autoplay loop class="" poster="<?php !empty(the_sub_field('image')) ? the_sub_field('image') : '' ;?>" > 
                         <source src="<?php echo $vid_file; ?>" type="video/mp4"/>         
                     </video>
                 <?php elseif($vid_url):?>

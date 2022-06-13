@@ -22,7 +22,7 @@
 						wp_nav_menu(
 						array(
 							'theme_location' => 'footer_navigation' . $i,
-							'menu_class' => 'col-sm-3 footer-menu',
+							'menu_class' => 'footer-menu',
 							'menu_id' => 'f_menu_' . $i
 						));
 					}

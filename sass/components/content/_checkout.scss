@@ -27,6 +27,10 @@
             .checkout_summary_wrap{
                 display: flex;
                 border-top: 1px solid #000;
+                input.input-text, textarea{
+                    text-align: right;
+                    padding: 14px 20px;
+                }
                 @media screen and (max-width: 1023px) {
                     display: block;
                     border-top: 0;

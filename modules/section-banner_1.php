@@ -21,8 +21,14 @@
         if(get_sub_field('bg_color')){
             $bg_color = get_sub_field('bg_color');
         }
+        else{
+            $bg_color = 'transparent';
+        }
         if(get_sub_field('text_color')){
             $text_color = get_sub_field('text_color');
+        }
+        else{
+            $bg_color = 'transparent';
         }
         if(get_sub_field('border_color')){
             $border_color = get_sub_field('border_color');
@@ -35,7 +41,7 @@
         <div class="hero_type_1  <?php echo ($banner_height == 1) ? 'half_height': ''; ?>">
             <div class="hero_background">
                 <?php if($vid_file):?>
-                    <video controls class="" width="100%" height="auto" autoplay="true" loop="loop" poster="<?php the_sub_field('image') ;?>" > 
+                    <video autoplay loop poster="<?php !empty(the_sub_field('image')) ? the_sub_field('image') : '' ;?>" > 
                         <source src="<?php echo $vid_file; ?>" type="video/mp4"/>         
                     </video>
                 <?php elseif($vid_url):?>

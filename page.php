@@ -19,11 +19,10 @@ get_header();
 // in your taxonomy/term template file
 $current_term = get_queried_object();
 $term = get_queried_object();
-//print_r($term);
 $child_template = get_field('display_cat_child_template', $term->taxonomy . '_' . $term->term_id);
 // parent property is either 0 or the parent ID
 if(is_product_category()){
-  if ( $current_term->parent || $child_template == 1 ) {
+  if ( ($current_term->parent || $child_template == 1) && ($current_term->name != 'גברים')  && ($current_term->name != 'נשים')  && ($current_term->name != 'ילדים ונוער')  && ($current_term->name != 'קולקציית בית')) {
     get_template_part( 'template-parts/content', 'child' );
     exit;
   } else {

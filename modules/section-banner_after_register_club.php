@@ -34,6 +34,7 @@
                     ?>
                     </h1> 
                 </div>
+                <!-- dana said that csutomer that bought has moadon and can have points,  -->
                 <div class="hero_bottom">
                     <?php if( has_bought() ):?>
                         <div>

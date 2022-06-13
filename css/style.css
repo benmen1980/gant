@@ -1980,7 +1980,7 @@ a, a:hover, a:focus, a:active {
 
 .title_bottom.sub_title_right_on_center h1 {
   position: absolute;
-  top: calc(100% - 120px);
+  top: 83%;
   right: 50%;
   -webkit-transform: translateX(50%);
           transform: translateX(50%);
@@ -4118,6 +4118,16 @@ footer .footer_content div ul li {
   margin-bottom: 5px;
 }
 
+@media screen and (max-width: 1200px) {
+  footer .footer_content div ul li p {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+  }
+}
+
 @media screen and (max-width: 1023px) {
   footer .footer_content div ul li.menu-item-has-children {
     border-top: 1px solid #ccc;
@@ -4672,6 +4682,10 @@ footer .footer_legal_links ul li a:hover {
 .woocommerce-lost-password form.lost_reset_password .form-row .button-secondary {
   width: 100%;
   margin-top: 10px;
+}
+
+.woocommerce #payment #place_order, .woocommerce-page #payment #place_order {
+  color: #fff;
 }
 
 /* Child Categories
@@ -6798,6 +6812,11 @@ body.gallery_open {
   border-top: 1px solid #000;
 }
 
+.woocommerce-checkout .entry-content form .checkout_summary_wrap input.input-text, .woocommerce-checkout .entry-content form .checkout_summary_wrap textarea {
+  text-align: right;
+  padding: 14px 20px;
+}
+
 @media screen and (max-width: 1023px) {
   .woocommerce-checkout .entry-content form .checkout_summary_wrap {
     display: block;
@@ -7863,6 +7882,13 @@ body.gallery_open {
   z-index: 0;
 }
 
+.hero_type_1 .hero_background video {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
 .hero_type_1 .hero_background .img_wrapper {
   background-position: top center;
   background-size: cover;
@@ -7900,6 +7926,7 @@ body.gallery_open {
 .hero_type_1 .hero_content .hero_titles h1 {
   font-size: 120px;
   line-height: 1;
+  width: 100%;
 }
 
 @media screen and (max-width: 1366px) {
@@ -7939,8 +7966,12 @@ body.gallery_open {
   z-index: 1;
 }
 
-.hero_type_1 .hero_content .hero_buttons a:first-child {
+.hero_type_1 .hero_content .hero_buttons a {
   margin-left: 20px;
+}
+
+.hero_type_1 .hero_content .hero_buttons a:last-child {
+  margin-left: 0;
 }
 
 .hero_type_2 {
@@ -7995,6 +8026,13 @@ body.gallery_open {
   display: flex;
 }
 
+.hero_type_2 .hero_background video {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
 .hero_type_2 .hero_background .img_wrapper {
   height: 100%;
   width: 100%;
@@ -8046,7 +8084,7 @@ body.gallery_open {
 }
 
 .hero_type_2 .hero_content > * {
-  max-width: 67.77777%;
+  max-width: 70%;
 }
 
 @media screen and (max-width: 1023px) {
@@ -9353,9 +9391,6 @@ body.gallery_open {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
   border-bottom: 1px solid #cac3bd;
   padding: 30px 0;
   position: relative;
@@ -9369,7 +9404,8 @@ body.gallery_open {
 
 .logged-in.woocommerce-edit-account .post-11 .entry-content .woocommerce .woocommerce-MyAccount-content .step3-form form.edit-account .form-row label {
   margin: 0;
-  width: 40%;
+  width: auto;
+  margin-left: 20px;
 }
 
 @media screen and (max-width: 1023px) {
@@ -9385,7 +9421,8 @@ body.gallery_open {
           box-shadow: unset;
   padding: 0;
   height: auto;
-  width: 60%;
+  width: auto;
+  text-align: right;
 }
 
 @media screen and (max-width: 1023px) {
@@ -10263,11 +10300,13 @@ p.row_radio_wrapper .radio_wrapper label::before {
 
 .overview_page .benefits_section .benefit_item .benefit_desc {
   height: 50px;
+  -webkit-box-sizing: content-box;
+          box-sizing: content-box;
 }
 
 @media screen and (max-width: 1023px) {
   .overview_page .benefits_section .benefit_item .benefit_desc {
-    height: auto;
+    height: 70px;
   }
 }
 
