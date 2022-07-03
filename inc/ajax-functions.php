@@ -14,6 +14,53 @@ function gant_ajax_enqueue() {
 
 add_action( 'wp_enqueue_scripts', 'gant_ajax_enqueue' );
 
+/**
+ * send sms before registration
+ */
+add_action( 'wp_ajax_send_sms', 'send_sms' );
+// for non-logged in users:
+add_action( 'wp_ajax_nopriv_send_sms', 'send_sms' );
+
+function send_sms(){
+    session_start();
+    // if ( isset( $_POST['user_fname'] ) && empty( $_POST['user_fname'] ) ) {
+    //     $validation_errors->add( 'billing_first_name_error', __( 'First name cannot be left blank.', 'woocommerce' ) );
+    // }
+    if(isset($_REQUEST['user_phone']) && $_REQUEST['user_phone'] != '') {
+        $user_phone = $_REQUEST["user_phone"];
+        $fourRandomDigit = rand(1000,9999);
+        $msg = __('Validation code is: ', 'gant').$fourRandomDigit;
+        SendSMS($msg,$user_phone);
+        //SendSMS($msg,'0556642589');
+        $_SESSION['code'] = $fourRandomDigit;
+
+    }
+}
+
+/**
+ * check code equal to sms
+ */
+add_action( 'wp_ajax_check_code', 'check_code' );
+// for non-logged in users:
+add_action( 'wp_ajax_nopriv_check_code', 'check_code' );
+
+function check_code(){
+    session_start();
+    if(isset($_REQUEST['enter_code']) && $_REQUEST['enter_code'] != '') {
+        $enter_code = $_REQUEST["enter_code"];
+        if($enter_code == $_SESSION['code']){
+            $msg =  __('אימות בוצע בהצלחה','gant');
+            wp_send_json_success(['msg' => $msg, 'response' => true]);
+        }
+        else{
+            $msg =  __('מספר אימות לא תקין.','gant');
+            wp_send_json_success(['msg' => $msg, 'response' => false]);
+        }
+        unset($_SESSION['code']);
+    }
+}
+
+
 
 /**
  * search result in menu
@@ -291,8 +338,12 @@ function filter_products(){
         'posts_per_page' =>  $current_pdt_in_page,
         'post_status' => array('publish'),
         'meta_key' => $meta_key,
-        'orderby' => $order_by. ' name',
-        'order' => $order,
+        'orderby'  => array(
+            $order_by => $order,
+            'menu_order'      => 'ASC',
+        ),
+        //'orderby' => $order_by. ' menu_order',
+        //'order' => $order,
         'post_parent__in' => (!empty($post_parent_in)) ? $post_parent_in : null,
         'meta_query'	=> array(
             'relation'		=> 'AND',
@@ -312,8 +363,12 @@ function filter_products(){
         'posts_per_page' => -1,
         'post_status' => array('publish'),
         'meta_key' => $meta_key,
-        'orderby' => $order_by. ' name',
-        'order' => $order,
+        'orderby'  => array(
+            $order_by => $order,
+            'menu_order'      => 'ASC',
+        ),
+        // 'orderby' => $order_by. ' menu_order',
+        // 'order' => $order,
         'post_parent__in' => (!empty($post_parent_in)) ? $post_parent_in : null,
         'meta_query'	=> array(
             'relation'		=> 'AND',

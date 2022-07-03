@@ -3,6 +3,189 @@
 var $=jQuery.noConflict();
 
 jQuery(document).ready(function($){
+    
+    function ValidateID(str){
+        //INPUT VALIDATION
+
+        // Just in case -> convert to string
+        var IDnum = String(str);
+
+        // Validate correct input
+        if ((IDnum.length > 9) || (IDnum.length < 5)){
+            $('#reg_id').after('<span class="error">הכנס ת"ז תקין</span>');
+            check_validate_id = false;
+        }
+
+        if (isNaN(IDnum)){
+            $('#reg_id').after('<span class="error">הכנס ת"ז תקין</span>');
+            check_validate_id = false;
+        }
+        // The number is too short - add leading 0000
+        if (IDnum.length < 9){
+            while(IDnum.length < 9){
+                IDnum = '0' + IDnum;
+            }
+        }
+
+        // CHECK THE ID NUMBER
+        var mone = 0, incNum;
+        for (var i=0; i < 9; i++)
+        {
+            incNum = Number(IDnum.charAt(i));
+            incNum *= (i%2)+1;
+            if (incNum > 9)
+            incNum -= 9;
+            mone += incNum;
+        }
+        if (mone%10 != 0){
+            $('#reg_id').after('<span class="error">הכנס ת"ז תקין</span>');
+            check_validate_id = false;
+
+        }
+        else{
+            check_validate_id = true;
+        }
+    }
+    
+    $('.send_validation_sms').on('click', function() {
+        console.log('enter click565');
+        user_phone = $(this).closest('form').find('.form-row input#reg_username').val();
+        user_fname = $(this).closest('form').find('.form-row input#reg_first_name').val();
+        user_lname = $(this).closest('form').find('.form-row input#reg_last_name').val();
+        user_email = $(this).closest('form').find('.form-row input#reg_email').val();
+        user_id = $(this).closest('form').find('.form-row input#reg_id').val();
+        user_birthday = $(this).closest('form').find('.form-row input#reg_birthday').val();
+        $(".error").remove();
+        if (user_fname.length == 0) {
+            $('#reg_first_name').after('<span class="error">שם פרטי שדה חובה</span>');
+            check_validate_fname = false;
+        }
+        else{
+            check_validate_fname = true;
+        }
+        if (user_birthday.length == 0) {
+            $('#reg_birthday').after('<span class="error">תאריך לידה שדה חובה</span>');
+            check_validate_birthday = false;
+        }
+        else{
+            check_validate_birthday = true;
+        }
+        if (user_phone.length == 0) {
+            $('#reg_username').after('<span class="error">טלפון שדה חובה</span>');
+            check_validate_phone = false;
+        }
+        else{
+            var regEx = /^\+?(972|0)(\-)?0?([5]{1}\d{8})$/;
+            var validPhone = regEx.test(user_phone);
+            if(!validPhone){
+                $('#reg_username').after('<span class="error">הכנס טלפון תקין</span>');
+                check_validate_phone = false;
+            }   
+            else{
+                check_validate_phone = true;
+            }
+        }
+        if (user_lname.length == 0) {
+            $('#reg_last_name').after('<span class="error">שם משפחה שדה חובה</span>');
+            check_validate_lname = false;
+        }
+        else{
+            check_validate_lname = true;
+        }
+        if (user_email.length == 0) {
+            $('#reg_email').after('<span class="error">אימייל שדה חובה</span>');
+            check_validate_email = false;
+        } 
+        else {
+            //var regExEmail = /^[A-Z0-9][A-Z0-9._%+-]{0,63}@(?:[A-Z0-9-]{1,63}\.){1,125}[A-Z]{2,63}$/;
+            var regExEmail = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+            var validEmail = regExEmail.test(user_email);
+            if (!validEmail) {
+              $('#reg_email').after('<span class="error">הכנס אימייל תקין</span>');
+              check_validate_email = false;
+            }
+            else{
+                check_validate_email = true;
+            }
+        }
+        if (user_id.length == 0) {
+            $('#reg_id').after('<span class="error">ת"ז שדה חובה</span>');
+            check_validate_id = false;
+            console.log('enter if');
+        } 
+        else {
+            ValidateID(user_id);
+
+        }
+        console.log("check_validate_id", check_validate_id);
+        console.log("check_validate_email", check_validate_email);
+        console.log("check_validate_fname", check_validate_fname);
+        console.log("check_validate_lname", check_validate_lname);
+        console.log("check_validate_phone", check_validate_phone);
+        console.log("check_validate_birthday", check_validate_birthday);
+
+        if(check_validate_id == true && check_validate_email == true && check_validate_lname == true && 
+            check_validate_fname == true && check_validate_phone == true && check_validate_birthday == true){
+            $.ajax({
+                url: ajax_obj.ajaxurl,
+                data: {
+                'action': 'send_sms',
+                'user_phone': user_phone,
+                },
+                success: function (data) {
+                    console.log('success');
+                    $('.input_wrapper_validation_code').show();
+                },
+                error: function (errorThrown) {
+                    console.log('error');
+                    console.log(errorThrown);
+                }
+            });
+        }
+    });
+
+    $('.check_code_wrapper .check_code').on('click', function() {
+
+        var enter_code = $(this).prev('#validation_code').val();
+        $.ajax({
+            url: ajax_obj.ajaxurl,
+            data: {
+            'action': 'check_code',
+            'enter_code': enter_code,
+            },
+            dataType: 'json',
+            method: 'POST',
+            success: function (data) {
+                if($(".msg_after_validation").length)
+                    $(".msg_after_validation").remove();
+                if($('.register_btn').length){
+                    $('.register_btn').remove();
+                }
+                //console.log('success');
+                console.log(data);
+                console.log(data.data);
+                console.log(data.data.msg);
+                console.log(data.data.response);
+                $('.check_code_wrapper').after('<div class="msg_after_validation">'+ data.data.msg +'</div>');
+                if(data.data.response == true)
+                    $('.form-row-submit').append('<button type="submit" class="register_btn" name="register">הרשמה</button>')
+                    //$('.register_btn').show();
+            },
+            error: function (errorThrown) {
+                if($(".msg_after_validation").length)
+                    $(".msg_after_validation").remove();
+                if($('.register_btn').length){
+                    $('.register_btn').remove();
+                }
+                console.log('error');
+                console.log(errorThrown);
+                $('.check_code_wrapper').after('<div class="msg_after_validation">אירעה שגיאה, נסה שנית</div>');
+            }
+        });
+    });
+
+
+
     var timer = null;
     $('#searchform > input').keydown(function(){
         

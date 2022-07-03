@@ -9,6 +9,7 @@
         $title_point = get_sub_field('title_point');
         $desc_point = get_sub_field('desc_point');
         $title_no_club = get_sub_field('title_no_club');
+        $title_already_register_club = get_sub_field('title_club_already_register');
     ?>
         <div class="<?php echo (!empty($img_under_txt) ? 'hero_type_2' : 'hero_type_2'); ?> hero_wrapper">
             <div class="hero_background">
@@ -36,14 +37,17 @@
                 </div>
                 <!-- dana said that csutomer that bought has moadon and can have points,  -->
                 <div class="hero_bottom">
-                    <?php if( has_bought() ):?>
+                    <?//php if( has_bought() ):?>
                         <div>
-                            <h3><?php echo $title_point.': '?></h3>
-                            <h3><?php echo $desc_point; ?></h3>
+                            <?php  if( get_user_meta( get_current_user_id(), 'is_club', true ) == 1): ?>
+                                <h3><?php echo $title_already_register_club; ?></h3>
+                                <h3><?php echo $title_point.': '?></h3>
+                                <h3><?php echo $desc_point; ?></h3>
+                            <?php else:?>
+                                <h3><?php echo $title_no_club; ?></h3>
+                            <?php endif; ?>
                         </div>
-                    <?php else:?>
-                        <h3><?php echo $title_no_club; ?></h3>
-                    <?php endif;?>
+                    <?//php endif;?>
                 </div>
             </div>
         </div>

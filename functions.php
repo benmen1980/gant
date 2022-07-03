@@ -219,6 +219,15 @@ require get_template_directory() . '/inc/acf-functions.php';
  */
 require get_template_directory() . '/inc/ajax-functions.php';
 
+function register_my_session()
+{
+  if( !session_id() )
+  {
+    session_start();
+  }
+}
+
+add_action('init', 'register_my_session');
 
 function is_variable_product_out_of_stock($product) {
     $variation_ids = $product->get_visible_children();
@@ -381,4 +390,28 @@ function check_filter() {
 
 
 
+
+function validId($id){
+    if(!is_numeric($id))
+        return false;
+    if(strlen($id) < 5 || strlen($id) > 9)
+        return false;
+    
+    $id = str_pad($id, 9, "0", STR_PAD_LEFT);
+    
+    $res = 0;
+    for($i = 0; $i < 9; $i++){
+        $num = $id[$i];
+        
+        $num *= ($i % 2) + 1;
+        
+        if($num > 9)
+            $num -= 9;
+        $res += $num;
+    }
+    
+    if($res % 10 == 0)
+        return true;
+    return false;
+}
 

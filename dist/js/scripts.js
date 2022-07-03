@@ -1,5 +1,10 @@
 var $=jQuery.noConflict();
 jQuery(document).on("ready", function(){
+
+    //validate register form field before enter token
+    $( ".send_validation_sms" ).on("click", function(event){
+        
+    });
     if (!$("body").hasClass("page-template-register")) {
         if($('.slider_benefits').length){
             $('.slider_benefits').slick({
@@ -311,7 +316,7 @@ jQuery(document).on("ready", function(){
             // Display the hidden content
             $('.accordion ' + currentLink).slideDown(350).addClass('open');
         }
-    e.preventDefault();
+        e.preventDefault();
     });
         
     function close_section() {
@@ -730,6 +735,11 @@ jQuery(document).on("ready", function(){
         });
 
        
+    }
+
+    if (window.location.href.indexOf("branch") > -1) {
+        $("#register_modal").toggleClass('is_modal_showing');
+        $('body').toggleClass('is_modal_open');
     }
     
     

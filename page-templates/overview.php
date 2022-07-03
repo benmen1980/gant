@@ -4,12 +4,16 @@ Template Name: Overview Page
 
 */
 
+
 get_header();
+
+
 
 if ( !is_user_logged_in() ){
     wp_redirect ( home_url("/my-account") );
     exit;
 }
+
 ?>
 
 <div class="overview_page">

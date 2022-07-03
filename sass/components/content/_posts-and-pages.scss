@@ -2352,3 +2352,65 @@ footer{
 .woocommerce #payment #place_order, .woocommerce-page #payment #place_order{
     color: #fff;
 }
+button.send_validation_sms{
+    border: 0;
+    background-color: #000;
+    color: #fff;
+    &:disabled{
+        border: 1px solid #999999;
+        background-color: #cccccc;
+        color: #fff;
+    }
+}
+.input_wrapper_validation_code{
+    display: none;
+    margin: auto;
+    text-align: center;
+    border: 1px solid grey;
+    padding: 20px;
+    margin-bottom: 30px;
+    .check_code_wrapper{
+        display: flex;
+        margin: 20px 0;
+        input{
+            margin-left: 10px;
+        }
+        button{
+            background-color: #000;
+            color: #fff;
+        }
+    }
+    .msg_after_validation{
+        display: block;
+        width: 100%;
+        text-align: center;
+        font-size: 20px;
+        margin: 10px;
+    }
+}
+.validation_token_wrapper{
+    width: 100%;
+    button.send_validation_sms{
+        margin: 0px auto 30px;
+        display: block;
+    }
+}
+
+.modal#register_modal .modal_container .modal_content form{
+    p.form-row.form-row-submit button.register_btn{
+        background-color: #1C2B4A;
+        color: #fff;
+        display: block;
+        margin: 20px auto;
+        padding: 7px 30px;
+        width: 100%;
+    }
+    .error{
+        color: red;
+    }
+    
+} 
+.send_pswd_msg{
+    margin: 20px 0;
+    font-size: 20px;
+}

@@ -2,6 +2,7 @@
 
 use PriorityWoocommerceAPI\WooAPI;
 
+
 /*
 * Create search form shortcode
 */
@@ -80,6 +81,12 @@ function wooc_validate_extra_register_fields( $username, $email, $validation_err
         
         $validation_errors->add( 'account_id_error', __( 'ת"ז הינו שדה חובה', 'gant' ) );  
     }
+    elseif(isset($_POST['account_id']) && !empty($_POST['account_id']) ){
+        $check_validId = validId($_POST['account_id']);
+        if($check_validId != 1){
+            $validation_errors->add( 'account_id_error', __( 'הכנס ת"ז תקין', 'gant' ) );  
+        }
+    }
     if ( !(preg_match('/^05\d([-]{0,1})\d{7}$/', $username ))){
         wc_add_notice( "הכנס טלפון נייד תקין" ,"error" );
     }
@@ -108,6 +115,17 @@ function my_account_saving_extra_field( $user_id ) {
     else{
         update_user_meta( $user_id, 'agree_business_owner', 'off' );
     }
+    if( isset($_POST['want_club_registration']) )
+        update_user_meta( $user_id, 'want_club_registration', 1 );
+    else{
+        update_user_meta( $user_id, 'want_club_registration', 0 );
+    }
+    if( isset($_POST['is_club']) )
+    update_user_meta( $user_id, 'is_club', 1 );
+else{
+    update_user_meta( $user_id, 'is_club', 0 );
+}
+    
      
 }
 
@@ -128,6 +146,19 @@ function add_extra_fields( $user )
                 <th><label for="agree_business_owner"><?php echo __('הירשם לניוזלטר Gant','gant')?></label></th>
                 <td> 
                     <input type="checkbox" name="agree_business_owner"   <?php  checked( get_user_meta( $user->ID, 'agree_business_owner', true ), 'on' ); ?> value="on" />
+                </td>   
+            </tr>
+            
+            <tr>
+                <th><label for="want_club_registration"><?php echo __('סמן חבר מועדון בהרשמה','gant')?></label></th>
+                <td> 
+                    <input type="checkbox" name="want_club_registration"  <?php  checked( get_user_meta( $user->ID, 'want_club_registration', true ), 1 ); ?>  />
+                </td>   
+            </tr>
+            <tr>
+                <th><label for="is_club"><?php echo __('חבר מועדון','gant')?></label></th>
+                <td> 
+                    <input type="checkbox" name="is_club"  <?php  checked( get_user_meta( $user->ID, 'is_club', true ), 1 ); ?>  />
                 </td>   
             </tr>
         </table>
@@ -317,7 +348,8 @@ add_action('wp_authenticate', 'check_user_in_priority', 9999, 2);
 add_action( 'template_redirect', 'get_user_details_after_registration');
 
 function get_user_details_after_registration() {
-    if ( is_page_template( 'page-templates/overview.php' ) && ($_SERVER['HTTP_REFERER'] == get_site_url().'/register/')){
+    $prev_url = $_SERVER['HTTP_REFERER'];
+    if ( (is_page_template( 'page-templates/overview.php' ) && ($_SERVER['HTTP_REFERER'] == get_site_url().'/register/')) || ( is_front_page() && strpos($prev_url, 'branch') == true )){
         if ( is_user_logged_in() ) {
             $user_id = get_current_user_id();
             $meta = get_user_meta($user_id);
@@ -356,13 +388,14 @@ function get_user_details_after_registration() {
                             if ($error_code == 0) {
                                 $PosCustomersResult = $result["SearchPosCustomersResult"][0];
                                 if(empty($PosCustomersResult)){
+                                    //echo 'current user:'.get_current_user_id();
                                     // sync cust to priorirty
-                                    $priority_customer_number = 'WEB-' . (string)$user_id;
+                                    $site_priority_customer_number = 'WEB-'.get_current_user_id();
                                     $data = [
                                         "CreateCustomer" => true,
                                     ];
                                     $data["POSCustomerDetails"] = [
-                                        "POSCustomerNumber" => $priority_customer_number,
+                                        "POSCustomerNumber" => $site_priority_customer_number,
                                         "City" => !empty($billing_city) ? $billing_city : '',
                                         "StreetAddress" => !empty($billing_address_1) ? $billing_address_1 : '',
                                         "HouseNumber" => !empty($billing_address_2) ? (int)$billing_address_2 : 0,
@@ -401,7 +434,7 @@ function get_user_details_after_registration() {
                                     $body_array = makeRequestCustomerPos('POST', $form_name ,  ['body' => json_encode($data)], true);
                                     $error_code = $body_array["ErrorCode"];
                                     if($error_code == 0){
-                                        update_user_meta($user_id, 'priority_customer_number', $priority_customer_number, true);
+                                        update_user_meta($user_id, 'priority_customer_number', $site_priority_customer_number, true);
                                     }
                                     else{
                                         $message = $body_array['EdeaError']['DisplayErrorMessage'];
@@ -418,7 +451,11 @@ function get_user_details_after_registration() {
                                 else{
                                     //update priority number to user
                                     $priority_customer_number = $PosCustomersResult["POSCustomerNumber"];
+                                    $is_club = $PosCustomersResult["ChannelName"];
                                     update_user_meta($user_id, 'priority_customer_number', $priority_customer_number);
+                                    if(!empty($is_club)){
+                                        update_user_meta($user_id, 'is_club', 1);
+                                    }
                                 }
                             }
                             else{
@@ -434,7 +471,11 @@ function get_user_details_after_registration() {
                         else{
                             //update priority number to user
                             $priority_customer_number = $PosCustomersResult["POSCustomerNumber"];
+                            $is_club = $PosCustomersResult["ChannelName"];
                             update_user_meta($user_id, 'priority_customer_number', $priority_customer_number);
+                            if(!empty($is_club)){
+                                update_user_meta($user_id, 'is_club', 1);
+                            }
                         }
                     }
                     else{
@@ -450,7 +491,12 @@ function get_user_details_after_registration() {
                 else{
                     //update priority number to user
                     $priority_customer_number = $PosCustomersResult["POSCustomerNumber"];
+                    $is_club = $PosCustomersResult["ChannelName"];
                     update_user_meta($user_id, 'priority_customer_number', $priority_customer_number);
+                    // check if club and update user meta
+                    if(!empty($is_club)){
+                        update_user_meta($user_id, 'is_club', 1);
+                    }
                 }
             }
             else{
@@ -472,11 +518,24 @@ function get_user_details_after_registration() {
 
 
 //redirect to my account after success registration
-function registration_redirect() {
-    return home_url( '/overview' );
-}
+function wc_custom_registration_redirect() {
+    $prev_url = $_SERVER['HTTP_REFERER'];
+    //check if user register in store
+    if (strpos($prev_url, 'branch') == true) {
+        //echo $key . ' branch exists in the URL <br>';
+        //echo get_current_user_id(); 
+        wp_logout();
+        wp_destroy_current_session();
+        wp_redirect ( home_url("/") );
+        exit;
+    }
+    else{
+        return home_url( '/overview' );
+    }
 
-add_filter( 'registration_redirect', 'registration_redirect' );
+}
+add_action('woocommerce_registration_redirect', 'wc_custom_registration_redirect', 99);
+//add_filter( 'registration_redirect', 'registration_redirect' );
 
 
 
@@ -1076,10 +1135,7 @@ function afterPostUpdated($meta_id, $post_id, $meta_key='', $meta_value=''){
         get_substainable_filter($product_cat_id);
     }
 }
-add_action('updated_post_meta', 'afterPostUpdated', 10, 4);
-
-
-
+//add_action('updated_post_meta', 'afterPostUpdated', 10, 4);
 
 
 
@@ -1954,6 +2010,175 @@ add_filter( 'woocommerce_valid_order_statuses_for_order_again', 'add_order_again
 function add_order_again_status($array){
     $array = array_merge($array, array('on-hold', 'processing', 'pending-payment', 'cancelled', 'refunded'));
     return $array;
+}
+
+
+
+add_filter( 'nav_menu_meta_box_object', 'disable_pagination_in_menu_meta_box', 9 );
+
+function disable_pagination_in_menu_meta_box($obj) {
+  $obj->_default_query = array(
+    'posts_per_page' => -1
+  );
+  return $obj;
+}
+
+
+function SendSMS($message_text,$recepients) {
+    $sms_user = "gus123456"; // User Name (Provided by Inforu)
+    $sms_apitoken = get_option('sms_token'); // Password (Provided by Inforu)
+    $sms_sender = "GANT"; //
+    $message_text = preg_replace( "/\r|\n/", "", $message_text); // remove line breaks
+    $xml = '';
+    $xml .= '<Inforu>'.PHP_EOL;
+    $xml .= ' <User>'.PHP_EOL;
+    $xml .= ' <Username>'.htmlspecialchars($sms_user).'</Username>'.PHP_EOL;
+    $xml .= ' <ApiToken>'.htmlspecialchars($sms_apitoken).'</ApiToken>'.PHP_EOL;
+    $xml .= ' </User>'.PHP_EOL;
+    $xml .= ' <Content Type="sms">'.PHP_EOL;
+    $xml .= ' <Message>'.htmlspecialchars($message_text).'</Message>'.PHP_EOL;
+    $xml .= ' </Content>'.PHP_EOL;
+    $xml .= ' <Recipients>'.PHP_EOL;
+    $xml .= ' <PhoneNumber>'.htmlspecialchars($recepients).'</PhoneNumber>'.PHP_EOL;
+    $xml .= ' </Recipients>'.PHP_EOL;
+    $xml .= ' <Settings>'.PHP_EOL;
+    $xml .= ' <Sender>'.htmlspecialchars($sms_sender).'</Sender>'.PHP_EOL;
+    $xml .= ' </Settings>'.PHP_EOL;
+    $xml .= '</Inforu>';
+    $ch = curl_init();
+    curl_setopt($ch,CURLOPT_URL,'https://api.inforu.co.il/SendMessageXml.ashx');
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, 'InforuXML='.urlencode($xml) );
+    curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+    $response = curl_exec($ch);
+    curl_close($ch);
+    //print_r($response);
+    return $response;
+}
+
+//SendSMS('קוד אימות:','0556642589');
+
+
+
+// Change error message - username already exist to phone already exist because we changed the username to be the user phone
+add_filter('gettext', 'mycustom_func');
+function mycustom_func($translated_text){
+    if($translated_text == 'קיים כבר משתמש שרשום תחת שם משתמש זה. יש לבחור שם אחר.'){
+        $translated_text = 'קיים כבר משתמש שרשום תחת טלפון זה. יש לבחור טלפון אחר';
+    }
+    if($translated_text == 'אנא הכנס שם משתמש קיים'){
+        $translated_text = 'אנא הכנס טלפון נייד';
+    }
+    return $translated_text;
+}
+
+
+
+// if user didn't register to club
+// add checkbox to register to club and 45 shequel fee
+if(is_user_logged_in()){
+
+    if( get_user_meta( get_current_user_id(), 'is_club', true ) == 0){
+
+        add_action( 'woocommerce_after_checkout_billing_form', 'fee_club_checkbox_field', 20 );
+        function fee_club_checkbox_field(){
+            $user_check_club_on_registration = get_user_meta( get_current_user_id(), 'want_club_registration', true );
+            echo '<tr class="club_registration"><th>';
+    
+            woocommerce_form_field( 'checkbox_club', array(
+                'type'          => 'checkbox',
+                'class'         => array('checkbox_club form-row-wide'),
+                'label'         =>  __('הצטרפות לחבר מועדון', 'gant'),
+                'placeholder'   => __(''),
+            ), $user_check_club_on_registration );
+    
+            echo '</th><td>';
+        }
+    
+    
+        // Add a custom calculated fee conditionally
+        add_action( 'woocommerce_cart_calculate_fees', 'set_club_fee' );
+        function set_club_fee( $cart ){
+            if ( is_admin() && ! defined('DOING_AJAX') || ! is_checkout() )
+                return;
+    
+            // if ( did_action('woocommerce_cart_calculate_fees') >= 2 )
+            //     return;
+            $user_check_club_on_registration = get_user_meta( get_current_user_id(), 'want_club_registration', true );
+            if ( $user_check_club_on_registration  == 1) {
+                $fee_label   = __('הצטרפות לחבר מועדון', 'gant');
+                $fee_amount  = 45;
+                WC()->cart->add_fee( $fee_label, $fee_amount );
+            }
+        }
+
+
+        // jQuery - Ajax script
+        add_action( 'wp_footer', 'checkout_fee_script' );
+        function checkout_fee_script() {
+            // Only on Checkout
+            if( is_checkout() && ! is_wc_endpoint_url() ) :
+            ?>
+            <script type="text/javascript">
+            jQuery( function($){
+                if (typeof wc_checkout_params === 'undefined')
+                    return false;
+
+                $('form.checkout').on('change', 'input[name=checkbox_club]', function(){
+                    var fee = $(this).prop('checked') === true ? 1 : 0;
+
+                    $.ajax({
+                        type: 'POST',
+                        url: wc_checkout_params.ajax_url,
+                        data: {
+                            'action': 'club_check_fee',
+                            'club_check_fee': fee,
+                        },
+                        success: function (result) {
+                            $('body').trigger('update_checkout');
+                        },
+                    });
+                });
+            });
+            </script>
+            <?php
+            endif;
+        }
+
+        // Get Ajax request and saving to WC session
+        add_action( 'wp_ajax_club_check_fee', 'get_club_check_fee' );
+        add_action( 'wp_ajax_nopriv_club_check_fee', 'get_club_check_fee' );
+        function get_club_check_fee() {
+            if ( isset($_POST['club_check_fee']) &&  $_POST['club_check_fee'] == 1) {
+                update_user_meta( get_current_user_id(), 'want_club_registration', 1 );
+            }
+            else{
+                update_user_meta( get_current_user_id(), 'want_club_registration', 0 );
+            }
+            die();
+        }
+    }
+}
+
+
+
+
+
+
+
+
+// Save the custom checkout checkbox field as the order meta and user meta
+add_action( 'woocommerce_checkout_create_order', 'custom_checkout_field_update_order_meta', 10, 2 );
+function custom_checkout_field_update_order_meta( $order, $data ) {
+    $value = isset($_POST['checkbox_club']) ? 1 : 0; // Set the correct values
+    
+    // Save as custom order meta data
+    $order->update_meta_data( 'checkbox_club', $value );
+
+    // Save as custom user meta data
+    if ( get_current_user_id() > 0 ) {
+        update_user_meta( get_current_user_id(), 'is_club', $value );
+    }
 }
 
 

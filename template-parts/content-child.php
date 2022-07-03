@@ -25,8 +25,11 @@ $args_cat = array(
     'posts_per_page' => $posts_per_page,
     'paged' => 1,
     'meta_key'       => 'total_sales',
-    'orderby'        => 'meta_value_num name',
-    'order'          => 'DESC',
+    //'orderby'        => 'meta_value_num menu_order',
+    'orderby'  => array(
+		'meta_value_num' => 'DESC',
+		'menu_order'      => 'ASC',
+	),
     'meta_query' => array(
         'relation'		=> 'AND',
         array(
