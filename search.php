@@ -39,7 +39,7 @@ get_header();
 				endwhile;?>
 			</div>
 			<nav class="navigation paging-navigation" role="navigation">
-				<h1 class="screen-reader-text"><?php _e( 'Posts navigation', 'gant' ); ?></h1>
+				<h2 class="screen-reader-text"><?php _e( 'Posts navigation', 'gant' ); ?></h2>
 				<div class="nav-links">
 					<?php if ( get_previous_posts_link() ) : ?>
 						<div class="nav-previous"><?php previous_posts_link( '<span class="button_label">'.__( 'הקודם', 'gant' ).'</span>' ); ?></div>

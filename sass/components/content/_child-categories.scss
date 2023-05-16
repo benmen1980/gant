@@ -1,30 +1,3 @@
-nav.breadcrumb{
-    .arrow_btn{
-        position: relative;
-        .button-secondary{
-            padding:4px 8px;
-            position: static;
-            .btn_icon{
-                transform: translateX(0px);
-                margin-right:0;
-                margin-left:5px;
-                svg{
-                    transform: rotate(0deg);
-                }
-            }
-            .button_label{
-                position: absolute;
-                right: 45px;
-            }
-            &:hover{
-                .btn_icon{
-                    transform: translateX(10px);
-                }
-            }
-        } 
-    } 
-}
-
 
 .module_30_70{
     .top_header{

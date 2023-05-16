@@ -49,11 +49,24 @@ if ( ! is_ajax() ) {
 		</noscript>
 
 		<?php wc_get_template( 'checkout/terms.php' ); ?>
+		
+		<?php if(false): ?>
+			<div class="register_before_checkout_wrapper">
+				<?php if ( ! is_user_logged_in()){ ?>
+					<p><?php _e("עדיין לא הצטרפת למועדון הלקוחות שלנו?", "gant"); ?></p>
+					<a  class="go-to-account button-primary" href="<?php echo get_permalink( get_option('woocommerce_myaccount_page_id') ); ?>" title="<?php _e('Register','woocommerce'); ?>">
+						<span class="button_label">
+							<?php _e('הצטרף עכשיו!','gant'); ?>
+						</span>
+					</a>
+				<?php }?>
+			</div>
+		<?php endif;?>
 
 		<?php do_action( 'woocommerce_review_order_before_submit' ); ?>
 		
 		<button type="submit" class="button-secondary alt " name="woocommerce_checkout_place_order" id="place_order">
-			<span class="button_label"><?php echo esc_html( $order_button_text )  ?></span>
+			<?php echo esc_html( $order_button_text )  ?>
 		</button>
 	
 

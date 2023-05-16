@@ -68,7 +68,11 @@ if ( wc_get_page_id( 'shop' ) > 0 ) : ?>
 							'key' => '_stock_status',
 							'value' => 'instock',
 							'compare' => '=',
-						)
+						),
+						// array(
+						// 	'key' => '_thumbnail_id',
+						// 	'compare' => 'EXISTS',
+						// )
 					)
 				);
 				$featured_pdts = get_posts( $args_cat );

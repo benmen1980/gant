@@ -25,7 +25,14 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 <p>פרטי הגישה שמסרת ישמשו אותך בחיבור במהלך הצקאאוט</p>
 <p style="direction:ltr"><?php printf( esc_html__( '%1$s :או בדף החשבון שלי', 'gant' ), make_clickable( esc_url( wc_customer_edit_account_url() ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 <p><span style="font-weight: bold">שם משתמש:</span><span><?php echo $user_login; ?></span></p>
-<p><span style="font-weight: bold">סיסמא:</span><span>הסיסמה שהגדרת בעת יצירת חשבון</span></p>
+<p><span style="font-weight: bold">סיסמא:</span>
+<?php if ( 'yes' === get_option( 'woocommerce_registration_generate_password' ) && $password_generated && $set_password_url ) : ?>
+		<?php // If the password has not been set by the user during the sign up process, send them a link to set a new password ?>
+		<span><a href="<?php echo esc_attr( $set_password_url ); ?>"><?php printf( esc_html__( 'Click here to set your new password.', 'woocommerce' ) ); ?></a></span>
+<?php else: ?>
+	<span>הסיסמה שהגדרת בעת יצירת חשבון</span></p>
+<?php endif; ?>
+
 <?php if(false): ?>
 	<p><?php printf( esc_html__( 'Hi %s,', 'woocommerce' ), esc_html( $user_login ) ); ?></p>
 	<?php /* translators: %1$s: Site title, %2$s: Username, %3$s: My account link */ ?>
@@ -36,6 +43,8 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 	<?php endif; ?>
 <?php endif; ?>
 <?php $email_after_registration = get_field('email_after_registration', 'option'); ?>
+<p></p>
+<p></p>
 <img alt="Welcome image SE" height="750" src="<?php echo $email_after_registration['second_image']; ?>" style="display:block;outline:none;text-decoration:none;font-size:13px;padding:0px;margin: 0;text-align:center;border:0px"/>
 <p></p>
 <p></p>

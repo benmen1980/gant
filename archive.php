@@ -11,7 +11,7 @@ get_header();
 
 ?>
 
-	<main id="primary" class="site-main test2">
+	<main id="primary" class="site-main test3">
 
 		<?php if ( have_posts() ) : ?>
 

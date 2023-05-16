@@ -7,6 +7,7 @@ Template Name: FAQ Purchase Term Page
 get_header();
 ?>
 <div class="faq_page">
+<h1 class="faq_main_title"><?php _e("שאלות נפוצות על תנאי רכישה", "gant"); ?></h1>
     <div class="accordion">
         <?php 
             if( have_rows('group_question_purchase_term', 'option') ) {

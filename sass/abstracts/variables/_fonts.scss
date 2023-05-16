@@ -23,3 +23,26 @@
 	src: url('../fonts/almoni-medium-aaa.woff') format('woff'), 
 	url('../fonts/almoni-medium-aaa.woff2') format('woff2'), 
 }
+
+@font-face {
+	font-family:'gantmodern';
+	font-weight:normal; /*(regular)*/
+	font-style: normal;
+	src: url('../fonts/GantModernV2-Regular.otf');
+}
+
+@font-face {
+	font-family:'gantmodern';
+	font-weight:bold; /*(regular)*/
+	font-style: normal;
+	src: url('../fonts/GantModernV2-Bold.otf');
+}
+
+@font-face {
+	font-family:'gantserif';
+	font-weight:400; /*(regular)*/
+	font-style: normal;
+	src: url('../fonts/GantSerif-MediumCondensed.otf');
+	src: url('../fonts/GantSerif-MediumCondensed.woff') format('woff'), 
+	url('../fonts/GantSerif-MediumCondensed.woff2') format('woff2'), 
+}

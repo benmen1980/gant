@@ -23,6 +23,9 @@
             list-style-type: none;
             li{
                 padding: 0 60px;
+				@media screen and (max-width: 1023px) {
+					padding: 0 20px;
+				}
                 a{
                     text-decoration: none;
 					background-color: transparent;
@@ -380,6 +383,13 @@
 			#primary-left-menu{
 				flex-direction: row-reverse;
 			}
+		}
+		&.loader_active + .loader_wrap{
+			display: block;
+			background-color: rgba(255,255,255,0.4);
+			left:0;
+			width:100%;	
+			height: 100vh;
 		}
     }    
 }

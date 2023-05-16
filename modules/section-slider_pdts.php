@@ -20,7 +20,11 @@ $radio_selected = $related_categories['select_cat_or_pdt'];
 					'key' => '_stock_status',
 					'value' => 'instock',
 					'compare' => '=',
-				)
+				),
+				// array(
+				// 	'key' => '_thumbnail_id',
+				// 	'compare' => 'EXISTS',
+				// )
 			)
 		);
 		$featured_pdts = get_posts( $args_cat );

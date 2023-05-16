@@ -28,20 +28,23 @@ $args_cat = array(
             'key' => '_stock_status',
             'value' => 'instock',
             'compare' => '=',
-        )
+        ),
+        // array(
+        //     'key' => '_thumbnail_id',
+        //     'compare' => 'EXISTS',
+        // )
     )
 );
 
 
 
 $arr_posts = new WP_Query( $args_cat );
-//wp_reset_query();
-//print_r(wp_list_pluck($arr_posts2->posts, 'ID'));
 $total_count = $arr_posts->found_posts;
 $current_count = $arr_posts->post_count;
 $max_page = $arr_posts->max_num_pages;
 
 ?>
+<?php if(true): ?>
 <div class="r_side">
     <?php if(!empty(get_term_meta($current_term_id, 'size_filter', true))): ?>
         <div class="dropdown">
@@ -63,15 +66,32 @@ $max_page = $arr_posts->max_num_pages;
                         </button>
                     </div>
                     <div class="dropdown_content">
-                        <?php  $sizes =  get_term_meta($current_term_id, 'size_filter', true); 
-                        $sizes = getOrderedBySize($sizes);
+                        <?php  $catSizes =  get_term_meta($current_term_id, 'size_filter', true); 
+                        $sizes = getOrderedBySize($catSizes);
+                        if(empty($sizes)){
+                            $sizes = getOrderedBySizeChild($catSizes);
+                            if(empty($sizes)){
+                                $sizes = $catSizes;
+                            }
+                        }
+                        
                         ?>
                         <?php $counter_size = 0;foreach($sizes as $key=>$size): ?>
                         <button role="menuitemcheckbox" class="menu_item_checkbox" aria-checked="false" data-section="size" aria-label="מידה: <?php echo $key;?>">
                             <p class="row_checkbox_wrapper">
                                 <span class=" checkbox_wrapper">
                                     <input class="checkbox_size" id="checkbox_size_<?php echo $counter_size?>" type="checkbox" name="checkbox_size" value="<?php echo $key ?>">	
-                                    <label for="checkbox_size_<?php echo $counter_size?>"><?php echo $key ?></label>
+                                    <label for="checkbox_size_<?php echo $counter_size?>">
+                                        
+                                        <?php $term = get_term_by('slug', $key , 'pa_size');
+                                        if ( !empty( $term->description ) ){
+                                            echo $key.' -'.$term->description;
+                                        }
+                                        else{
+                                            echo $key;
+                                        }
+                                         ?>
+                                    </label>
                                 </span>
                             </p>
                             <span class="checkbox_count">(<?php echo $size; ?>)</span></span>
@@ -105,7 +125,7 @@ $max_page = $arr_posts->max_num_pages;
                         </button>
                     </div>
                     <div class="dropdown_content">
-                        <?php  $cuts = get_term_meta($current_term_id, 'cut_filter', true);;?>
+                        <?php  $cuts = get_term_meta($current_term_id, 'cut_filter', true);?>
                         <?php $counter_cut = 0;foreach($cuts as $key=>$cut): ?>
                             <button role="menuitemcheckbox" class="menu_item_checkbox checkbox_cut_wrapper" aria-checked="false" data-section="size" aria-label="גיזרה: <?php echo $key;?>">
                                 <p class="row_checkbox_wrapper">
@@ -147,10 +167,18 @@ $max_page = $arr_posts->max_num_pages;
                     </div>
                     <div class="dropdown_content checkbox_color_dropdown">
                         <?php  //$colors = get_field('color_filter'); var_dump($colors);
-                        $colors = get_term_meta($current_term_id, 'color_filter', true);//var_dump($colors); ?>
+                        $colors = get_term_meta($current_term_id, 'color_filter', true); ?>
                         <?php $counter_color = 0; foreach($colors as $key=>$color): ?>
+                            <?php 
+                            if($key == 'multi color'){
+                                $color_class = 'multicolor_row';
+                            }
+                            else{
+                                $color_class = $key;
+                            }
+                            ?>
                             <button role="menuitemcheckbox" class="menu_item_checkbox checkbox_color_wrapper" aria-checked="false" data-section="size" aria-label="צבע: <?php echo $key;?>">
-                                <p class="row_checkbox_wrapper">
+                                <p class="row_checkbox_wrapper <?php echo $color_class; ?>">
                                     <span class=" checkbox_wrapper">
                                         <input class="checkbox_color"  data-paged="1" total_pdts="<?php echo $color;?>" posts_per_page="<?php echo $posts_per_page;?>" id="checkbox_color_<?php echo $counter_color;?>" type="checkbox" name="checkbox_color" value="<?php echo $key ?>">	
                                         <label for="checkbox_color_<?php echo $counter_color;?>" style="color:<?php echo  $key;?>">
@@ -300,6 +328,10 @@ $max_page = $arr_posts->max_num_pages;
                                         'value' => 'instock',
                                         'compare' => '=',
                                     )
+                                    // array(
+                                    //     'key' => '_thumbnail_id',
+                                    //     'compare' => 'EXISTS',
+                                    // )
                                 )
                             );
                             $my_query = new WP_Query( $args );
@@ -328,6 +360,7 @@ $max_page = $arr_posts->max_num_pages;
         </button>
     </div>
 </div>
+<?php endif; ?>
 <div class="l_side">
     <?php if(wp_is_mobile()): ?>
         <div class="count_wrapper_mobile">

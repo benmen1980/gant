@@ -14,8 +14,6 @@
 
 get_header();
 
-
-
 // in your taxonomy/term template file
 $current_term = get_queried_object();
 $term = get_queried_object();
@@ -25,11 +23,25 @@ if(is_product_category()){
   if ( ($current_term->parent || $child_template == 1) && ($current_term->name != 'גברים')  && ($current_term->name != 'נשים')  && ($current_term->name != 'ילדים ונוער')  && ($current_term->name != 'קולקציית בית')) {
     get_template_part( 'template-parts/content', 'child' );
     exit;
-  } else {
-    get_template_part('modules/section','case');
+  } else { ?>
+    <h1 class="parent_cat_title"><?php echo $current_term->name; ?></h1>
+    <?php get_template_part('modules/section','case');
     get_footer();
     exit;
-  }
+ }
+}
+else{
+    while ( have_posts() ) :
+        the_post();
+      
+        get_template_part( 'template-parts/content', 'page' );
+      
+        // If comments are open or we have at least one comment, load up the comment template.
+        if ( comments_open() || get_comments_number() ) :
+          comments_template();
+        endif;
+      
+    endwhile; // End of the loop.
 }
 
 
@@ -37,17 +49,6 @@ if(is_product_category()){
 
 
 
-while ( have_posts() ) :
-  the_post();
-
-  get_template_part( 'template-parts/content', 'page' );
-
-  // If comments are open or we have at least one comment, load up the comment template.
-  if ( comments_open() || get_comments_number() ) :
-    comments_template();
-  endif;
-
-endwhile; // End of the loop.
 
 ?>
 

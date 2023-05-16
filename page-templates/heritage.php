@@ -25,7 +25,7 @@ get_header();
         </div>
         <div class="hero_content">
             <div class="hero_titles title_center sub_title_center_under_title">
-                <h2 class="center_under_title"><span><?php echo $banner_sub_title ?></span></h2>
+                <p class="center_under_title"><span><?php echo $banner_sub_title ?></span></p>
                 <h1><?php echo $banner_title;?></h1>
                 <p  class="hero_desc"><?php echo $banner_desc ?></p>
             </div> 
@@ -52,7 +52,7 @@ get_header();
                         
                     </div>
                     <div class="l_side">
-                        <img src="<?php echo $image ?>" alt="">
+                        <img src="<?php echo $image ?>" alt="<?php echo $title; ?>">
                     </div>
                 </div>
             <?php endwhile;

@@ -100,11 +100,28 @@ $count = $woocommerce->cart->cart_contents_count;
 						</div>
 						<div class="product-price" data-title="<?php esc_attr_e( 'Price', 'woocommerce' ); ?>">
 							<?php
-							echo apply_filters( 'woocommerce_cart_item_price', WC()->cart->get_product_price( $_product ), $cart_item, $cart_item_key ); // PHPCS: XSS ok.
+							$quantity = $cart_item['quantity'];
+							$price = $cart_item['data']->get_price() * $quantity;
+							//echo $_product->get_sale_price();
+							$pdt_regular_price = $_product->get_regular_price();
+							if($cart_item['data']->get_price() != $pdt_regular_price){ ?>
+								<div class="prices_wrapper">
+									<span class="original_price"><?php echo apply_filters( 'woocommerce_cart_item_price', wc_price($pdt_regular_price * $quantity), $cart_item, $cart_item_key ); ?></span>
+									<span class="sale_price"><?php echo apply_filters( 'woocommerce_cart_item_price', wc_price($price), $cart_item, $cart_item_key ); ?></span>
+								</div>
+								<div data-sku="<?php echo $_product->get_sku(); ?>" class="product-sale-desc">
+									<?//php esc_attr_e( 'מבצע:', 'gant' ); ?>
+								</div>
+							<? }
+							else{
+								echo apply_filters( 'woocommerce_cart_item_price', wc_price($price), $cart_item, $cart_item_key ); // PHPCS: XSS ok.
+							}
+							
 							?>
 						</div>
-						<div class="cart_product_quantity_remove_wrapper">
-							<div class="product-quantity" data-title="<?php esc_attr_e( 'Quantity', 'woocommerce' ); ?>">
+						
+						<div class="cart_product_quantity_remove_wrapper <?php echo ($cart_item['data']->get_price() == 0 ? 'free-item' : '')  ?>">
+							<div class="product-quantity"  data-pid="<?php echo $product_id; ?>" data-title="<?php esc_attr_e( 'Quantity', 'woocommerce' ); ?>" data-id="<?php echo $_product->get_id(); ?>">
 								<?php
 								if ( $_product->is_sold_individually() ) {
 									$product_quantity = sprintf( '1 <input type="hidden" name="cart[%s][qty]" value="1" />', $cart_item_key );
@@ -125,7 +142,7 @@ $count = $woocommerce->cart->cart_contents_count;
 								echo apply_filters( 'woocommerce_cart_item_quantity', $product_quantity, $cart_item_key, $cart_item ); // PHPCS: XSS ok.
 								?>
 							</div>
-							<div class="product-remove">
+							<!-- <div class="product-remove">
 								<?php
 									echo apply_filters( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 										'woocommerce_cart_item_remove_link',
@@ -139,18 +156,23 @@ $count = $woocommerce->cart->cart_contents_count;
 										$cart_item_key
 									);
 								?>
-							</div>
+							</div> -->
+							<button class="product-remove button_underline" data-product_id="<?php esc_attr_e( $cart_item['variation_id'] ); ?>">
+								<?php esc_attr_e( 'Remove', 'woocommerce' ) ?>
+							</button>
 						</div>
 					</div>
 				</div>
 				
 			<?php } ?>
 			
-			<?php do_action( 'woocommerce_cart_contents' ); ?>
-			
-				<button type="submit" class="button" name="update_cart" value="<?php esc_attr_e( 'Update cart', 'woocommerce' ); ?>">
-					<?php esc_html_e( 'Update cart', 'woocommerce' ); ?>
-				</button>
+				<?php do_action( 'woocommerce_cart_contents' ); ?>
+				<div class="submit_form_wrapper">
+					<button type="submit" class="button-secondary" name="update_cart" value="<?php esc_attr_e( 'Update cart', 'woocommerce' ); ?>">
+						<span class="button_label"><?php esc_html_e( 'Update cart', 'woocommerce' ); ?></span>
+					</button>
+				</div>
+
 
 				<?php do_action( 'woocommerce_cart_actions' ); ?>
 

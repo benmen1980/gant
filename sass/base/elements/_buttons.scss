@@ -1,6 +1,6 @@
 
 @mixin button-secondary{
-    padding: 4px 25px;
+    padding: 10px 30px;
     text-decoration: none;
     position: relative;
     text-align: center;
@@ -9,15 +9,19 @@
     border: 0;
     border-radius: 0;
     transition: box-shadow 0.3s ease-in-out;
+    z-index: 1;
+    font-size: 18px;
     @media screen and (max-width: 1023px) {
         font-size: 16px;
         padding: 4px 12px;
     }
     span{
         color:#fff;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        justify-content: center;
     }
-    
-
     &::after{
         content: '';
         width: 100%;
@@ -37,6 +41,17 @@
     &:hover::after{
          //transform: scale(1.05);
         padding: 4px 1px;
+    }
+    .gantserif{
+        font-family: "gantserif";
+        font-weight: 400;
+    }
+    .gantmordern{
+        font-weight: 400;
+        font-family: "gantmodern";
+    }
+    .almoni{
+        font-family: "almoni-dl";
     }
 }
 
@@ -107,8 +122,24 @@
     transition-property: color,background-color,box-shadow;
     line-height: 1;
     color:#000;
+    font-size: 18px;
     span{
         color:#000;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        justify-content: center;
+        &.gantserif{
+            font-family: "gantserif";
+            font-weight: 400;
+        }
+        &.gantmordern{
+            font-weight: 400;
+            font-family: "gantmodern";
+        }
+        &.almoni{
+            font-family: "almoni-dl";
+        }
     }
     &:after{
         content: '';
@@ -122,9 +153,9 @@
         transition: 300ms padding;
         -webkit-transform: translateY(-50%);
         transform: translateY(-50%);
-        box-shadow: inset 0 0 0 1px currentColor;
+        box-shadow: inset 0 0 0 0.8px currentColor;
         backface-visibility: hidden;
-        color:#000;
+        color: currentColor;
     }
     &:hover{
         &:after{
@@ -141,6 +172,10 @@
         border: 0;
         font-size: 20px;
         font-weight: 700;
+        span{
+            display: inline-block;
+
+        }
         @media screen and (max-width: 1023px) {
             font-size: 18px;
         }

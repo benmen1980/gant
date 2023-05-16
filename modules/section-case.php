@@ -33,6 +33,9 @@ if($choose_module):
             case 'navigation_module_2':
                 get_template_part('modules/section','navigation_module2');
                 break;
+            case 'navigation_module_3':
+                get_template_part('modules/section','navigation_module3');
+                break;
             case 'module_50_50':
                 get_template_part('modules/section','module_50_50');
                 break;

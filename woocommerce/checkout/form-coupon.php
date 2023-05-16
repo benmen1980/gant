@@ -27,7 +27,7 @@ if ( ! wc_coupons_enabled() ) { // @codingStandardsIgnoreLine.
 <form class="woocommerce-form-coupon" method="post" >
 	<!-- <h3 class="coupon_title"><?php esc_html_e( 'קופון:', 'gant' ); ?></h3> -->
 	<button type="button" class="display_coupon_btn">
-		<?php esc_html_e( 'הכנס קוד הנחה', 'woocommerce' ); ?>
+		<?php esc_html_e( 'הכנס קוד קופון', 'woocommerce' ); ?>
 	</button>
 	<div class="coupon">
 		<div class="form-row form-row-first">

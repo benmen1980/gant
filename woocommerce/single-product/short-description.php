@@ -19,17 +19,27 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-global $post;
+global $post,$product;
 
 $short_description = apply_filters( 'woocommerce_short_description', $post->post_excerpt );
 
-if ( ! $short_description ) {
-	return;
-}
+// if ( ! $short_description ) {
+// 	return;
+// }
 
 ?>
+<?php if(!wp_is_mobile()): ?>
+	<h3 class="product_detail_id">
+		<em>
+			<?php echo __('דגם מספר','gant')?>
+			<?php echo $product->get_sku(); ?>
+		</em>
+	</h3>
+<?php endif; ?>
 <div class="woocommerce-product-details__short-description">
 	<?php echo $short_description; // WPCS: XSS ok. ?>
+	<?php echo get_field('short_desc_from_file'); ?>
+	<?php echo get_field('model_desc'); ?>
 </div>
 <a class="product_detail_more_details" href="#product-description-accordion" >
 	<span class="button_underline"><?php esc_html_e( 'מידע מפורט', 'gant' ); ?></span>

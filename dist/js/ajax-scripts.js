@@ -11,13 +11,15 @@ jQuery(document).ready(function($){
         var IDnum = String(str);
 
         // Validate correct input
-        if ((IDnum.length > 9) || (IDnum.length < 5)){
+        if ((IDnum.length > 9) || (IDnum.length < 5) ){
             $('#reg_id').after('<span class="error">הכנס ת"ז תקין</span>');
+            $('#validate_id').after('<span class="error">הכנס ת"ז תקין</span>');
             check_validate_id = false;
         }
 
         if (isNaN(IDnum)){
             $('#reg_id').after('<span class="error">הכנס ת"ז תקין</span>');
+            $('#validate_id').after('<span class="error">הכנס ת"ז תקין</span>');
             check_validate_id = false;
         }
         // The number is too short - add leading 0000
@@ -39,6 +41,7 @@ jQuery(document).ready(function($){
         }
         if (mone%10 != 0){
             $('#reg_id').after('<span class="error">הכנס ת"ז תקין</span>');
+            $('#validate_id').after('<span class="error">הכנס ת"ז תקין</span>');
             check_validate_id = false;
 
         }
@@ -47,15 +50,44 @@ jQuery(document).ready(function($){
         }
     }
     
-    $('.send_validation_sms').on('click', function() {
-        console.log('enter click565');
+    $('.woocommerce-form-register .send_validation_sms').on('click', function() {
         user_phone = $(this).closest('form').find('.form-row input#reg_username').val();
         user_fname = $(this).closest('form').find('.form-row input#reg_first_name').val();
         user_lname = $(this).closest('form').find('.form-row input#reg_last_name').val();
         user_email = $(this).closest('form').find('.form-row input#reg_email').val();
         user_id = $(this).closest('form').find('.form-row input#reg_id').val();
         user_birthday = $(this).closest('form').find('.form-row input#reg_birthday').val();
+        user_site_condition = $(this).closest('form').find('.condition_accept_wrapper input#read_site_condition').is(":checked");
+        console.log("🚀 ~ file: ajax-scripts.js:61 ~ $ ~ user_site_condition:", user_site_condition);
+        user_club_condition = $(this).closest('form').find('.condition_accept_wrapper input#read_club_condition').is(":checked");
+        console.log("🚀 ~ file: ajax-scripts.js:62 ~ $ ~ user_club_condition:", user_club_condition);
+        want_club_registration = $(this).closest('form').find('.condition_accept_wrapper input#want_club_registration').is(":checked");
+        console.log("🚀 ~ file: ajax-scripts.js:63 ~ $ ~ want_club_registration:", want_club_registration);
+
         $(".error").remove();
+        if (user_site_condition == false) {
+            $('#read_site_condition').next("label").after('<span class="error">אישור תקנון אתר שדה חובה</span>');
+            check_validate_site_condition = false;
+        }
+        else{
+            check_validate_site_condition = true;
+        }
+
+        if (user_club_condition == false) {
+            $('#read_club_condition').next("label").after('<span class="error">אישור תקנון מועדון שדה חובה</span>');
+            check_validate_club_condition = false;
+        }
+        else{
+            check_validate_club_condition = true;
+        }
+        if (want_club_registration == false) {
+            $('#want_club_registration').next("label").after('<span class="error"> הרשמה למועדון שדה חובה</span>');
+            check_want_club_registration = false;
+        }
+        else{
+            check_want_club_registration = true;
+        }
+
         if (user_fname.length == 0) {
             $('#reg_first_name').after('<span class="error">שם פרטי שדה חובה</span>');
             check_validate_fname = false;
@@ -125,7 +157,8 @@ jQuery(document).ready(function($){
         console.log("check_validate_birthday", check_validate_birthday);
 
         if(check_validate_id == true && check_validate_email == true && check_validate_lname == true && 
-            check_validate_fname == true && check_validate_phone == true && check_validate_birthday == true){
+            check_validate_fname == true && check_validate_phone == true && check_validate_birthday == true &&
+            check_want_club_registration == true && check_validate_club_condition == true && check_validate_site_condition == true){
             $.ajax({
                 url: ajax_obj.ajaxurl,
                 data: {
@@ -133,7 +166,7 @@ jQuery(document).ready(function($){
                 'user_phone': user_phone,
                 },
                 success: function (data) {
-                    console.log('success');
+                    console.log('success1');
                     $('.input_wrapper_validation_code').show();
                 },
                 error: function (errorThrown) {
@@ -144,7 +177,126 @@ jQuery(document).ready(function($){
         }
     });
 
-    $('.check_code_wrapper .check_code').on('click', function() {
+    
+    $('.login_validation_btn .user_validation_phone_id').on('click', function() {
+
+        user_phone = $(this).closest('form').find('.form-row input#validate_phone').val();
+        user_id = $(this).closest('form').find('.form-row input#validate_id').val();
+        //$this =  $(this);
+        //$(this).attr("data-phone",user_phone); 
+        if (user_phone.length == 0) {
+            $('#validate_phone').after('<span class="error">טלפון שדה חובה</span>');
+            check_validate_phone = false;
+        }
+        else{
+            var regEx = /^\+?(972|0)(\-)?0?([5]{1}\d{8})$/;
+            var validPhone = regEx.test(user_phone);
+            if(!validPhone){
+                $('#validate_phone').after('<span class="error">הכנס טלפון תקין</span>');
+                check_validate_phone = false;
+            }   
+            else{
+                check_validate_phone = true;
+            }
+        }
+
+        if (user_id.length == 0) {
+            $('#validate_id').after('<span class="error">ת"ז שדה חובה</span>');
+            check_validate_id = false;
+        } 
+        else {
+            ValidateID(user_id);
+
+        }
+        console.log("🚀 ~ file: ajax-scripts.js:180 ~ $ ~ check_validate_id:", check_validate_id);
+        console.log("🚀 ~ file: ajax-scripts.js:180 ~ $ ~ check_validate_phone:", check_validate_phone);
+        if(check_validate_id == true && check_validate_phone == true){
+
+            $.ajax({
+                type:"post",
+                url: ajax_obj.ajaxurl,
+                data: {
+                    'action': 'check_user_data_and_club',
+                    'user_phone': user_phone,
+                    'user_id' : user_id
+                },
+                success: function (data) {
+                    console.log('success');
+                    console.log(data.message);
+                    
+                    $('body').addClass('is_modal_open');
+
+                    if(data.message == 'is_not_club'){
+                        $("#check_club_details_msg_modal").addClass('is_modal_showing');
+                        $('#check_club_details_msg_modal .modal_content').hide();
+                        $('#check_club_details_msg_modal .modal_content#msg_not_club').show();
+                    }
+                    else if(data.message == 'is_club'){
+                        location.reload();
+                        $("#validation_phone_modal .send_validation_sms").attr("data-phone",user_phone); 
+                        $("#validation_phone_modal").addClass('is_modal_showing');
+                        $('body').addClass('is_modal_open');
+
+                        
+                    }
+                    else if(data.message == 'is_not_match'){
+                        $("#check_club_details_msg_modal").addClass('is_modal_showing');
+                        $('#check_club_details_msg_modal .modal_content').hide();
+                        $('#check_club_details_msg_modal .modal_content#msg_data_not_match').show();
+                    }
+                    else if(data.message == 'is_not_exist'){
+                        $("#check_club_details_msg_modal").addClass('is_modal_showing');
+                        $('#check_club_details_msg_modal .modal_content').hide();
+                        $('#check_club_details_msg_modal .modal_content#msg_data_not_exist').show();
+                    }
+           
+
+                },
+                error: function (errorThrown) {
+                    console.log('error');
+                   
+                }
+            });
+            // $.ajax({
+            //     url: ajax_obj.ajaxurl,
+            //     data: {
+            //     'action': 'send_sms',
+            //     'user_phone': user_phone,
+                
+            //     },
+            //     success: function (data) {
+            //         console.log('success1');
+            //         $('.input_wrapper_validation_code').show();
+            //     },
+            //     error: function (errorThrown) {
+            //         console.log('error');
+            //         console.log(errorThrown);
+            //     }
+            // });
+        }
+    });
+
+    $('#validation_phone_modal .send_validation_sms').on('click', function() {
+
+        var user_phone = $(this).data('phone');
+        $.ajax({
+            url: ajax_obj.ajaxurl,
+            data: {
+            'action': 'send_sms',
+            'user_phone': user_phone,
+            },
+            success: function (data) {
+                console.log('success');
+                $('.input_wrapper_validation_code').show();
+            },
+            error: function (errorThrown) {
+                console.log('error');
+                console.log(errorThrown);
+            }
+        });
+    });
+
+    $('#register_modal .check_code_wrapper .check_code').on('click', function() {
 
         var enter_code = $(this).prev('#validation_code').val();
         $.ajax({
@@ -167,9 +319,17 @@ jQuery(document).ready(function($){
                 console.log(data.data.msg);
                 console.log(data.data.response);
                 $('.check_code_wrapper').after('<div class="msg_after_validation">'+ data.data.msg +'</div>');
-                if(data.data.response == true)
-                    $('.form-row-submit').append('<button type="submit" class="register_btn" name="register">הרשמה</button>')
-                    //$('.register_btn').show();
+                if(data.data.response == true){
+                    $("#register_modal input.validation_sms_code").val(data.data.code);
+                    $('.form-row-submit').append('<button type="submit" class="register_btn" name="register">הרשמה</button>');
+                    //$('.woocommerce-form-register .register_btn').trigger('submit');
+                    $('.modal_content').animate({
+                        scrollTop: $(".register_btn").offset().top
+                    }, 1000);
+                }
+                // else{
+                //     return;
+                // }   
             },
             error: function (errorThrown) {
                 if($(".msg_after_validation").length)
@@ -183,6 +343,66 @@ jQuery(document).ready(function($){
             }
         });
     });
+
+    $('#validation_phone_modal .check_code_wrapper .check_code').on('click', function() {
+
+        var enter_code = $(this).prev('#validation_code').val();
+        $.ajax({
+            url: ajax_obj.ajaxurl,
+            data: {
+            'action': 'check_code',
+            'enter_code': enter_code,
+            },
+            dataType: 'json',
+            method: 'POST',
+            success: function (data) {
+                if($(".msg_after_validation").length)
+                    $(".msg_after_validation").remove();
+                if($('.register_btn').length){
+                    $('.register_btn').remove();
+                }
+                //console.log('success');
+                console.log(data);
+                console.log(data.data);
+                console.log(data.data.msg);
+                console.log(data.data.response);
+                $('.check_code_wrapper').after('<div class="msg_after_validation">'+ data.data.msg +'</div>');
+                if(data.data.response == true){
+                    $("form.edit-account input.edit_account_validation_code").val(data.data.code);
+                    $("#validation_phone_modal").removeClass('is_modal_showing');
+                    $("#validation_user_details_modal").addClass('is_modal_showing');
+                    $('body').addClass('is_modal_open');
+
+                }
+                // else{
+                //     return;
+                // }   
+            },
+            error: function (errorThrown) {
+                if($(".msg_after_validation").length)
+                    $(".msg_after_validation").remove();
+                if($('.register_btn').length){
+                    $('.register_btn').remove();
+                }
+                console.log('error');
+                console.log(errorThrown);
+                $('.check_code_wrapper').after('<div class="msg_after_validation">אירעה שגיאה, נסה שנית</div>');
+            }
+        });
+    });
+    
+
+
+
+    $('#edit_details_modal .save_account_details').on('click', function() {
+        var searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.has('sms_check')) {
+        searchParams.delete('sms_check');
+        var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+        window.location.href = newUrl;
+        }
+    });
+
 
 
 
@@ -263,7 +483,18 @@ jQuery(document).ready(function($){
             filter_product('clean_query');
         } else {
             filter_product('filter');
+            if($('.dropbtn').hasClass('dropdown_open')){
+                $('.dropdown_open').next('.dropdown_wrapper').find('.dropdown_box').toggle();
+                $('.dropbtn').removeClass('dropdown_open')
+            }
+            
             $('.filter_reset > button').show();
+        }
+        //remove page variable from url if exist
+        var uri = window.location.toString();
+        if (uri.indexOf("?") > 0) {
+            var clean_uri = uri.substring(0, uri.indexOf("?"));
+            window.history.replaceState({}, document.title, clean_uri);
         }
     });
 
@@ -441,14 +672,18 @@ jQuery(document).ready(function($){
                         // var url = '';
                         // current_url = url + '?' + 'pdt_to_show' + '=' + parseInt(current_pdt_in_page) + parseInt(data.total_results);
                         // window.history.replaceState(null, null, current_url);
+
+                        window.history.replaceState(null, null, "?page="+newPaged);
                     }
                     
                    
                     if (data.more_items == false) {
                       loadMoreButton.hide();
-                    } else {
-                      loadMoreButton.attr('data-paged', newPaged);
-                      loadMoreButton.show();
+                    }
+                    else {
+                        loadMoreButton.attr('data-paged', newPaged);
+                        loadMoreButton.show();
+                        
                      
                     }
                     if(parseInt(data.found_posts) - parseInt($('.current_number_pdt_in_page').text()) == 1){
@@ -484,9 +719,10 @@ jQuery(document).ready(function($){
             $('.menu_item_checkbox .checkbox_wrapper input[type="checkbox"]').prop("checked", false);
             $('.menu_item_checkbox .checkbox_wrapper input[type="checkbox"]').closest('.menu_item_checkbox').attr('aria-checked','false');
         }
-
+        $("input[id=radio_sort_popularity]").trigger('change');
         filter_product('clean_query');
         $(this).hide();
+ 
     });
 
     //“Add to cart” with Woocommerce and AJAX
@@ -515,24 +751,338 @@ jQuery(document).ready(function($){
             },
             complete: function (response) {
                 $thisbutton.removeClass('loader_active');
+                $('html, body').animate({ scrollTop: 0 }, 'slow');
             },
             success: function (response) {
 
-                if (response.error & response.product_url) {
-                    window.location = response.product_url;
+                if (response.error) {
+                    console.log("error");
+                    $('.woocommerce-notices-wrapper').html(response.error_msg);
+                    $(document.body).trigger('wc_fragment_refresh');
+                    //window.location = response.product_url;
                     return;
                 } else {
                     console.log(response);
+                    $('.woocommerce-notices-wrapper').html(response);
                     $(document.body).trigger('added_to_cart', [response.fragments, response.cart_hash, $thisbutton]);
-                    $('#modal_mini_cart').toggleClass('is_modal_showing');
-                    $('body').toggleClass('is_modal_open');
-                        //$(document.body).trigger('wc_fragment_refresh');
+                    //$('#modal_mini_cart').toggleClass('is_modal_showing');
+                    //$('body').toggleClass('is_modal_open');
+                    $(document.body).trigger('wc_fragment_refresh');
                     
                 }
             },
         });
     });
 
+    // $('.woocommerce-cart-form').on('change', 'select.qty', function(){
+	// 	$("[name='update_cart']").trigger("click");
+    //     //$('.bag_button a').trigger('click');
+	// });
+            
+    $('.woocommerce-cart-form').submit(function(event) {
+        event.preventDefault(); // prevent the form from submitting normally
+      
+        // perform the update to the cart using AJAX or other means
+        var customFieldInputs = $('form.woocommerce-cart-form .cart_item .product-quantity');
+        var cartItemArray = [];
+
+        // Loop through custom field input fields
+        customFieldInputs.each( function() {
+            var product_id = $( this ).data( 'id' );
+            var quantity = $( this ).find('select.qty').val();
+    
+            // Add input field name and value to cart item array
+            cartItemArray.push({
+                'product_id': product_id,
+                'quantity': quantity
+            });
+        });
+        console.log( cartItemArray );
+        $.ajax({
+            type: 'post',
+            url: ajax_obj.ajaxurl,
+            data: {
+                action: 'update_transaction_from_cart',
+                cart_item_array:  cartItemArray
+            },
+            beforeSend: function (response) {
+                $('header .main_menu_wrapper').addClass('loader_active');
+            },
+            complete: function (response) {
+                $('header .main_menu_wrapper').removeClass('loader_active');
+                $('html, body').animate({ scrollTop: 0 }, 'slow');
+            },
+            success: function (response) {
+                console.log( 'AJAX success:', response );  
+                localStorage.setItem("transaction_update", JSON.stringify(response));
+                //if (!$("body").hasClass("woocommerce-cart")) {
+                location.href = ajax_obj.woo_shop_url; 
+            },
+            error: function( xhr, status, error ) {
+                console.log( 'AJAX error:', status, error );
+                //window.location.href = ajax_obj.woo_shop_url;
+            }
+        });
+        
+        // add code to execute after the update is complete
+     
+    });
+
+    $('input#coupon_code').on('keypress', function(event) {
+        if (event.which === 13) {
+          event.preventDefault();
+          // do something else here, such as triggering a button click event
+        }
+    });
+
+
+    
+
+    $('.bag_button a').click(function(e) {
+
+        console.log('update');
+        $.ajax({
+            type: 'post',
+            url: ajax_obj.ajaxurl,
+            data: {action: "update_bag"},
+            beforeSend: function (response) {
+                if (!$("body").hasClass("woocommerce-cart")) {
+                    $('header .main_menu_wrapper').addClass('loader_active');
+                }
+                //$('body').trigger('wc_update_cart');
+            },
+            complete: function (response) {
+                console.log('complete');
+                if (!$("body").hasClass("woocommerce-cart")) {
+                    $('header .main_menu_wrapper').removeClass('loader_active');
+                }
+                //console.log(response);
+                //window.location.reload();
+            },
+            success: function (response) {
+                var msg_error = response.error;
+                console.log(response);
+                if (msg_error!= null) {
+                    console.log("error");
+                    $('.woocommerce-notices-wrapper').html(response.error_msg);
+                    if (!$("body").hasClass("woocommerce-cart")) {
+                        window.location.href = ajax_obj.woo_shop_url;
+                    }
+  
+                }
+                else{
+                    console.log('update success');
+                    console.log(response);
+                    $('html, body').animate({ scrollTop: 0 }, 'slow');
+                    localStorage.setItem("transaction_update", JSON.stringify(response));
+                    if (!$("body").hasClass("woocommerce-cart")) {
+                        window.location.href = ajax_obj.woo_shop_url;
+                    }
+                }
+
+            },
+            error : function( data ) {
+                console.log(data);
+                console.log( 'Error…' );
+            }
+        });
+    });
+
+   
+
+
+
+    if ($("body").hasClass("woocommerce-cart")) {
+        $('.bag_button a').trigger('click');
+        // setTimeout(function() {
+        //     $('.bag_button a').trigger('click');
+        // },6000);
+        // Retrieve data from local storage
+        var transaction_data = JSON.parse(localStorage.getItem("transaction_update"));
+
+        // Do something with the data
+        console.log(transaction_data);
+        // console.log(transaction_data.OrderItems);
+        jQuery.each(transaction_data.OrderItems, function(index, item) {
+           item_sale_desc = item.FirstSaleDescription;
+           console.log("🚀 ~ file: ajax-scripts.js:673 ~ jQuery.each ~ item_sale_desc:", item_sale_desc);
+           
+           item_code  = item.ItemCode;
+           item_sale_price = item.TotalPrice;
+           $(".product-sale-desc[data-sku='"+item_code+"']").text(item_sale_desc);
+        });
+
+    }
+    jQuery(document).on('updated_checkout', function() {
+        var transaction_data = JSON.parse(localStorage.getItem("transaction_update"));
+
+        // Do something with the data
+        console.log(transaction_data);
+        // console.log(transaction_data.OrderItems);
+        jQuery.each(transaction_data.OrderItems, function(index, item) {
+           item_sale_desc = item.FirstSaleDescription;
+           console.log("🚀 ~ file: ajax-scripts.js:673 ~ jQuery.each ~ item_sale_desc:", item_sale_desc);
+           
+           item_code  = item.ItemCode;
+           item_sale_price = item.TotalPrice;
+           $(".product-sale-desc[data-sku='"+item_code+"']").text(item_sale_desc);
+        });
+    });
+
+   
+
+    //“remove to cart” with Woocommerce and AJAX
+    $("body").on("click", ".product-remove", function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        var pd_id_remove = $(this).attr("data-product_id");
+        //var remove_url = wc_get_cart_remove_url( product_id );
+        console.log("🚀 ~ file: ajax-scripts.js:541 ~ $ ~ product_id", pd_id_remove);
+        var data = {
+            action: 'product_remove',
+            product_id: pd_id_remove,
+        };
+        console.log(data);
+        $.ajax({
+            type: 'post',
+            url: ajax_obj.ajaxurl,
+            data: data,
+            beforeSend: function (response) {
+                $('body').trigger('wc_update_cart');
+            },
+            complete: function (response) {
+                console.log( response );
+                $('body').trigger('wc_cart_button_updated');
+                console.log('complete');
+                window.location.reload();
+            },
+            success: function (response) {
+                //$(document.body).trigger('wc_fragment_refresh');
+                console.log( response );
+                console.log('success');
+                //window.location.reload();
+            },
+            error : function( data ) {
+                console.log( 'Error…' );
+            }
+        });
+    });
+
+  
+
+    $("body").on("click", ".apply_coupon", function(e){
+        console.log('enter coupon');
+        e.preventDefault();
+        e.stopPropagation();
+        $thisbutton = $(this),
+        $form = $thisbutton.closest('tr.coupon'),
+        coupon_code = $form.find('input[name=coupon_code]').val() || 0;
+        var data = {
+            action: 'apply_coupon_programatically',
+            coupon_code: coupon_code,
+        };
+        console.log(data);
+        $.ajax({
+            type: 'post',
+            url: ajax_obj.ajaxurl,
+            data: data,
+            // beforeSend: function (response) {
+            //     $thisbutton.addClass('loader_active');
+            // },
+            // complete: function (response) {
+            //     $thisbutton.removeClass('loader_active');
+            // },
+            success: function (response) {
+                console.log('success');
+                console.log(response);
+                //$('.fee').html( response );
+                if ($("body").hasClass("woocommerce-cart"))
+                    $('body').trigger('wc_update_cart');
+                if ($("body").hasClass("woocommerce-checkout"))
+                $('body').trigger('update_checkout');
+
+               // window.location.reload();
+
+                
+            },
+            error : function( data ) {
+                console.log( 'Error…' );
+            }
+        });
+    });
+
+
+    $("body").on("click", ".fee .remove_coupon", function(e){
+        console.log('enter coupon');
+        e.preventDefault();
+        e.stopPropagation();
+        $thisbutton = $(this);
+        coupon_code = $thisbutton.data('coupon');
+        console.log("🚀 ~ file: ajax-scripts.js:583 ~ $ ~ coupon_code", coupon_code);
+        var data = {
+            action: 'remove_coupon_programatically',
+            coupon_code: coupon_code,
+        };
+        console.log(data);
+        $.ajax({
+            type: 'post',
+            url: ajax_obj.ajaxurl,
+            data: data,
+            // beforeSend: function (response) {
+            //     $thisbutton.addClass('loader_active');
+            // },
+            // complete: function (response) {
+            //     $thisbutton.removeClass('loader_active');
+            // },
+            success: function (response) {
+                console.log('success');
+                console.log(response);
+                //$('.fee').html( response );
+                if ($("body").hasClass("woocommerce-cart"))
+                    $('body').trigger('wc_update_cart');
+                if ($("body").hasClass("woocommerce-checkout"))
+                    $('body').trigger('update_checkout');
+                //window.location.reload();
+
+                
+            },
+            error : function( data ) {
+                console.log( 'Error…' );
+            }
+        });
+    });
+
+    $("body").on("click", ".club_fee .remove_coupon", function(e){
+        console.log('remove club fee');
+        $('#checkbox_club').attr('checked', false).trigger('click');
+        window.location.reload();
+    });
+    $("body").on("click", "#birthday_coupon", function(e){
+        console.log('enter func');
+        
+        coupon_code = $(this).data('coupon');
+        console.log("🚀 ~ file: ajax-scripts.js:926 ~ $ ~ coupon_code:", coupon_code);
+        var data = {
+            action: 'apply_coupon_birthday_programatically',
+            coupon_code: coupon_code,
+        };
+        console.log(data);
+        $.ajax({
+            type: 'post',
+            url: ajax_obj.ajaxurl,
+            data: data,
+            success: function (response) {
+                console.log('success1');
+                if ($("body").hasClass("woocommerce-cart"))
+                    $('body').trigger('wc_update_cart');
+                if ($("body").hasClass("woocommerce-checkout"))
+                    $('body').trigger('update_checkout');
+            },
+            error : function( data ) {
+                console.log( 'Error…' );
+            }
+        });
+    });
 
  
     

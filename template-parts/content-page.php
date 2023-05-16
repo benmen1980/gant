@@ -9,8 +9,9 @@
 
 ?>
 <?php 
+
 // if ( is_edit_account_page() &&  !is_user_logged_in()) {  
-// 	echo 'enter gere';
+// 	echo 'enter Here';
 // 	wp_redirect ( home_url("/my-account") );
 // 	exit;
 // } 
@@ -35,6 +36,7 @@ if ( is_edit_account_page() ) {  ?>
 
 	<div class="entry-content">
 		<?php
+           //get_template_part( 'template-parts/content', 'filter' );
 		the_content();
 
 		wp_link_pages(

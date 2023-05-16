@@ -2,7 +2,6 @@
 get_header();
 
 $current_term = get_queried_object();
-//print_r($current_term);
 $taxonomy = $current_term->taxonomy;
 $current_term_name = $current_term->name;
 $current_term_id = $current_term->term_id;
@@ -36,7 +35,11 @@ $args_cat = array(
             'key' => '_stock_status',
             'value' => 'instock',
             'compare' => '=',
-        )
+        ),
+        // array(
+        //     'key' => '_thumbnail_id',
+        //     'compare' => 'EXISTS',
+        // )
     ), 
     'tax_query'  => array(
         'relation'		=> 'AND',
@@ -52,40 +55,52 @@ $args_cat = array(
 
 
 $arr_posts = new WP_Query( $args_cat );
-//wp_reset_query();
-//print_r(wp_list_pluck($arr_posts2->posts, 'ID'));
+wp_reset_query();
+//print_r(wp_list_pluck($arr_posts->posts, 'ID'));
 $total_count = $arr_posts->found_posts;
 $current_count = $arr_posts->post_count;
 $max_page = $arr_posts->max_num_pages;
 
 
 $filter_top = get_field('top_filter_category');
-$filter_type = $filter_top['select_filter_type'];
-$one_img = $filter_top['one_img'];
-$two_img = $filter_top['two_img'];
-$bg_color = $filter_top['bg_color'];
-$text_color = $filter_top['bg_text'];
-$filter_cat = $filter_top['select_cat'];
+if(!empty($filter_top)){
+    $filter_type = $filter_top['select_filter_type'];
+    $one_img = $filter_top['one_img'];
+    $two_img = $filter_top['two_img'];
+    $bg_color = $filter_top['bg_color'];
+    $text_color = $filter_top['bg_text'];
+    $filter_cat = $filter_top['select_cat'];
 
-if($filter_type == 'no-img'){
-    $width = 'full_width';
+    if($filter_type == 'no-img'){
+        $width = 'full_width';
+    }
+    elseif($filter_type == 'one-img'){
+        $width = 'two_third_width';
+    }
+    else{
+        $width = 'third_width';
+    }
 }
-elseif($filter_type == 'one-img'){
-    $width = 'two_third_width';
-}
-else{
-    $width = 'third_width';
-}
+
+
+
 
 $seo_group = get_field('seo_content');
 $seo_title = $seo_group['title'];
 $seo_description = $seo_group['description'];
 
+
 $related_categories = get_field('related_categories');
 $categories = $related_categories['enter_category'];
 
+
+$related_product = get_field('related_pdt');
+//print_r($related_product );
+$related_title = $related_product['title'];
+$radio_selected = $related_product['select_cat_or_pdt'];
  
 ?>
+
 <div class="container">
     <div class="section_modules_wrapper">
         <?php 
@@ -107,19 +122,20 @@ $categories = $related_categories['enter_category'];
             <div class="top_header <?php echo $width ?>" style="background-color:<?php echo $bg_color; ?>; color:<?php echo $text_color; ?>;">
                 <div class="r_side">
                     <?php if(!empty($term)): ?>
-                    <nav class="breadcrumb">
-                        <div class="arrow_btn">
-                            <a href="<?php  echo  $parent_term_slug; ?>" title="<?php echo $parent_term_name; ?>" class="button-secondary" style="background-color:<?php echo $bg_color; ?>; color:<?php echo $bg_color; ?>;">
-                                <span class="btn_icon" style="color:<?php echo $text_color; ?>;">
-                                    <svg focusable="false" class="c-icon icon--arrow-button" viewBox="0 0 42 10" width="15px" height="15px">
-                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M40.0829 5.5H0V4.5H40.0829L36.9364 1.35359L37.6436 0.646484L41.9971 5.00004L37.6436 9.35359L36.9364 8.64649L40.0829 5.5Z" fill="currentColor"></path>
-                                    </svg>
-                                </span>
-                                <span class="button_label" style="color:<?php echo $text_color; ?>;"><?php echo $parent_term_name; ?></span>
-                            </a>
-                        </div>
-                        
-                    </nav>
+                        <nav class="breadcrumb_pdt">
+                            <a class="button_underline" href="/"><?php echo __( 'בית', 'gant' ); ?></a>
+                            <span class="delimiter" aria-hidden="true">></span>
+                            <?php if($parent_term_id): ?>
+                                <a class="button_underline" <?php echo $parent_term_name; ?> href="<?php  echo  $parent_term_slug; ?>">
+                                    <?php echo $parent_term_name; ?>
+                                </a>
+                                <span class="delimiter" aria-hidden="true">></span>
+                            <?php endif; ?>
+                            <?php if($current_term_id): ?>
+                                <?php echo $current_term_name; ?>
+                                <span class="delimiter" aria-hidden="true">></span>
+                            <?php endif; ?>
+                        </nav>
                     <?php endif; ?>
                     <h1><?php echo $current_term_name ?></h1>
                     <?php if(!empty($filter_cat)): ?>
@@ -216,6 +232,7 @@ $categories = $related_categories['enter_category'];
             <div class="modal_bg"></div>
         </div>
     <?php endif;?>
+    <?php if(true): ?>
     <div class="pdts_wrapper">
         <?php 
         if ( $arr_posts->have_posts() ) :?>
@@ -250,13 +267,12 @@ $categories = $related_categories['enter_category'];
                     <?php
                     $counter_post ++;
                 endwhile;?>
-                <div class="loader_wrap">
-                    <div class="loader_spinner">
-                        <img src="<?php echo get_template_directory_uri();?>/dist/images/loader.svg" alt="">
-                    </div>
+            </div>
+            <div class="loader_wrap gg">
+                <div class="loader_spinner">
+                    <img src="<?php echo get_template_directory_uri();?>/dist/images/loader.svg" alt="">
                 </div>
             </div>
-          
 
             <?php if($max_page > 1): ?>
                 <div class="load_more_pdts_wrapper">
@@ -282,7 +298,9 @@ $categories = $related_categories['enter_category'];
                 </div>
             <?php endif; ?>
         <?php endif;?>
+
     </div>
+    <?php endif; ?>
     <button class="button_underline" id="back_to_top" aria-label="<?php echo __('חזרה למעלה','gant')?>">
             <?php echo __('חזרה למעלה','gant')?>
     </button>
@@ -300,14 +318,63 @@ $categories = $related_categories['enter_category'];
 
         </div>
     <?php endif;?>
-    <?php if(!empty($seo_title)): ?>
+    <?php if(!empty($related_title)): ?>
+        <div class="pdts_related_wrapper">
+            <section class="slider_section section_wrap">
+                <?php if(!empty($radio_selected)): ?>
+                    <div class="section_header">
+                        <h3><?php echo $related_title; ?></h3>
+                    </div>
+                <?php endif; ?>
+                <?php if($radio_selected == 'select_pdts'):
+                    $featured_pdts =  $related_product['select_products'];
+                else:
+                    $selected_cat =  $related_product['select_category'];
+                    
+                    $term = get_term( $selected_cat, 'product_cat' );
+                    $slug = $term->slug;
+
+                    $args_cat = array(
+                        'post_type' =>  array('product', 'product_variation'),
+                        'post_status' => array('publish'),
+                        'product_cat' => $slug,
+                        'posts_per_page' => 10,
+                        // 'meta_query' => array(
+                        // 	array(
+                        // 		'key' => '_stock_status',
+                        // 		'value' => 'instock',
+                        // 		'compare' => '=',
+                        // 	)
+                        // )
+                    );
+                    $featured_pdts = get_posts( $args_cat );
+                endif;
+                if( $featured_pdts ):?>
+                    <div class="slider_pdts slider_wrap">
+                        <?php 
+                        foreach( $featured_pdts as $product ):
+                            setup_postdata( $product );
+                            get_template_part('page-templates/box-product'); 
+                            wp_reset_postdata(); 
+                        endforeach;
+                        ?>
+                    </div>
+                <?php endif; ?>
+            </section>		
+        </div>
+    <?php endif;?>
+    <?php if(!empty($seo_title) || !empty($seo_description)): ?>
         <div class="section_seo_wrapper">
+            <?php if(!empty($seo_title)): ?>
             <header class="section_header">
                 <h3><?php echo $seo_title; ?></h3>
             </header>
+            <?php endif; ?>
+            <?php if(!empty($seo_description)): ?>
             <div class="seo_desc">
                 <p><?php echo $seo_description; ?></p>
             </div>
+            <?php endif; ?>
         </div>
     <?php endif;?>
 </div>

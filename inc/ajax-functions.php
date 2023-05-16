@@ -1,5 +1,7 @@
 <?php 
 
+use PriorityWoocommerceAPI\WooAPI;
+//use PriorityWoocommerceAPI\CardPOS;
 
 function gant_ajax_enqueue() {
     global $wp_query; 
@@ -9,6 +11,7 @@ function gant_ajax_enqueue() {
 	wp_localize_script('gant-ajax-scripts', 'ajax_obj', array( 
         'ajaxurl' => admin_url( 'admin-ajax.php' ),
         'current_page' => get_query_var( 'paged' ) ? get_query_var('paged') : 1,
+        'woo_shop_url' => get_permalink( wc_get_page_id( 'cart' ) )
     ));
 }
 
@@ -50,17 +53,242 @@ function check_code(){
         $enter_code = $_REQUEST["enter_code"];
         if($enter_code == $_SESSION['code']){
             $msg =  __('אימות בוצע בהצלחה','gant');
-            wp_send_json_success(['msg' => $msg, 'response' => true]);
+            if ( is_user_logged_in() ) {
+                $user = wp_get_current_user();
+                update_user_meta( $user->ID, 'sms_code', $_SESSION['code'] );
+            }
+            wp_send_json_success(['msg' => $msg, 'code' => $_SESSION['code'],'response' => true]);
         }
         else{
             $msg =  __('מספר אימות לא תקין.','gant');
-            wp_send_json_success(['msg' => $msg, 'response' => false]);
+            wp_send_json_success(['msg' => $msg,'response' => false]);
         }
-        unset($_SESSION['code']);
+        //unset($_SESSION['code']);
     }
 }
 
+//check if user data  are same thatn priority and check if is club
 
+add_action( 'wp_ajax_check_user_data_and_club', 'check_user_data_and_club' );
+// for non-logged in users:
+add_action( 'wp_ajax_nopriv_check_user_data_and_club', 'check_user_data_and_club' );
+
+function check_user_data_and_club(){
+    if(isset($_REQUEST['user_phone']) && $_REQUEST['user_phone'] != '') {
+        $user_phone = $_REQUEST["user_phone"];
+    }
+    if(isset($_REQUEST['user_id']) && $_REQUEST['user_id'] != '') {
+        $user_id = $_REQUEST["user_id"];
+    }
+    $result = CardPOS::instance()->check_user_by_mobile_phone_and_id($user_phone,$user_id);
+    $error_code = $result["ErrorCode"];
+    if ($error_code == 0) {
+        $PosCustomersResult = $result["POSCustomersMembershipDetails"][0];
+        //the user exist we have to check if is club
+        if(!empty($PosCustomersResult)){
+            $is_club = $PosCustomersResult["ClubsMemberships"];
+            if(!empty($is_club)){
+                //user data match and is club so we create this user
+                
+
+                $priority_customer_number = $PosCustomersResult["POSCustomerBasicDetails"]["POSCustomerNumber"];
+                $username = $PosCustomersResult["POSCustomerBasicDetails"]["MobileNumber"];
+                $email = $PosCustomersResult["POSCustomerBasicDetails"]["Email"];
+                $fname = $PosCustomersResult["POSCustomerBasicDetails"]["FirstName"];
+                $lname = $PosCustomersResult["POSCustomerBasicDetails"]["LastName"];
+                $fullname = $PosCustomersResult["POSCustomerBasicDetails"]["FullName"];
+                $displayname = $PosCustomersResult["POSCustomerBasicDetails"]["FirstName"];
+                $user_city = $PosCustomersResult["POSCustomerBasicDetails"]["City"];
+                $user_address_1 = $PosCustomersResult["POSCustomerBasicDetails"]["Address"];
+                $user_address_2 = $PosCustomersResult["POSCustomerBasicDetails"]["Address2"];
+                $user_city = $PosCustomersResult["POSCustomerBasicDetails"]["City"];
+                $user_zipcode = $PosCustomersResult["POSCustomerBasicDetails"]["ZipCode"];
+                $user_birthId = $PosCustomersResult["POSCustomerBasicDetails"]["BirthID"];
+                $user_birthDate = $PosCustomersResult["POSCustomerBasicDetails"]["BirthDate"];
+    
+                $encryption_key = "my_secret_key";
+
+                // Get the encrypted number from the session
+                $encrypted_number = $_SESSION['encrypted_number'];
+
+                // Decrypt the number using the AES algorithm
+                $user_password = openssl_decrypt($encrypted_number, "AES-256-CBC", $encryption_key);
+
+        
+                $user_id = wp_insert_user(array(
+                    'user_login'  =>  $username,
+                    'user_email'  =>  (!empty($email)) ? $email : $username.'@gmail.com',
+                    'user_pass' => $user_password,
+                    'first_name'  =>  $fname,
+                    'last_name'  =>  $lname,
+                    'role' => 'customer',
+                    'user_nicename' => $fullname,
+                    'display_name'  => $fullname,
+                ));
+                if (is_wp_error($user_id)) {
+                    $multiple_recipients = array(
+                        get_bloginfo('admin_email')
+                    );
+                    $subj = 'Error creating user from priority';
+                    $body = $user_id->get_error_message().'</br>';
+                    $body.= 'username:'.$username.', first name:'.$fname.',last_name: '.$lname;
+                    wp_mail( $multiple_recipients, $subj, $body );
+                }
+                else{
+                    $user = get_user_by('id', $user_id);
+                    $user_login = $user->user_login;
+                    wp_set_current_user($user_id, $user_login);
+                    wp_set_auth_cookie($user_id);
+                    do_action('wp_login', $user_login,$user);
+
+                    //$wc = new WC_Emails();
+                    //$wc->customer_new_account($user_id);
+                }
+                
+                update_user_meta($user_id, 'priority_customer_number', $priority_customer_number);
+                update_user_meta($user_id, 'billing_address_1', $user_address_1);
+                update_user_meta($user_id, 'billing_address_2', $user_address_2);
+                update_user_meta($user_id, 'billing_city', $user_city);
+                update_user_meta($user_id, 'billing_phone', $username);
+                update_user_meta($user_id, 'billing_postcode', $user_zipcode);
+                update_user_meta($user_id, 'account_id', $user_birthId);
+                update_user_meta($user_id, 'reg_birthday', $user_birthDate);
+                update_user_meta($user_id, 'has_to_edit_details', 1);
+
+                //update club
+                update_user_meta($user_id, 'is_club', 1);
+                update_user_meta($user_id, 'club_fee_paid', 1);
+
+               
+
+
+                //update user points and birthday
+                $raw_option = WooAPI::instance()->option('setting-config');
+                $raw_option = str_replace(array("\n", "\t", "\r"), '', $raw_option);
+                $config = json_decode(stripslashes($raw_option));
+                $branch_num = $config->BranchNumber;
+                $unique_id = $config->UniqueIdentifier;
+                $pos_num = $config->POSNumber;
+
+                $priority_customer_number = get_user_meta($user_id, 'priority_customer_number', true);
+
+                $data["POSCustomerNumber"] = $priority_customer_number;
+                $data["ClubCode"] = "01";
+                $data['UniquePOSIdentifier'] = [
+                    "BranchNumber" => $branch_num,
+                    "POSNumber" => $pos_num,
+                    "UniqueIdentifier" => $unique_id,
+                    "ChannelCode" => "",
+                    "VendorCode" => "",
+                    "ExternalAccountID" => ""
+                ];
+
+                $form_name =  'PosCustomers';
+
+                $form_action = 'GetPOSCustomerWithExtendedDetails';
+
+                $body_array = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action, ['body' => json_encode($data)], true);
+                $error_code = $body_array["ErrorCode"];
+                if($error_code == 0){
+                    if(!empty($body_array["POSCustomerExtendedDetails"]["PointsPerPointsTypeDetails"])){
+                        $points = $body_array["POSCustomerExtendedDetails"]["PointsPerPointsTypeDetails"][0]["TotalPoints"];
+                        update_user_meta( $user_id, 'points_club', $points);
+                    } 
+                    if(!empty($body_array["POSCustomerExtendedDetails"]["CouponEligibilities"])){
+                        $coupon = $body_array["POSCustomerExtendedDetails"]["CouponEligibilities"][0]["OriginalCouponDescription"];
+                        $coupon_code = $body_array["POSCustomerExtendedDetails"]["CouponEligibilities"][0]["CouponCode"];
+                        if($coupon == "יומהולדת"){
+                            update_user_meta( $user_id, 'birthday_coupon', $coupon_code);
+                        }
+
+                    }
+                    else{
+                        if(get_user_meta( $user_id, 'birthday_coupon', true ))
+                            delete_user_meta( $user_id, 'birthday_coupon' );
+                    }
+                }
+                else{
+                    $message = $body_array['EdeaError']['DisplayErrorMessage'];
+                    $multiple_recipients = array(
+                        get_bloginfo('admin_email')
+                    );
+                    $subj = 'Error sync user with extended details1: '.$user_id;
+                    wp_mail( $multiple_recipients, $subj, $message );
+                }
+                
+
+                $response = array(
+                    'message' => 'is_club',
+                );
+            }
+            else{
+                $response = array(
+                    'message' => 'is_not_club',
+                );
+                
+            }
+        }
+
+        //user data not match priority data or doesnt exit in priority
+        else{
+            $result = CardPOS::instance()->check_user_by_mobile_phone($user_phone);
+            $error_code = $result["ErrorCode"];
+            if ($error_code == 0) {
+                $PosCustomersResult = $result["POSCustomersMembershipDetails"][0];
+                if(empty($PosCustomersResult)){
+                    $result =  CardPOS::instance()->check_user_by_id_num($user_id);
+                    $error_code = $result["ErrorCode"];
+                    if ($error_code == 0) {
+                        $PosCustomersResult = $result["POSCustomersMembershipDetails"][0];
+                        if(empty($PosCustomersResult)){
+                            $response = array(
+                                'message' => 'is_not_exist',
+                            );
+                        }
+                        else{
+                            //user exit by id but not by id and phone so he has to call client service to update details
+                            $response = array(
+                                'message' => 'is_not_match',
+                            );
+                        }
+                    }
+                    else{
+                        $message = $result['EdeaError']['DisplayErrorMessage'];
+                        $multiple_recipients = array(
+                            get_bloginfo('admin_email')
+                        );
+                        $subj = 'Error check user exist with id number in priority';
+                        wp_mail( $multiple_recipients, $subj, $message );
+                    }
+                }
+                else{
+                    //user exit by phone but not by id and phone so he has to call client service to update details
+                    $response = array(
+                        'message' => 'is_not_match',
+                    );
+                }
+            }
+            else{
+                $message = $result['EdeaError']['DisplayErrorMessage'];
+                $multiple_recipients = array(
+                    get_bloginfo('admin_email')
+                );
+                $subj = 'Error check user exist with mobile phone in priority';
+                wp_mail( $multiple_recipients, $subj, $message );
+            }
+        }
+        wp_send_json($response);
+        wp_die();
+    }
+    else{
+        $message = $result['EdeaError']['DisplayErrorMessage'];
+        $multiple_recipients = array(
+            get_bloginfo('admin_email')
+        );
+        $subj = 'Error check user exist with phone and id in priority';
+        wp_mail( $multiple_recipients, $subj, $message );
+    }
+}
 
 /**
  * search result in menu
@@ -75,26 +303,33 @@ function get_search_ajax_query(){
        $search = sanitize_text_field($_REQUEST["sterm"]);
    }
    $q1 = get_posts(array(
-    'post_type' => 'product',
+    'post_type' => array('product', 'product_variation'),
     'post_status' => 'publish',
     'posts_per_page' => '-1',
     's' => $search
     ));
     //print_r($q1);
     $q2 = get_posts(array(
-        'post_type' => 'product',
-        'post_status' => 'publish',
-        'posts_per_page' => '-1',
+        'post_type' => array('product', 'product_variation'),
+        //'post_status' => 'publish',
+        'posts_per_page' => -1,
         'meta_query' => array(
+            'relation' => 'OR',
             array(
             'key' => '_sku',
             'value' => $search,
-            'compare' => 'LIKE'
+            'compare' => '='
+            ),
+            array(
+                'key' => '_variable_sku',
+                'value' => $search,
+                'compare' => '='
             )
         )
     ));
     //print_r($q2);
     $merged = array_merge( $q1, $q2 );
+    //print_r($merged);
     $post_ids = array();
     foreach( $merged as $item ) {
         $post_ids[] = $item->ID;
@@ -106,7 +341,7 @@ function get_search_ajax_query(){
     }
     //print_r($unique);
     $args = array(
-        'post_type' => 'product',
+        'post_type' => array('product', 'product_variation'),
         'posts_per_page' => '4',
         'post__in' => $unique,
         'paged' => get_query_var('paged'),
@@ -190,9 +425,15 @@ add_action( 'wp_ajax_filter_products', 'filter_products' );
 add_action( 'wp_ajax_nopriv_filter_products', 'filter_products' );
 function filter_products(){
     $meta_qry[] = array(
-        'key' => '_stock_status',
-        'value' => 'instock',
-        'compare' => '=',
+        array(
+            'key' => '_stock_status',
+            'value' => 'instock',
+            'compare' => '=',
+        ),
+        // array(
+        //     'key' => '_thumbnail_id',
+        //     'compare' => 'EXISTS',
+        // )
     );
     $clr = $_REQUEST["colors"];
     if (isset( $_REQUEST['colors'] )  && $_REQUEST['colors'] != ''){  
@@ -484,36 +725,972 @@ function filter_products(){
     wp_reset_query();
 	die; 
 }
+add_action( 'plugins_loaded', 'check_plugin_loaded' );
+
+function check_plugin_loadedcheck_plugin_loaded() {
+    require_once WP_PLUGIN_DIR. '/WooCommercePriorityAPI/includes/classes/card_pos/card_pos.php';
+    //require_once WP_PLUGIN_DIR. '/WooCommercePriorityAPI/includes/classes/wooapi.php';
+}
+
+//on remove product, we need:
+//1- to check that the bag is not locked
+
+add_action( 'wp_ajax_product_remove', 'product_remove' );
+add_action( 'wp_ajax_nopriv_product_remove', 'product_remove' );
+function product_remove() {
+    global $wpdb, $woocommerce;
+    $count = $woocommerce->cart->get_cart_contents_count();
+    $product_id = absint($_POST['product_id']); 
+    
+
+    //before removing check if bag is locked 
+    $form_name = 'Transactions';
+    $form_action = 'UpdateTransaction';
+    $data = CardPOS::instance()->openOrUpdateTransaction(0,0,0);
+    //print_r($data);die;
+    $data = json_encode($data);
+    $result = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
+    $error_code = $result["ErrorCode"];
+    //print_r($result);die;
+    //$error_src = $result['EdeaError']['ErrorSource'];
+    if ($error_code != 0) {
+        // the order is locked so cancel
+        if($error_code == 59){
+            CardPOS::instance()->cancel_transaction();
+            
+        }
+    }
+
+    
+    foreach ($woocommerce->cart->get_cart() as $cart_item_key => $cart_item){
+        $temporarytransactionnumber = $cart_item['temporary_transaction_num'];
+        if($cart_item['variation_id'] == $product_id ){
+            // Remove product in the cart using  cart_item_key.
+            $woocommerce->cart->remove_cart_item( $cart_item_key );
+        }
+    }
+    //save in temporary array the new bag 
+    $data = CardPOS::instance()->openOrUpdateTransaction(0,0,0);
+    $data['temporaryTransactionNumber'] = $temporarytransactionnumber ;
+    $check = $temporarytransactionnumber;
+    $form_name = 'Transactions';
+
+    $form_action = 'UpdateTransaction';
+    $data = json_encode($data);
+    $result = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
+    $passed_validation = apply_filters('woocommerce_add_to_cart_validation', true, $product_id, $quantity,$cart_item_data);
+    $product_status = get_post_status($product_id);
+        //$result =  CardPOS::instance()->openOrUpdateTransaction($product_id,$quantity, $variation_id );
+    $error_code = $result["ErrorCode"];
+    if ($error_code == 0) {
+        update_bag_after_sync($passed_validation,$product_status,$result);
+        //$result_order_items = $result["Transaction"]["OrderItems"];
+        //if cart is not empty, before adding to bag , remove all products from bag
+        // if ( WC()->cart->get_cart_contents_count() != 0 ) {
+        //     foreach ( WC()->cart->get_cart_contents() as $key => $cart_item ) {
+        //         WC()->cart->remove_cart_item($key);
+        //     }
+        //     if(!empty($result_order_items)){
+        //         foreach($result_order_items as $key=>$item){
+        //             //save transaction array to first product in cart data to send id to approve
+        //             if($key == 0){
+        //                 //$lastupdate_transaction_array = [];
+        //                 $lastupdate_transaction_array = array('lastupdate_transaction' => $result);
+        //                 $lastappprove_transaction_array = array('lastapprove_transaction' => array());
+        //                 $cart_item_data  = array_merge($cart_item_data, $lastupdate_transaction_array,$lastappprove_transaction_array); 
+        //             }
+        //             $sku = $item['ItemCode'];  //2201666S
+        //             $current_variation_id = wc_get_product_id_by_sku($sku); //4836
+        //             $current_product_id = wp_get_post_parent_id($current_variation_id); //4830
+        //             //if($current_product_id == $product_id){
+        //             $qtty = $item['ItemQuantity'];
+        //             $price = $item['PricePerItem'];
+        //             $tot_price = $item['TotalPrice']; // price after discount for all quantity 
+        //             $final_price = $item['FinalPrice']; //price after discount for one product
+        //             // Cart item data to send & save in order
+        //             //if sale price
+        //             if($final_price != $price){
+        //                 $edea_price = array('edea_price' => $final_price);
+        //                 $cart_item_data  = array_merge($cart_item_data, $edea_price);
+        //             }
+        
+        //             //just for test because I dont have price sale
+        //             //$edea_price = array('edea_price' => 100);
+        //             //$cart_item_data  = array_merge($cart_item_data, $edea_price);
+            
+        //             WC()->cart->add_to_cart($current_product_id, $qtty, $current_variation_id,array(),$cart_item_data);
+        //         }
+        //     }
+        // }
+        WC_AJAX :: get_refreshed_fragments();
+    }
+    
+    else{
+        
+        $error_msg = $result['EdeaError']['DisplayErrorMessage'];
+        wc_add_notice( 'error in update transaction when removing product from bag: '.$error_msg, 'error' );
+        exit;
+    }
+
+
+    
+    exit();
+}
+
+// add_action( 'wp_ajax_update_cart_item_quantity', 'update_cart_item_quantity' );
+// add_action( 'wp_ajax_nopriv_update_cart_item_quantity', 'update_cart_item_quantity' );
+
+// function update_cart_item_quantity() {
+//     $product_id = intval( $_POST['product_id'] );
+//     $quantity = intval( $_POST['quantity'] );
+//     $cart_item_key = WC()->cart->generate_cart_id( $product_id );
+//     $cart_item = WC()->cart->get_cart_item( $cart_item_key );
+//     if ( $cart_item ) {
+//         WC()->cart->set_quantity( $cart_item_key, $quantity );
+//         echo 'success';
+//     }
+//     wp_die();
+// }
+
+
+
+add_action('wp_ajax_update_bag', 'update_bag');
+add_action('wp_ajax_nopriv_update_bag', 'update_bag');
+
+
+        
+function update_bag() {
+    global $woocommerce;
+
+    $data = CardPOS::instance()->openOrUpdateTransaction(0,0, 0 );
+    $temporarytransactionnumber = $data['temporaryTransactionNumber'];
+    $form_name = 'Transactions';
+
+    if($temporarytransactionnumber == null){
+        $form_action = 'OpenTransaction';
+    }
+    else{
+        $form_action = 'UpdateTransaction';
+    }
+    $data = json_encode($data);
+  
+    $result = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
+    //$result =  CardPOS::instance()->openOrUpdateTransaction($product_id,$quantity, $variation_id );
+    $error_code = $result["ErrorCode"];
+    $product_status = 'publish';
+    $passed_validation = true;
+    if ($error_code == 0) {
+        update_bag_after_sync($passed_validation,$product_status,$result);
+        $i = 0;
+        if ( WC()->cart->get_cart_contents_count() > 0 ) {
+            foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+                if($i == 0){
+                    $last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+                    $i ++;
+                }
+            }
+            echo wp_send_json($last_update_transaction);
+        }
+    }
+    else {
+        //$error_src = $result['EdeaError']['ErrorSource'];
+        // the order is locked so cancel
+        if($error_code == 59){
+            $i = 0;
+            foreach ( WC()->cart->get_cart_contents() as $key =>$cart_item ) {
+                //iterate only once, to get transaction array
+                if($i!=0)  break;
+                $raw_option = WooAPI::instance()->option('setting-config');
+                $raw_option = str_replace(array("\n", "\t", "\r"), '', $raw_option);
+                $config = json_decode(stripslashes($raw_option));
+                $branch_num = $config->BranchNumber;
+                $unique_id = $config->UniqueIdentifier;
+                $pos_num = $config->POSNumber;
+                //retrieve approve result from cart to send it to cancel to allow adding product to bag after that te btransaction was locked
+                $data = $cart_item['lastapprove_transaction'];
+                $data['UniquePOSIdentifier'] = [
+                    "BranchNumber" => $branch_num,
+                    "POSNumber" => $pos_num,
+                    "UniqueIdentifier" => $unique_id,
+                    "ChannelCode" => "",
+                    "VendorCode" => "",
+                    "ExternalAccountID" => ""
+                ];
+        
+                $form_name = 'Transactions';
+                $form_action = 'CancelTransactionApproval';
+        
+        
+                $data = json_encode($data);
+                $result_cancel = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
+                $error_code = $result_cancel["ErrorCode"];
+                if ($error_code == 0) {
+                 //echo 'enter if';
+                    $cart_item['lastapprove_transaction'] =  $result_cancel; 
+                    //$cart_item['cart_locked'] =  'true';    
+                    WC()->cart->cart_contents[$key] = $cart_item;
+                    
+                    update_bag_after_sync($passed_validation,$product_status,$result_cancel);
+                }
+                else{
+                    //echo 'enter else';
+                    $error_msg = $result['EdeaError']['DisplayErrorMessage'];
+                    wc_add_notice( 'error cancel transaction before adding to bag: '.$error_msg, 'error' );
+                    exit;
+                }
+                $i++;
+            }
+            WC()->cart->set_session();
+            wp_die();
+        }
+        else{
+           
+            $error_msg = $result['EdeaError']['DisplayErrorMessage'];
+            wc_add_notice( 'error adding product to bag: '.$error_msg, 'error' );
+            $html_msg = wc_print_notices(1);
+            //echo $html_msg;die;
+            $data = array(
+                'error' => true,
+                'error_msg' => $html_msg,
+                'data' => $data
+                //'product_url' => apply_filters('woocommerce_cart_redirect_after_error', get_permalink($product_id), $product_id)
+            );
+            
+            echo wp_send_json($data);
+            wp_die();
+            
+        }
+    }
+
+    wp_die();
+}
+
+
+
+add_action('wp_ajax_update_transaction_from_cart', 'update_transaction_from_cart');
+add_action('wp_ajax_nopriv_update_transaction_from_cart', 'update_transaction_from_cart');
+
+function update_transaction_from_cart(){
+    foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+        if($i == 0){
+            $temporarytransactionnumber = $cart_item['temporary_transaction_num'];
+            $i ++;
+        }
+    }
+    $cart_item_array = $_POST['cart_item_array'];
+    //print_r( $_POST['cart_item_array']);
+    foreach($cart_item_array as  $cart_item){
+        $quantity = $cart_item['quantity'];
+        $variation_id = $cart_item['product_id'];
+        $price = get_post_meta($variation_id, '_price', true);
+        $sku = get_post_meta( $variation_id, '_sku', true );
+        if($quantity == 0) continue;
+        $items_in_bag [] = [
+            'OrderItemBasicInputDetails' => [
+                "ItemCode" => $sku,
+                "Barcode" => "",
+                "ItemQuantity" => $quantity,
+                "PricePerItem" => $price,
+                "CalculatePrice" => false,
+                "IsManualPrice" => false,
+                "IsManualDiscount" => false,
+                "VATPercent" => 17,
+                "ClubCode" => ""
+            ],
+            "PointsPerType" => []
+        ];
+    }
+    $raw_option = WooAPI::instance()->option('setting-config');
+    $raw_option = str_replace(array("\n", "\t", "\r"), '', $raw_option);
+    $config = json_decode(stripslashes($raw_option));
+    $branch_num = $config->BranchNumber;
+    $unique_id = $config->UniqueIdentifier;
+    $pos_num = $config->POSNumber;
+
+    if (is_user_logged_in() ) {
+        $current_user = wp_get_current_user();
+        $user_id = $current_user->ID;
+        $cust_priority_number = get_user_meta($user_id, 'priority_customer_number', true);
+        $cust_name = $current_user->user_firstname.' '.$current_user->user_lastname;
+        $billing_address_1 = get_user_meta($user_id, 'billing_address_1', true);
+        $billing_city = get_user_meta($user_id, 'billing_city', true);
+        $billing_postcode = get_user_meta($user_id, 'billing_postcode', true);
+        $cust_phone = get_user_meta($user_id, 'billing_phone', true);
+        $cust_id_number = get_user_meta($user_id, 'account_id', true);
+        $is_club = get_user_meta($user_id, 'is_club', true);
+        $has_paid_club = get_user_meta( $user_id, 'club_fee_paid', true );
+    }
+    else{
+        $cust_priority_number = '';
+        $cust_name = '';
+        $billing_address_1 = '';
+        $billing_city = '';
+        $billing_postcode = '';
+        $cust_phone = '';
+        $cust_id_number = '';
+        $is_club = '';
+        $has_paid_club = 1;
+    }
+
+    if(!empty($is_club)){
+        $club_code = '01';
+    }
+    else{
+        $club_code = '';
+    }
+
+    $data['Transaction']['TransactionBasicDetails'] = [
+        "TemporaryTransactionNumber" => $temporarytransactionnumber,
+        "TransactionDateTime" => "2022-11-06T10:12:54.619Z",
+        "IsOrder" => true,
+        "IsCancelTransaction" => false,
+        "POSCustomerNumber" => $cust_priority_number,
+        "ClubCode" => $club_code,
+        "IsManualDiscount" => false,
+        "SupplyBranch" => ""
+    ];
+    $data['Transaction']['TransactionItems'] = [];
+
+    $data['Transaction']['ShippingDetails'] = [
+        "City" => "",
+        "ForeignLanguageCity" => "",
+        "Address" => "",
+        "ForeignLanguageAddress" => "",
+        "HouseNumber" => 0,
+        "ApartmentNumber" => 0,
+        "ZipCode" => "",
+        "ContactPersonName" => "",
+        "ForeignLanguageContactPersonName" => "",
+        "Mail" => "",
+        "Fax" => "",
+        "SupplyDate" => "2022-11-06T10:12:54.619Z",
+        "FromSupplyHour" => "2022-11-06T10:12:54.619Z",
+        "ToSupplyHour" => "2022-11-06T10:12:54.619Z",
+        "Remark" => "",
+        "ForeignLanguageRemark" => "",
+        "FirstPhoneNumber" => "",
+        "SecondPhoneNumber" => "",
+        "ShipMethod" => "",
+        "Address2" => "",
+        "Address3" => "",
+        "Email" => ""
+    ];
+
+    $data['Transaction']['OrderItems'] = $items_in_bag;
+
+    $default_club = '777';
+    $default_club = $config->CLUB_DEFAULT_PARTNAME ?? $default_club;
+    $fee_amount  = get_field('club_cost','option');
+    if($has_paid_club == 0 && $club_code == '01'){
+        $data['Transaction']['OrderItems'][] = [
+            'OrderItemBasicInputDetails' => [
+                "ItemCode" => $default_club,
+                "Barcode" => "",
+                "ItemQuantity" => 1,
+                "PricePerItem" => $fee_amount,
+                "CalculatePrice" => false,
+                "IsManualPrice" => false,
+                "IsManualDiscount" => false,
+                "VATPercent" => 17,
+                "ClubCode" => "01"
+            ],
+            "PointsPerType" => []
+        ];
+    }
+
+    $data['Transaction']['Remark'] = [
+        "CustomerName" => $cust_name,
+        "CustomerIDNumber" => $cust_id_number,
+        "CustomerPhone" => $cust_phone,
+        "CustomerAddress" => $billing_address_1,
+        "CustomerCity" => $billing_city,
+        "CustomerZipCode" => $billing_postcode
+    ];
+
+    $data['temporaryTransactionNumber'] = $temporarytransactionnumber;
+
+    $data['TransactionProcessingSettings'] = [
+        "CalculateSales" => true,
+        "ContainExternalMetaData" => false,
+        "RegisterByGeneralPosCustomer" => !empty($cust_priority_number) ? false : true,
+        "RetrieveItemPictureFilename" => false,
+        "CalculateTax" => 0
+    ];
+
+    $data['UniquePOSIdentifier'] = [
+        "BranchNumber" => $branch_num,
+        "POSNumber" => $pos_num,
+        "UniqueIdentifier" => $unique_id,
+        "ChannelCode" => "",
+        "VendorCode" => "",
+        "ExternalAccountID" => ""
+    ];
+
+    $form_name = 'Transactions';
+
+    $form_action = 'UpdateTransaction';
+    //print_r($data);die;
+    $data = json_encode($data);
+    //print_r($data);
+    $result = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
+    //$result =  CardPOS::instance()->openOrUpdateTransaction($product_id,$quantity, $variation_id );
+    //print_r($result);die;
+    $error_code = $result["ErrorCode"];
+    $product_status = 'publish';
+    $passed_validation = true;
+
+    if ($error_code == 0) {
+        update_bag_after_sync($passed_validation,$product_status,$result);
+        $i = 0;
+        foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+            if($i == 0){
+                $last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+                $i ++;
+            }
+        }
+        echo wp_send_json($last_update_transaction);
+    }
+    else {
+        //$error_src = $result['EdeaError']['ErrorSource'];
+        // the order is locked so cancel
+        if($error_code == 59){
+            $i = 0;
+            foreach ( WC()->cart->get_cart_contents() as $key =>$cart_item ) {
+                //iterate only once, to get transaction array
+                if($i!=0)  break;
+                //retrieve approve result from cart to send it to cancel to allow adding product to bag after that te btransaction was locked
+                $data = $cart_item['lastapprove_transaction'];
+                $data['UniquePOSIdentifier'] = [
+                    "BranchNumber" => $branch_num,
+                    "POSNumber" => $pos_num,
+                    "UniqueIdentifier" => $unique_id,
+                    "ChannelCode" => "",
+                    "VendorCode" => "",
+                    "ExternalAccountID" => ""
+                ];
+        
+                $form_name = 'Transactions';
+                $form_action = 'CancelTransactionApproval';
+        
+        
+                $data = json_encode($data);
+                $result_cancel = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
+                $error_code = $result_cancel["ErrorCode"];
+                if ($error_code == 0) {
+                 
+                    $cart_item['lastapprove_transaction'] =  $result_cancel; 
+                    //$cart_item['cart_locked'] =  'true';    
+                    WC()->cart->cart_contents[$key] = $cart_item;
+                    
+                    update_bag_after_sync($passed_validation,$product_status,$result);
+                }
+                else{
+                    $error_msg = $result['EdeaError']['DisplayErrorMessage'];
+                    wc_add_notice( 'error cancel transaction before adding to bag: '.$error_msg, 'error' );
+                    exit;
+                }
+                $i++;
+            }
+            WC()->cart->set_session();
+            wp_die();
+        }
+        else{
+           
+            $error_msg = $result['EdeaError']['DisplayErrorMessage'];
+            wc_add_notice( 'error adding product to bag: '.$error_msg, 'error' );
+            $html_msg = wc_print_notices(1);
+            //echo $html_msg;die;
+            $data = array(
+                'error' => true,
+                'error_msg' => $html_msg,
+                //'product_url' => apply_filters('woocommerce_cart_redirect_after_error', get_permalink($product_id), $product_id)
+            );
+            
+            echo wp_send_json($data);
+            wp_die();
+            
+        }
+    }
+
+    wp_die();
+}
 
 
 add_action('wp_ajax_woocommerce_ajax_add_to_cart', 'woocommerce_ajax_add_to_cart');
 add_action('wp_ajax_nopriv_woocommerce_ajax_add_to_cart', 'woocommerce_ajax_add_to_cart');
-        
+
 function woocommerce_ajax_add_to_cart() {
+    global $woocommerce;
 
-    $product_id = apply_filters('woocommerce_add_to_cart_product_id', absint($_POST['product_id']));
+    $product_id = apply_filters('woocommerce_add_to_cart_product_id', absint($_POST['product_id'])); //624
     $quantity = empty($_POST['quantity']) ? 1 : wc_stock_amount($_POST['quantity']);
-    $variation_id = absint($_POST['variation_id']);
-    $passed_validation = apply_filters('woocommerce_add_to_cart_validation', true, $product_id, $quantity);
+    $variation_id = absint($_POST['variation_id']); //630
+    $passed_validation = apply_filters('woocommerce_add_to_cart_validation', true, $product_id, $quantity,$cart_item_data);
     $product_status = get_post_status($product_id);
-
+    // if ( WC()->cart->get_cart_contents_count() > 0 ) {
+    //     foreach( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+    //         if ( $cart_item['data']->get_id() == $product_id ) {
+    //         //if ( $cart_item['data']->get_data() == wc_get_product( $product_id )->get_data() ) {    
+    //             WC()->cart->set_quantity( $cart_item_key, $quantity ); 
+    //             $updated_qty  = true;
+    //             WC()->cart->calculate_totals();
+    //             wp_die();
+    //         }
+           
+    //     }
+        
+        
+    // }
+    
     if ($passed_validation && WC()->cart->add_to_cart($product_id, $quantity, $variation_id) && 'publish' === $product_status) {
 
         do_action('woocommerce_ajax_added_to_cart', $product_id);
 
-        if ('yes' === get_option('woocommerce_cart_redirect_after_add')) {
-            wc_add_to_cart_message(array($product_id => $quantity), true);
-        }
-
+        //if ('yes' === get_option('woocommerce_cart_redirect_after_add')) {
+            wc_add_to_cart_message(array($variation_id => $quantity), true);
+        //}
+  
+        $data =  wc_print_notices(true); 
+        echo wp_send_json($data);
+        wc_clear_notices();
         WC_AJAX :: get_refreshed_fragments();
+        //die();
     } else {
 
         $data = array(
             'error' => true,
-            'product_url' => apply_filters('woocommerce_cart_redirect_after_error', get_permalink($product_id), $product_id));
-
+            'product_url' => apply_filters('woocommerce_cart_redirect_after_error', get_permalink($product_id), $product_id),
+            'error_msg' => wc_print_notices(true)); 
         echo wp_send_json($data);
+        wc_clear_notices();
+
     }
 
     wp_die();
+
+}
+
+function update_bag_after_sync($passed_validation,$product_status,$result){
+    $transaction_number = $result["Transaction"]["TemporaryTransactionNumber"]; //T0771012198
+    $cart_item_data = array('temporary_transaction_num' => $transaction_number);
+
+    $result_order_items = $result["Transaction"]["OrderItems"];
+    //print_r($result_order_items);
+    //before adding to bag , remove all products from bag
+    if ( WC()->cart->get_cart_contents_count() > 0 ) {
+        foreach ( WC()->cart->get_cart_contents() as $key => $cart_item ) {
+            WC()->cart->remove_cart_item($key);
+        }
+    }
+   // echo 'enter here1';
+   if(!empty($result_order_items)){
+    foreach($result_order_items as $key=>$item){
+        //echo 'enter here2';
+       //save transaction array to first product in cart data to send id to approve
+       if($key == 0){
+           //$lastupdate_transaction_array = [];
+           $lastupdate_transaction_array = array('lastupdate_transaction' => $result);
+           $lastappprove_transaction_array = array('lastapprove_transaction' => array());
+           $cart_item_data  = array_merge($cart_item_data, $lastupdate_transaction_array,$lastappprove_transaction_array); 
+       }
+       $sku = $item['ItemCode'];  //2201666S
+       $current_variation_id = wc_get_product_id_by_sku($sku); //4836
+       $current_product_id = wp_get_post_parent_id($current_variation_id); //4830
+       //if($current_product_id == $product_id){
+           $qtty = $item['ItemQuantity'];
+           $price = $item['PricePerItem'];
+           $tot_price = $item['TotalPrice']; // price after discount for all quantity 
+           $final_price = $item['FinalPrice']; //price after discount for one product
+           // Cart item data to send & save in order
+           //if sale price
+           //if($final_price != $price){
+               $edea_price = array('edea_price' => $final_price);
+               $cart_item_data  = array_merge($cart_item_data, $edea_price);
+           //}
+
+           //just for test because I dont have price sale
+           //$edea_price = array('edea_price' => 100);
+           //$cart_item_data  = array_merge($cart_item_data, $edea_price);
+           
+           if ($passed_validation && WC()->cart->add_to_cart($current_product_id, $qtty, $current_variation_id,array(),$cart_item_data) && 'publish' === $product_status) {
+
+               do_action('woocommerce_ajax_added_to_cart', $current_product_id);
+               // Calculate totals
+               //$woocommerce->cart->calculate_totals();
+               // Save cart to session
+               //$woocommerce->cart->set_session();
+               // Maybe set cart cookies
+               //$woocommerce->cart->maybe_set_cart_cookies();
+       
+               if ('yes' === get_option('woocommerce_cart_redirect_after_add')) {
+                   wc_add_to_cart_message(array($current_product_id => $qtty), true);
+               }
+        
+
+           } 
+           else {
+               wc_print_notices('error updating bag');
+               // $data = array(
+               //     'error' => true,
+               //     'product_url' => apply_filters('woocommerce_cart_redirect_after_error', get_permalink($current_product_id), $current_product_id),
+               //     'error_msg' => wc_print_notices(true)); 
+               // echo wp_send_json($data);
+               // wc_clear_notices();
+           }
+
+       //}
+
+    }
+   }
+
+
+    //WC_AJAX :: get_refreshed_fragments();
+    
+}
+
+
+function woocommerce_custom_price_to_cart_item( $cart_object ) {  
+    //if( !WC()->session->__isset( "reload_checkout" )) {
+        foreach ( $cart_object->cart_contents as $key => $value ) {
+            if( isset( $value["edea_price"] ) ) {
+                //for woocommerce version lower than 3
+                //$value['data']->price = $value["custom_price"];
+                //for woocommerce version +3
+                $value['data']->set_price($value["edea_price"]);
+               
+            }
+        }  
+    //}  
+}
+add_action( 'woocommerce_before_calculate_totals', 'woocommerce_custom_price_to_cart_item', 99 );
+
+
+add_action('wp_ajax_apply_coupon_programatically', 'apply_coupon_programatically');
+add_action('wp_ajax_nopriv_apply_coupon_programatically', 'apply_coupon_programatically');
+        
+function apply_coupon_programatically() {
+    if (isset($_POST['coupon_code'])){
+        $coupon_code = $_POST['coupon_code'];
+        $result =  CardPOS::instance()->getCoupons($coupon_code );
+        $error_code = $result["ErrorCode"];
+        if ($error_code == 0) {
+            //get coupon value and set it in session to add it in fee
+            $_SESSION['coupon_code'] = $coupon_code;
+            $msg = __( 'Coupon code applied successfully.', 'woocommerce' );
+            wc_add_notice( $msg );
+        
+        }
+        //coupon code not valid or error
+        else {
+            if($error_code == 59){
+                CardPOS::instance()->cancel_transaction();   
+            }
+            else{
+                $response = $result['EdeaError']['DisplayErrorMessage'];
+                if(!empty($result["FailedCoupons"]["FailedCouponsToAdd"])){
+                    $failedCouponMsg = $result["FailedCoupons"]["FailedCouponsToAdd"][0]["CouponError"]["DisplayErrorMessage"];
+                    wc_add_notice( $failedCouponMsg, 'error' );
+                }
+                // שגיאה כללית
+                else{
+                    wc_add_notice( $response, 'error' );
+                                
+                    $multiple_recipients = array(
+                        get_bloginfo('admin_email')
+                    );
+                    $subj = 'Error set coupon from priority';
+                    wp_mail( $multiple_recipients, $subj, $message );
+                }
+            }
+
+        }
+        //$_SESSION['api_fee'] = $_POST['coupon_code'];
+        wp_die();
+    }
+
+}
+
+add_action('wp_ajax_apply_coupon_birthday_programatically', 'apply_coupon_birthday_programatically');
+add_action('wp_ajax_nopriv_apply_coupon_birthday_programatically', 'apply_coupon_birthday_programatically');
+        
+function apply_coupon_birthday_programatically() {
+    if (isset($_POST['coupon_code'])){
+        $coupon_code = $_POST['coupon_code'];
+        $result =  CardPOS::instance()->getCoupons($coupon_code );
+        $error_code = $result["ErrorCode"];
+    if ($error_code == 0) {
+        //get coupon value and set it in session to add it in fee
+        $_SESSION['coupon_birthday_code'] = $coupon_code;
+        $msg = __( 'Coupon code applied successfully.', 'woocommerce' );
+        wc_add_notice( $msg );
+      
+    }
+    //coupon code not valid or error
+    else {
+        $response = $result['EdeaError']['DisplayErrorMessage'];
+        if(!empty($result["FailedCoupons"]["FailedCouponsToAdd"])){
+            $failedCouponMsg = $result["FailedCoupons"]["FailedCouponsToAdd"][0]["CouponError"]["DisplayErrorMessage"];
+            wc_add_notice( $failedCouponMsg, 'error' );
+        }
+        // שגיאה כללית
+        else{
+            wc_add_notice( $response, 'error' );
+                        
+            $multiple_recipients = array(
+                get_bloginfo('admin_email')
+            );
+            $subj = 'Error set coupon from priority';
+            wp_mail( $multiple_recipients, $subj, $message );
+        }
+    }
+    //$_SESSION['api_fee'] = $_POST['coupon_code'];
+    wp_die();
+    }
+
+}
+
+
+
+add_action('wp_ajax_remove_coupon_programatically', 'remove_coupon_programatically');
+add_action('wp_ajax_nopriv_remove_coupon_programatically', 'remove_coupon_programatically');
+        
+function remove_coupon_programatically() {
+    if(isset($_SESSION['coupon_code'])){
+        WC()->cart->calculate_totals(); // Refresh cart
+        $coupon_code = $_SESSION['coupon_code'];
+   
+        $result =  CardPOS::instance()->removeCoupons($coupon_code );
+        $error_code = $result["ErrorCode"];
+        if ($error_code == 0) {
+            global $woocommerce;
+            $form_name = 'Transactions';
+            $form_action = 'UpdateTransaction';
+            $data = CardPOS::instance()->openOrUpdateTransaction(0,0,0);
+            //print_r($data);die;
+            $data = json_encode($data);
+            $result = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
+            $error_code = $result["ErrorCode"];
+            //print_r($result);die;
+            //$error_src = $result['EdeaError']['ErrorSource'];
+            if ($error_code == 0) {  
+                $total_before_general_discount = $result["Transaction"]["TotalBeforeGeneralDiscountIncludingVAT"];
+                $total_after_general_discount = $result["Transaction"]["TotalAfterGeneralDiscountIncludingVAT"];
+                //general sale
+                if($total_after_general_discount == $total_before_general_discount){
+                    $fees = WC()->cart->get_fees();
+                    foreach ($fees as $key => $fee) {
+                        if($fees[$key]->name === $_SESSION['api_fee']) {
+                            unset($fees[$key]);
+                            //remove coupon from session
+                           
+                            $msg = __( 'Coupon code removed successfully.', 'woocommerce' );
+                            wc_add_notice( $msg );
+                        }
+                    }
+                }
+                unset($_SESSION['coupon_code']);
+            }
+            else{
+        
+                $error_msg = $result['EdeaError']['DisplayErrorMessage'];
+                wc_add_notice( 'error in update transaction when removing coupon: '.$error_msg, 'error' );
+                $multiple_recipients = array(
+                    get_bloginfo('admin_email')
+                );
+                $subj = 'Error set coupon from priority';
+                wp_mail( $multiple_recipients, $subj, $error_msg );
+            }
+
+        }
+        //coupon code not valid
+        else {
+            $response = $result['EdeaError']['DisplayErrorMessage'];
+            if(!empty($result["FailedCoupons"]["FailedCouponsToRemove"])){
+                $failedCouponMsg = $result["FailedCoupons"]["FailedCouponsToRemove"][0]["CouponError"]["DisplayErrorMessage"];
+                wc_add_notice( $failedCouponMsg, 'error' );
+            }
+            // שגיאה כללית
+            else{
+                wc_add_notice( $response, 'error' );
+                
+                $multiple_recipients = array(
+                    get_bloginfo('admin_email')
+                );
+                $subj = 'Error remove coupon from priority';
+                wp_mail( $multiple_recipients, $subj, $message );
+                }
+        }
+
+    }
+    if(isset($_SESSION['coupon_birthday_code'])){
+        WC()->cart->calculate_totals(); // Refresh cart
+        $coupon_code = $_SESSION['coupon_birthday_code'];
+        $result =  CardPOS::instance()->removeCoupons($coupon_code );
+        $error_code = $result["ErrorCode"];
+        if ($error_code == 0) {
+            global $woocommerce;
+            $form_name = 'Transactions';
+            $form_action = 'UpdateTransaction';
+            $data = CardPOS::instance()->openOrUpdateTransaction(0,0,0);
+            //print_r($data);die;
+            $data = json_encode($data);
+            $result = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
+            $error_code = $result["ErrorCode"];
+            //print_r($result);die;
+            //$error_src = $result['EdeaError']['ErrorSource'];
+            if ($error_code == 0) {  
+                $total_before_general_discount = $result["Transaction"]["TotalBeforeGeneralDiscountIncludingVAT"];
+                $total_after_general_discount = $result["Transaction"]["TotalAfterGeneralDiscountIncludingVAT"];
+                //general sale
+                if($total_after_general_discount == $total_before_general_discount){
+                    $fees = WC()->cart->get_fees();
+                    foreach ($fees as $key => $fee) {
+                        if($fees[$key]->name === $_SESSION['api_fee']) {
+                            unset($fees[$key]);
+                            //remove coupon from session
+                          
+                            $msg = __( 'Coupon code removed successfully.', 'woocommerce' );
+                            wc_add_notice( $msg );
+                        }
+                    }
+                }
+                unset($_SESSION['coupon_birthday_code']);
+            }
+            else{
+        
+                $error_msg = $result['EdeaError']['DisplayErrorMessage'];
+                wc_add_notice( 'error in update transaction when removing coupon: '.$error_msg, 'error' );
+                $multiple_recipients = array(
+                    get_bloginfo('admin_email')
+                );
+                $subj = 'Error set coupon from priority';
+                wp_mail( $multiple_recipients, $subj, $error_msg );
+            }
+
+        }
+        //coupon code not valid
+        else {
+            $response = $result['EdeaError']['DisplayErrorMessage'];
+            if(!empty($result["FailedCoupons"]["FailedCouponsToRemove"])){
+                $failedCouponMsg = $result["FailedCoupons"]["FailedCouponsToRemove"][0]["CouponError"]["DisplayErrorMessage"];
+                wc_add_notice( $failedCouponMsg, 'error' );
+            }
+            // שגיאה כללית
+            else{
+                wc_add_notice( $response, 'error' );
+                
+                $multiple_recipients = array(
+                    get_bloginfo('admin_email')
+                );
+                $subj = 'Error remove coupon from priority';
+                wp_mail( $multiple_recipients, $subj, $message );
+                }
+        }
+
+    }
+
+
+}
+
+
+/**
+ * WooCommerce Extra Feature
+ * --------------------------
+*
+* Add custom fee to cart automatically
+*
+*/
+function woo_add_cart_fee() {
+   global $woocommerce;
+   //remove coupon fee after logut because session is cleared
+   if( (WC()->cart->get_cart_contents_count() > 0) && (!isset( $_SESSION['coupon_code']) || !isset( $_SESSION['coupon_birthday_code']))){
+    foreach(  WC()->cart->get_fees() as $fee_key => $fee ) {
+        if ( $fee->amount < 0 ){
+            WC()->cart->remove_fee( $fee_key );
+        }
+    }
+   }
+   $data = CardPOS::instance()->openOrUpdateTransaction(0,0, 0 );
+   $temporarytransactionnumber = $data['temporaryTransactionNumber'];
+   $form_name = 'Transactions';
+
+   if($temporarytransactionnumber == null){
+       $form_action = 'OpenTransaction';
+   }
+   else{
+       $form_action = 'UpdateTransaction';
+   }
+//    echo "<pre>";
+//    print_r($data);
+//    echo "</pre>";
+//    die;
+   $data = json_encode($data);
+   $result = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
+   $error_code = $result["ErrorCode"];
+   //print_r($result);die;
+   //$error_src = $result['EdeaError']['ErrorSource'];
+   if ($error_code == 0) {  
+       $total_before_general_discount = $result["Transaction"]["TotalBeforeGeneralDiscountIncludingVAT"];
+       $total_after_general_discount = $result["Transaction"]["TotalAfterGeneralDiscountIncludingVAT"];
+       $general_discount_sum = $result["Transaction"]["GeneralDiscountSum"];
+       //general sale
+       if(($total_after_general_discount < $total_before_general_discount) ){
+           $desc_sale = $result["Transaction"]["FirstSaleDescription"];
+           if($result["Transaction"]["SecondSaleDescription"] != ''){
+               $desc_sale = $result["Transaction"]["FirstSaleDescription"].', '.$result["Transaction"]["SecondSaleDescription"];
+           }
+           //$sale = $total_before_general_discount - $total_after_general_discount;
+           $sale = $general_discount_sum;
+           $woocommerce->cart->add_fee( __($desc_sale, 'woocommerce'), -$sale );
+           $_SESSION['api_fee'] = $desc_sale;
+       }
+       // else{
+       //     $fees = WC()->cart->get_fees();
+       //     foreach ($fees as $key => $fee) {
+       //         if($fees[$key]->name === $_SESSION['api_fee']) {
+       //             unset($fees[$key]);
+       //         }
+       //     }
+       // }
+       
+   }
+   else{
+    if ($error_code == 59) {  
+        CardPOS::instance()->cancel_transaction();
+    }
+    else{
+        $error_msg = $result['EdeaError']['DisplayErrorMessage'];
+        wc_add_notice( 'error in update transaction when adding general discount: '.$error_msg, 'error' );
+        $multiple_recipients = array(
+         get_bloginfo('admin_email')
+         );
+         $subj = 'Error set coupon from priority';
+         wp_mail( $multiple_recipients, $subj, $error_msg );
+    }
+   
+       //exit;
+   }
+     
+ }
+ add_action( 'woocommerce_cart_calculate_fees', 'woo_add_cart_fee' );
+
+
+//add_filter('woocommerce_checkout_cart_item_quantity','twf_display_custom_data_in_cart',1,3); 
+//add_filter('woocommerce_cart_item_price', 'twf_display_custom_data_in_cart',1,3);
+ 
+function twf_display_custom_data_in_cart( $product_name, $values, $cart_item_key )
+{
+    global $wpdb;
+ 
+    if(!empty($values['temporary_transaction_num']))
+    {
+        $return_string = "<table>
+                            <tr>
+                              <th>transaction num:</th>"
+                             ."<td>" . $values['temporary_transaction_num'] . "</td>
+                            </tr>
+                          </table>";
+        return $return_string;
+ 
+    }
 }

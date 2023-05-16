@@ -375,6 +375,80 @@ function array_combine_($keys, $values)
 
 
 
+// add_filter(
+// 	'wp_unique_filename',
+// 	function( $file_name, $ext, $dir, $cb, $alt, $no ) {
+// 		if ( isset( $_POST[ 'action' ] ) && 'forminator_submit_form_custom-forms' === $_POST[ 'action' ] ) {
+// 			if ( $no ) {
+// 				$find          = '-' . $no . $ext;
+// 				$original_name = str_replace( $find, $ext, $file_name );
+// 				return $original_name;
+// 			} else {
+// 				return $file_name;
+// 			}
+// 		}
+
+// 		return $file_name;
+// 	},
+// 	10,
+// 	9999999
+// );
+
+
+add_filter('wp_handle_upload_overrides','noneUniqueFilename');
+function noneUniqueFilename($overrides){
+    $overrides['test_form'] = false;
+    $overrides['unique_filename_callback'] = 'nonUniqueFilenameCallback';
+    return $overrides;
+}
+
+function nonUniqueFilenameCallback($directory, $name, $extension){
+    $filename = $name . strtolower($extension);
+    //remove old attachment
+    removeOldAttach($filename);
+
+    return $filename;
+}
+
+function removeOldAttach($filename){
+    $arguments = array(
+        'numberposts'   => -1,
+        'meta_key'      => '_wp_attached_file',
+        'meta_value'    => $filename,
+        'post_type'     => 'attachment'
+    );
+    $Attachments_to_remove = get_posts($arguments);
+
+    foreach($Attachments_to_remove as $a)
+        wp_delete_attachment($a->ID, true);
+}
+
+
+add_filter( 'sanitize_file_name', 'filename_filter_wpse_28439', 10, 1 );
+
+function filename_filter_wpse_28439( $name ) 
+{
+    $args = array(
+        'numberposts'   => -1,
+        'post_type'     => 'attachment',
+        'meta_query' => array(
+                array( 
+                    'key' => '_wp_attached_file',
+                    'value' => $name,
+                    'compare' => 'LIKE'
+                )
+            )
+    );
+    $attachments_to_remove = get_posts( $args );
+
+    foreach( $attachments_to_remove as $attach )
+        wp_delete_attachment( $attach->ID, true );
+
+    return $name;
+}
+
+
+
 //add this function for test only 
 //add_action( 'init', 'check_filter' );
 function check_filter() {
@@ -414,4 +488,35 @@ function validId($id){
         return true;
     return false;
 }
+
+
+
+
+
+
+//add_action( 'pre_get_posts', 'hide_products_without_images_on_all_queries',9999999999999 );
+function hide_products_without_images_on_all_queries( $q ){
+    if( ! is_admin() && $q->is_main_query() ){
+        $meta_query = $q->get( 'meta_query' );
+        $meta_query = array(
+            array(
+                'key'     => '_thumbnail_id',
+                'compare' => 'EXISTS'
+            )
+        );
+        $q->set( 'meta_query', $meta_query );
+        
+        $tax_query = $q->get( 'tax_query' );
+        $tax_query = array(
+            array(
+                'taxonomy' => 'product_visibility',
+                'field'    => 'name',
+                'terms'    => 'exclude-from-catalog',
+                'operator' => 'NOT IN',
+            )
+        );
+        $q->set( 'tax_query', $tax_query );
+    }
+}
+
 

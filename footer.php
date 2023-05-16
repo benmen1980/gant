@@ -120,6 +120,11 @@
     		</div>
     		<div class="modal_bg"></div>
 		</div>
+
+
+
+
+
 	</footer><!-- #colophon -->
 </div><!-- #page -->
 
@@ -128,5 +133,22 @@
 <script>document.write(typeof _holyclock_tag=="string"?_holyclock_tag:'HolyClock \x26lt;head\x26gt; tag missing!');</script>
 <!-- HolyClock.com <BODY> code -->
 
+<!-- Start of Glassix Chat Widget -->
+
+<script>
+
+var widgetOptions = {
+
+     apiKey: "73704cbd-bcf4-4958-88d1-106ba3f27e50",
+
+     snippetId: "Utof3pWxUafVDNyRj0GX"
+
+};
+
+(function(n){var u=function(){GlassixWidgetClient&&typeof GlassixWidgetClient=="function"?(window.widgetClient=new GlassixWidgetClient(n),widgetClient.attach(),window.glassixWidgetScriptLoaded&&window.glassixWidgetScriptLoaded()):f()},f=function(){r.onload=u;r.src="https://cdn.glassix.net/clients/widget.1.2.min.js";i.parentNode.removeChild(t);i.parentNode.insertBefore(r,i)},i=document.getElementsByTagName("script")[0],t=document.createElement("script"),r;(t.async=!0,t.type="text/javascript",t.crossorigin="anonymous",t.id="glassix-widget-script",r=t.cloneNode(),t.onload=u,t.src="https://cdn.glassix.com/clients/widget.1.2.min.js",!document.getElementById(t.id)&&document.body)&&(i.parentNode.insertBefore(t,i),t.onerror=f)})(widgetOptions)
+
+</script>
+
+<!-- End of Glassix Chat Widget -->
 </body>
 </html>

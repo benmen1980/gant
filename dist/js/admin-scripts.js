@@ -81,6 +81,30 @@ jQuery(document).ready(function($){
             },
             success: function (data) {
                 console.log('success');
+                console.log(data);
+                loader.removeClass('active');
+            },
+            error: function (errorThrown) {
+                loader.removeClass('active');
+                console.log(errorThrown);
+            }
+        });
+
+        
+    });
+
+    $('.set_product_model_desc').click(function(e) { 
+        var loader = $(this).next('.loader_wrap');
+        loader.addClass('active');
+        $.ajax({
+            url: ajaxurl,
+            method: 'POST',
+            data: {
+            'action': 'set_pdt_model_desc',
+            },
+            success: function (data) {
+                console.log('success');
+                console.log(data);
                 loader.removeClass('active');
             },
             error: function (errorThrown) {

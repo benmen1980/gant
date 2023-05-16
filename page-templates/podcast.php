@@ -32,7 +32,7 @@ $yt_link = get_field('yt_link');
         <div class="hero_type_1">
             <div class="hero_background">
                 <div class="img_wrapper" style="background-image:url('<?php echo $banner; ?>')">
-                    <img src="<?php echo $banner; ?>" alt="">
+                    <img src="<?php echo $banner; ?>" alt="<?php echo $title; ?>">
                 </div> 
             </div>
         </div>
@@ -45,19 +45,19 @@ $yt_link = get_field('yt_link');
     <?php endif;?>    
     <div class="applications_wrapper">
         <a class="app_item" href="<?php echo $apple_link ?>" title="<?php echo $apple_link ?>">
-            <img src="<?php echo $apple_img ; ?>" alt=""/>
+            <img src="<?php echo $apple_img ; ?>" alt="<?php echo $apple_link ?>"/>
         </a>
         <a class="app_item" href="<?php echo $play_link ?>" title="<?php echo $play_link ?>">
-            <img src="<?php echo $play_img ; ?>" alt=""/>
+            <img src="<?php echo $play_img ; ?>" alt="<?php echo $play_link ?>"/>
         </a>
         <a class="app_item" href="<?php echo $spotify_link ?>" title="<?php echo $spotify_link ?>">
-            <img src="<?php echo $spotify_img ; ?>" alt=""/>
+            <img src="<?php echo $spotify_img ; ?>" alt="<?php echo $spotify_link ?>"/>
         </a>
         <a class="app_item" href="<?php echo $deezer_link ?>" title="<?php echo $deezer_link ?>">
-            <img src="<?php echo $deezer_img ; ?>" alt=""/>
+            <img src="<?php echo $deezer_img ; ?>" alt="<?php echo $deezer_link ?>"/>
         </a>
         <a class="app_item" href="<?php echo $yt_link ?>" title="<?php echo $yt_link ?>">
-            <img src="<?php echo $yt_img ; ?>" alt=""/>
+            <img src="<?php echo $yt_img ; ?>" alt="<?php echo $yt_link ?>"/>
         </a>
     </div>
     <div class="podcast_wrapper">
@@ -71,7 +71,7 @@ $yt_link = get_field('yt_link');
 
                 <a href="<?php echo $link ?>" target="_blank" title="<?php echo $link ?>" class="podcast_item">
                     <div class="r_side">
-                        <img src="<?php echo $image; ?>" alt="">
+                        <img src="<?php echo $image; ?>" alt="<?php echo $title; ?>">
                     </div>
                     <div class="l_side">
                         <h4><?php echo $title; ?></h4>
@@ -82,6 +82,6 @@ $yt_link = get_field('yt_link');
         endif; ?>
     </div>
     <div class="bottom_banner">
-        <img src="<?php echo get_field('banner_bottom') ?>" alt="">
+        <img src="<?php echo get_field('banner_bottom') ?>" alt="<?php echo $title; ?>">
     </div>
 </div>

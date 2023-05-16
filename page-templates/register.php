@@ -83,27 +83,43 @@ get_header();
                     <label for="reg_id"><?php esc_html_e( 'ת"ז', 'gant' ); ?>&nbsp;<span class="required">*</span></label>
                     <input type="text" class="woocommerce-Input woocommerce-Input--id input-text" name="account_id" id="reg_id" value="<?php echo ( ! empty( $_POST['account_id'] ) ) ? esc_attr( wp_unslash( $_POST['account_id'] ) ) : ''; ?>" />
                 </p>
-
-
-                <p class="row_checkbox_wrapper">
+                <div class="row_checkbox_wrapper condition_accept_wrapper">
                     <span class="woocommerce-input-wrapper checkbox_wrapper">
-                        <input id="agree_business_owner" type="checkbox" name="agree_business_owner"   <?php  checked( get_user_meta( $user->ID, 'agree_business_owner', true ), 'on' ); ?> >	
-                        <label for="agree_business_owner">
-                        <?php echo get_field('checkbox_privacy','option');?>
+                        <input id="read_club_condition" type="checkbox" name="read_club_condition" <?php  checked( get_user_meta( $user->ID, 'read_club_condition', true ), '1' ); ?>>	
+                        <label for="read_club_condition">
+                        <?php echo get_field('checkbox_read_club_condition','option');?>
                         </label>
                     </span>
-                </p>
-
-                <p class="row_checkbox_wrapper">
+                </div>
+                <div class="row_checkbox_wrapper condition_accept_wrapper">
                     <span class="woocommerce-input-wrapper checkbox_wrapper">
-                        <input id="want_club_registration" type="checkbox" name="want_club_registration"   <?php  checked( get_user_meta( $user->ID, 'want_club_registration', true ), 1 ); ?> >	
+                        <input id="want_club_registration" type="checkbox" name="want_club_registration"   <?php  checked( get_user_meta( $user->ID, 'want_club_registration', true ), '1' ); ?> >	
                         <label for="want_club_registration">
                         <?php esc_html_e( 'הצטרף לחבר מועדון', 'gant' );?>
                         </label>
                     </span>
-                </p>
+                </div>
+                <div class="row_checkbox_wrapper condition_accept_wrapper">
+                    <span class="woocommerce-input-wrapper checkbox_wrapper">
+                        <input id="agree_business_owner" type="checkbox" name="agree_business_owner"   <?php  checked( get_user_meta( $user->ID, 'agree_business_owner', true ), 'on' ); ?> >	
+                        <label for="agree_business_owner">
+                            <?php echo get_field('checkbox_privacy','option');?>
+                        </label>
+                    </span>
+                </div>
+                
+                <div class="row_checkbox_wrapper condition_accept_wrapper">
+                    <span class="woocommerce-input-wrapper checkbox_wrapper">
+                        <input id="read_site_condition" type="checkbox" name="read_site_condition" <?php  checked( get_user_meta( $user->ID, 'read_site_condition', true ), '1'); ?>>	
+                        <label for="read_site_condition">
+                        <?php echo get_field('checkbox_read_site_condition','option');?>
+                        </label>
+                    </span>
+                </div>
+                
+                
                 <div class="row_before_submit">
-                    <?php echo get_field('desc_before_submit','option');?>
+                    <?//php echo get_field('desc_before_submit','option');?>
                 </div>
 
                 <?php if ( 'no' === get_option( 'woocommerce_registration_generate_password' ) ) : ?>
@@ -134,7 +150,7 @@ get_header();
                         </div>
                     </div>
                 <?php endif; ?>
-
+                <input type="hidden" name="validation_sms_code" class="validation_sms_code" value="">
     
                 <?php do_action( 'woocommerce_register_form' ); ?>
         

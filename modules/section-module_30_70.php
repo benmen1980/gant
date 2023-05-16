@@ -28,7 +28,7 @@
         <?php if($banner_type == 'one-img' || $banner_type == 'two-img'): ?>
             <div class="l_side">
                 <div class="img_wrapper">
-                    <img src="<?php echo $one_img; ?>" alt=""/>
+                    <img src="<?php echo $one_img; ?>" alt="<?php echo  $title;  ?>"/>
                 </div>
             </div>
 
@@ -36,7 +36,7 @@
         <?php if($banner_type == 'two-img'): ?>
             <div class="l_side">
                 <div class="img_wrapper">
-                    <img src="<?php echo $two_img; ?>" alt=""/>
+                    <img src="<?php echo $two_img; ?>" alt="<?php echo  $title;  ?>"/>
                 </div>
             </div>
         <?php endif; ?>

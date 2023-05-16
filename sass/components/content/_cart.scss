@@ -76,6 +76,18 @@
             display: flex;
             flex-wrap: wrap;
             border-left: 1px solid #000;
+            position: relative;
+            .submit_form_wrapper{
+                display: flex;
+                flex-basis: 100%;
+                max-width: 100%;
+                justify-content: center;
+                margin: 20px 0;
+                align-items: center;
+                button{
+                    font-size:20px;
+                }
+            }
             @media screen and (max-width: 1023px) {
                 display: block;
                 max-width: none;
@@ -114,6 +126,17 @@
                     }
                 }
                 .cart_product_info{
+                    .product-price{
+                        .prices_wrapper{
+                            .original_price{
+                                text-decoration: line-through;
+                                font-weight: 400;
+                            }
+                            .sale_price{
+                                color: #e10600;
+                            }
+                        }
+                    }
                     @media screen and (max-width: 1023px) {
                         flex-basis: 60%;
                         max-width: 60%;
@@ -143,8 +166,18 @@
                         display: flex;
                         align-items: center;
                         margin-top: 10px;
+                        &.free-item{
+                            pointer-events: none;
+                            select.qty{
+                                background-color: #ccc; 
+                            }
+                            .product-remove{
+                                display: none;
+                            }
+                        }
                         .product-quantity{
                             position: relative;
+             
                             select.qty{
                                 width: 90px;
                                 height: 40px;
@@ -185,7 +218,7 @@
                 }
             }
             button[name="update_cart"]{
-                display: none;
+                //display: none;
             }
         }
         .cart_summary{
@@ -210,6 +243,16 @@
                         border:0;
                         @media screen and (max-width: 1023px) {
                             padding: 20px 10px 0;
+                        }
+                        tr.cart_item,tr.cart-subtotal{
+                            box-shadow: 0 1px 0 rgba(0,0,0,.1) inset;
+                            td{
+                                ins{
+                                    background-color: transparent;
+                                    color: red;
+                                }
+                            }
+
                         }
                         td{
                             border:0;
@@ -236,62 +279,10 @@
                             width: 60%;
                             vertical-align: top;
                         }
-                        .display_coupon_btn_wrapper{
-                            th, td{
-                                display: none;
-                            }
-                            th:first-child{
-                                display: block;
-                                padding: 0;
-                                width: 100%;
-                            }
-                        }
-                        tr.order-total{
+                        // .fee + .display_coupon_btn_wrapper{
+                        //     display: none;
+                        // }
 
-                        }
-                        .coupon{
-                            display: none;
-                            @media screen and (max-width: 1023px) {
-                                align-items: center;
-                            }
-                            th{
-                                width: 70%;
-                                display: block;
-                                @media screen and (max-width: 1023px) {
-                                    padding: 10px 0 0 10px;
-                                    width: 50%;
-                                }
-                            }
-                            td{
-                                &:before{
-                                    content: none;
-                                }
-                            }
-                            input#coupon_code{
-                                height: 56px;
-                                box-shadow: 0 0 0 1px #cac3bd inset;
-                                border-radius: 0;
-                                transition: box-shadow 200ms cubic-bezier(.455,.03,.515,.955),-webkit-box-shadow 200ms cubic-bezier(.455,.03,.515,.955);
-                                border: 0;
-                                appearance: none;
-                                width: 100%;
-                                padding: 14px 40px 14px 20px;
-                                @media screen and (max-width: 1023px) {
-                                    height: 45px;
-                                }
-                                &:hover{
-                                    box-shadow: 0 0 0 2px #000 inset;
-                                }
-                            }
-                            .error_msg_coupon_empty{
-                                color: #ce2325;
-                                font-style: italic;
-                                font-size: 16px;
-                                background-color: #fdf4f4;
-                                padding: 0 10px;
-                                display: none;
-                            }
-                        }
                         .order-total{
                             font-size: 40px;
                             font-weight: 900;
@@ -336,3 +327,93 @@
         }
     }
 }
+.woocommerce-checkout-review-order,.cart_summary_content{
+    .display_coupon_btn_wrapper{
+        th, td{
+            display: none;
+        }
+        th:first-child{
+            display: block;
+            padding: 0 12px;
+            width: 100%;
+        }
+    }
+    .birthday_coupon_wrapper{
+        margin: 20px 0 0;
+        display: block;
+        th,td{
+            border-top: 0!important;
+        }
+    }
+    .coupon{
+        display: none;
+        @media screen and (max-width: 1023px) {
+            align-items: center;
+        }
+        th{
+            width: 70%;
+            display: block;
+            border: 0!important;
+            @media screen and (max-width: 1023px) {
+                padding: 10px 0 0 10px;
+                width: 50%;
+            }
+        }
+        td{
+            border: 0!important;
+            &:before{
+                content: none;
+            }
+        }
+        input#coupon_code{
+            height: 56px;
+            box-shadow: 0 0 0 1px #cac3bd inset;
+            border-radius: 0;
+            transition: box-shadow 200ms cubic-bezier(.455,.03,.515,.955),-webkit-box-shadow 200ms cubic-bezier(.455,.03,.515,.955);
+            border: 0;
+            appearance: none;
+            width: 100%;
+            padding: 14px 40px 14px 20px;
+            @media screen and (max-width: 1023px) {
+                height: 45px;
+            }
+            &:hover{
+                box-shadow: 0 0 0 2px #000 inset;
+            }
+        }
+        .error_msg_coupon_empty{
+            color: #ce2325;
+            font-style: italic;
+            font-size: 16px;
+            background-color: #fdf4f4;
+            padding: 0 10px;
+            display: none;
+        }
+    }
+}
+
+
+table.shop_table{
+    tr.cart_item,tr.cart-subtotal{
+        td{
+            ins{
+                background-color: transparent;
+                color: red;
+            }
+        }
+    }
+    tr.club_fee{
+        .remove_coupon{
+            display:none;
+        }
+    }
+    tr.fee{
+      .remove_coupon{
+        background-color: transparent;
+        border: 0;
+        text-decoration: underline;
+      }  
+    }
+}
+
+    

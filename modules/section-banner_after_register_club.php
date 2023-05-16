@@ -38,10 +38,17 @@
                 <!-- dana said that csutomer that bought has moadon and can have points,  -->
                 <div class="hero_bottom">
                     <?//php if( has_bought() ):?>
+                        <?php  if( get_user_meta( get_current_user_id(), 'birthday_coupon', true ) != ''): ?>
+                        <h4 class="birthday_txt">
+                            <?php echo get_sub_field('title_birthday'); ?>
+                        </h4>
+                        <?php endif; ?>
                         <div>
                             <?php  if( get_user_meta( get_current_user_id(), 'is_club', true ) == 1): ?>
                                 <h3><?php echo $title_already_register_club; ?></h3>
-                                <h3><?php echo $title_point.': '?></h3>
+                                <h3>
+                                    <?php echo $title_point.': '.get_user_meta(get_current_user_id(), 'points_club', true)?>
+                                    </h3>
                                 <h3><?php echo $desc_point; ?></h3>
                             <?php else:?>
                                 <h3><?php echo $title_no_club; ?></h3>

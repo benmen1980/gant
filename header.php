@@ -19,9 +19,9 @@
 
 	<?php wp_head(); ?>
 
-	<!-- HolyClock.com <HEAD> code for gant.ussl.co.il -->
+	<!-- HolyClock.com <HEAD> code for dev-gant.tmpurl.co.il -->
 	<script>/*<![CDATA[*/_holyclock_id="5afa1b48ce4ac7fe1f18443494e52348";_holyclock_tag='<s'+'cript src\x3d"//www.holyclock.com/holyclock.js?'+Math.floor(+new Date/864E5)+'">\x3c/script>';null!==document.cookie.match(/(?:^|;)\s*_holyclock_qr=\s*\w/)&&null===window.location.hash.match(/#holyclock=qr(?=#|$)/)&&document.write(_holyclock_tag);//]]></script>
-	<!-- HolyClock.com <HEAD> code for gant.ussl.co.il -->
+	<!-- HolyClock.com <HEAD> code for dev-gant.tmpurl.co.il -->
 </head>
 
 <body <?php body_class(); ?>>
@@ -91,7 +91,7 @@
 			</nav><!-- #site-navigation -->
 			<div class="site-branding">
 				<a href="/" title="גאנט ישראל">
-					<img src="<?php echo get_template_directory_uri();?>/dist/images/logo.svg" aria-hidden="false" alt="">
+					<img src="<?php echo get_template_directory_uri();?>/dist/images/logo.svg" aria-hidden="false" alt="גאנט ישראל">
 				</a>	
 			</div><!-- .site-branding -->
 
@@ -103,7 +103,7 @@
 						$bag_count = $woocommerce->cart->cart_contents_count;  
 						?>
 						<button type="button" class="bag_button" aria-label="סל קניות">
-							<a href="/cart/" aria-label="<?php echo sprintf("%u פריטים בסל קניות",$bag_count); ?>" title="<?php echo sprintf("פריטים בסל קניות %u",$bag_count); ?>">
+							<a href="javascript:void(0)" aria-label="<?php echo sprintf("%u פריטים בסל קניות",$bag_count); ?>" title="<?php echo sprintf("פריטים בסל קניות %u",$bag_count); ?>">
 								<span class="btn_icon">
 									<svg focusable="false" class="c-icon icon--basket" viewBox="0 0 20 20" width="20" height="20">
 										<path fill-rule="evenodd" clip-rule="evenodd" d="M7.2 5C7.2 3.4536 8.4536 2.2 10 2.2C11.5464 2.2 12.8 3.4536 12.8 5V6H7.2V5ZM6 7.2V8.99999H7.2V7.2H12.8V8.99999H14V7.2H16.8V15C16.8 16.5464 15.5464 17.8 14 17.8H6C4.4536 17.8 3.2 16.5464 3.2 15V7.2H6ZM6 6V5C6 2.79086 7.79086 1 10 1C12.2091 1 14 2.79086 14 5V6H18V15C18 17.2091 16.2091 19 14 19H6C3.79086 19 2 17.2091 2 15V6H6Z" fill="currentColor"></path>
@@ -118,7 +118,7 @@
 						<?php if( is_user_logged_in() ): ?>
 							<button type="button" class="open_login_popup" aria-label="חשבון שלי">
 								<span class="btn_icon">
-									<img src="<?php echo get_template_directory_uri();?>/dist/images/account.svg" aria-hidden="false" alt="">
+									<img src="<?php echo get_template_directory_uri();?>/dist/images/account.svg" aria-hidden="false" alt="חשבון שלי">
 								</span>
 								<span class="account_label">גאנט שלי</span>
 							</button>
@@ -200,6 +200,11 @@
 				</nav>
 			</div> 
 		</div>
+		<div class="loader_wrap" >
+			<div class="loader_spinner">
+				<img src="https://dev-gant.tmpurl.co.il/wp-content/themes/gant/dist/images/loader.svg" alt="">
+			</div>
+		</div>
 		<?php  $promo_link = get_field('popup_link','option');
 		if(!empty($promo_link)):?>
 			<div class="promotion_banner" style="color:<?php echo get_field('popup_bg_text','option'); ?>; background-color:<?php echo get_field('popup_bg_color','option');?>">
@@ -241,6 +246,10 @@
 									'key' => '_stock_status',
 									'value' => 'instock'
 								),
+								// array(
+								// 	'key' => '_thumbnail_id',
+								// 	'compare' => 'EXISTS',
+								// )
 							)
 						);
 						$loop = new WP_Query( $query_args );
@@ -260,7 +269,7 @@
 							</div>
 						</div>
 						<div class="top_results">
-							<h3 class="search-reuslt-title"><?php echo __('מוצרים','gant')?></h3>
+							<label class="search-reuslt-title"><?php echo __('מוצרים','gant')?></label>
 							<div class="arrow_btn">
 								<a class="button-secondary" href="#">
 									<span class="button_label"><?php echo __('ראה כל המוצרים','gant')?></span>	
@@ -301,7 +310,15 @@
 	<?php if(is_page_template('page-templates/overview.php') || (is_account_page() && !empty( WC()->query->get_current_endpoint() ) )):?>
 		<div class="account_nav_wrapper">
 			<div class="l_side number_points">
-				<?php esc_html_e( 'נקודות', 'gant' ); ?>
+				<?php 
+				$user_id = get_current_user_id();
+				if(!empty(get_user_meta($user_id, 'points_club', true))):
+					echo get_user_meta($user_id, 'points_club', true).' ';
+				else: 
+					echo '0 ';
+				endif;
+				esc_html_e( 'נקודות', 'gant' );
+				?>
 			</div>
 			<div class="account_nav_menu_wrapper">
 			<?php 				

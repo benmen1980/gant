@@ -27,9 +27,9 @@ get_header();
 				</div>
 				<div class="hero_content">
 					<div class="hero_titles title_center">
-						<h4><?php echo $error_title;?></h4>
-						<h1><?php echo $title;?></h1>
-						<h2 class=""><span><?php echo $sub_title ?></span></h2>
+						<h1><?php echo $error_title;?></h1>
+						<h2><?php echo $title;?></h2>
+						<h4 class=""><span><?php echo $sub_title ?></span></h4>
 						<div class="hero_buttons">
 						<?php if(get_field('choose_link_404','option')):while(the_repeater_field('choose_link_404','option')):
 							$page = get_sub_field('choose_page');
@@ -37,9 +37,9 @@ get_header();
 							$link_target = $page['target'] ? $page['target'] : '_self';
 							$link_url = $page['url'];
 						?>
-							<a  target="<?php echo esc_attr( $link_target ); ?>" style="background-color:<?php echo $bg_color; ?>; color:<?php echo $bg_color; ?>; <?php echo (!empty($border_color)) ? 'border: 1px solid '.$border_color : ''?>" href="<?php echo $link_url; ?>" title="<?php echo $link_title; ?>" class="button-secondary">
+							<a  target="<?php echo esc_attr( $link_target ); ?>" href="<?php echo $link_url; ?>" title="<?php echo $link_title; ?>" class="button-secondary">
 								<!-- <div class="button_animation" aria-hidden="true" style="background-color:<?//php echo $bg_color; ?>; color:<?//php echo $text_color; ?>;" href="<?php echo get_permalink($page->ID); ?>" title="<?php echo $page->post_title; ?>" class="button-secondary"></div> -->
-								<span class="button_label" style="color:<?php echo $text_color; ?>;"><?php echo $link_title; ?></span>
+								<span class="button_label"><?php echo $link_title; ?></span>
 							</a>
 
 						<?php endwhile;endif?>

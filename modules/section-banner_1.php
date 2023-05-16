@@ -1,8 +1,15 @@
 <section class="section_wrap banner_1">
     <?php if(get_sub_field('banner_hp')):while(the_repeater_field('banner_hp')):  
-        $title = get_sub_field('title');
+        
+        //title
+        $group_values_title = get_sub_field('typography_title');
+        $title = $group_values_title['title'];
+        $title_font_family = $group_values_title['select_txt_font'];
         $title_pos = get_sub_field('title_position');
-        $sub_title = get_sub_field('sub_title');
+
+        $group_values_subtitle = get_sub_field('typography_subtitle');
+        $sub_title = $group_values_subtitle['title'];
+        $subtitle_font_family = $group_values_subtitle['select_txt_font'];
         if( $sub_title){
             if(get_sub_field('sub_title_position_top') && $title_pos == "top"){
                 $sub_title_pos = get_sub_field('sub_title_position_top');
@@ -15,6 +22,9 @@
             }
         }
         $sub_title_pos = str_replace(' ','_',$sub_title_pos);
+       
+        $subtitle_font = get_sub_field('select_subtitle_font');
+        
         $img = get_sub_field('Image');
         $vid_file = get_sub_field('video');
         $vid_url = get_sub_field('video_iframe');
@@ -35,13 +45,15 @@
         }
        
         $banner_height = get_sub_field('banner_height');
+
+        $btn_font_family = get_sub_field('select_btn_font');
             
         
         ?>
         <div class="hero_type_1  <?php echo ($banner_height == 1) ? 'half_height': ''; ?>">
             <div class="hero_background">
                 <?php if($vid_file):?>
-                    <video autoplay loop poster="<?php !empty(the_sub_field('image')) ? the_sub_field('image') : '' ;?>" > 
+                    <video playsinline muted autoplay loop preload="<?php !empty(the_sub_field('Image')) ? the_sub_field('Image') : '' ;?>" poster="<?php !empty(the_sub_field('Image')) ? the_sub_field('Image') : '' ;?>" > 
                         <source src="<?php echo $vid_file; ?>" type="video/mp4"/>         
                     </video>
                 <?php elseif($vid_url):?>
@@ -56,9 +68,12 @@
             </div>
             <div class="hero_content" style="background-color:<?php echo $bg_color; ?>; color:<?php echo $text_color; ?>;">
                 <div class="hero_titles <?php echo 'title_'.$title_pos.' sub_title_'.$sub_title_pos; ?>">
-                    <h1><?php echo $title;?></h1>
-                    <h2 class="<?php echo $sub_title_pos; ?>"><span><?php echo $sub_title ?></span></h2>
+                    <h1 class="<?php echo $title_font_family; ?>" style="color:<?php echo $bg_color;?>;"><?php echo $title;?></h1>
+                    <h2 class="<?php echo $title_font_family; ?>" style="color:<?php echo $bg_color;?>;"><span><?php echo $sub_title ?></span></h2>
                 </div>
+                <?php if(get_sub_field('small_txt_above_btn')): ?>
+                <h4 class="small_txt" style="color:<?php echo $bg_color; ?>"><?php echo get_sub_field('small_txt_above_btn'); ?></h4>
+                <?php endif;?>
                 <div class="hero_buttons">
                 <?php if(get_sub_field('choose_link')):while(the_repeater_field('choose_link')):
                     $page = get_sub_field('choose_page');
@@ -66,9 +81,9 @@
                     $link_target = $page['target'] ? $page['target'] : '_self';
                     $link_url = $page['url'];
                 ?>
-                    <a  target="<?php echo esc_attr( $link_target ); ?>" style="background-color:<?php echo $bg_color; ?>; color:<?php echo $bg_color; ?>; <?php echo (!empty($border_color)) ? 'border: 1px solid '.$border_color : ''?>" href="<?php echo $link_url; ?>" title="<?php echo $link_title; ?>" class="button-secondary">
+                    <a  target="<?php echo esc_attr( $link_target ); ?>" style="background-color:<?php echo $bg_color; ?>; color:<?php echo (empty($border_color)) ? $bg_color : $text_color; ?>;" href="<?php echo $link_url; ?>" title="<?php echo $link_title; ?>" class="<?php echo (empty($border_color)) ? 'button-secondary' : 'button-primary';?>">
                         <!-- <div class="button_animation" aria-hidden="true" style="background-color:<?//php echo $bg_color; ?>; color:<?//php echo $text_color; ?>;" href="<?php echo get_permalink($page->ID); ?>" title="<?php echo $page->post_title; ?>" class="button-secondary"></div> -->
-                        <span class="button_label" style="color:<?php echo $text_color; ?>;"><?php echo $link_title; ?></span>
+                        <span class="button_label <?php echo $btn_font_family; ?>" style="color:<?php echo $text_color; ?>;"><?php echo $link_title; ?></span>
                     </a>
 
                 <?php endwhile;endif?>

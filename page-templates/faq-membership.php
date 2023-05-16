@@ -7,6 +7,7 @@ Template Name: FAQ Membership Page
 get_header();
 ?>
 <div class="faq_page">
+    <h1 class="faq_main_title"><?php _e("שאלות נפוצות על מועדון", "gant"); ?></h1>
     <div class="accordion">
         <?php 
             if( have_rows('group_question_club', 'option') ) {

@@ -13,27 +13,32 @@ defined( 'ABSPATH' ) || exit;
 get_header();
 
 
+
 $group_values = get_field('dynamic_product_related');
-//print_r($group_values);
-//print_r($product);
+
+$categories = get_the_terms( get_the_ID(), 'product_cat' );
 
 //echo get_field('color',615);
 ?>
 <main id="primary" class="site-main">
-	<?php 
+	<?php
 		while ( have_posts() ) :
 			the_post();
 			global $product;
-			//$parent_cat_id = wdo_get_product_top_level_category($product->ID);
-			//$term = get_term_by( 'id', $parent_cat_id, 'product_cat' );
-			//$parent_term_name = $term->name;
-			$sub_cat_name = get_field('sub_cat');
-			if(!empty($sub_cat_name)):
-				$term = get_term_by('name',$sub_cat_name,'product_cat'); 
-				$parent_tag_id =  $term->term_id;
-				$parent_term_name = $term->name;
-				$parent_term_slug = get_term_link ($parent_tag_id, 'product_cat');
-			endif;
+            $parent_cat_id = wdo_get_product_top_level_category($product->ID); // 1966
+			$term = get_term_by( 'id', $parent_cat_id, 'product_cat' );
+			
+			$parent_term_name = $term->name; // ילדים ונוער
+			$sub_cat_name = get_field('sub_cat'); // חולצות טי שירט
+			$category_slug = $sub_cat_name.'-'.$parent_term_name;
+			$category_slug = str_replace(' ', '-', $category_slug);
+			$parent_term_slug = get_term_link ($category_slug, 'product_cat');
+			// if(!empty($sub_cat_name)):
+			// 	$term = get_term_by('name',$sub_cat_name,'product_cat'); 
+			// 	$parent_tag_id =  $term->term_id;
+			// 	$parent_term_name = $term->name;
+			// 	$parent_term_slug = get_term_link ($parent_tag_id, 'product_cat');
+			// endif;
 			//$attimages = get_attached_media('image', $product->ID);
             $attachment_ids = $product->get_gallery_image_ids();
 
@@ -47,23 +52,51 @@ $group_values = get_field('dynamic_product_related');
 				<div class="single_product_wrapper">
 					<div class="top_details">
 						<div class="r_side">
-                            <?php if(isset($parent_tag_id)): ?>
-								<nav class="breadcrumb">
-									<div class="arrow_btn">
-										<a href="<?php  echo  $parent_term_slug; ?>" title="<?php echo $parent_term_name; ?>" class="button-secondary">
-											<span class="btn_icon">
-												<svg focusable="false" class="c-icon icon--arrow-button" viewBox="0 0 42 10" width="15px" height="15px">
-													<path fill-rule="evenodd" clip-rule="evenodd" d="M40.0829 5.5H0V4.5H40.0829L36.9364 1.35359L37.6436 0.646484L41.9971 5.00004L37.6436 9.35359L36.9364 8.64649L40.0829 5.5Z" fill="currentColor"></path>
-												</svg>
-											</span>
-											<span class="button_label"> <?php esc_html_e( $sub_cat_name, 'gant' ); ?></span>
-										</a>
-									</div>
-									
-								</nav>
-							<?php endif; ?>
 							<?php if(wp_is_mobile()): ?>
-								
+								<!-- old breadcrumb -->
+								<?php if(isset($parent_cat_id) && false): ?>
+									<nav class="breadcrumb">
+										<div class="arrow_btn">
+											<a href="<?php  echo  $parent_term_slug; ?>" title="<?php echo $parent_term_name; ?>" class="button-secondary">
+												<span class="btn_icon">
+													<svg focusable="false" class="c-icon icon--arrow-button" viewBox="0 0 42 10" width="15px" height="15px">
+														<path fill-rule="evenodd" clip-rule="evenodd" d="M40.0829 5.5H0V4.5H40.0829L36.9364 1.35359L37.6436 0.646484L41.9971 5.00004L37.6436 9.35359L36.9364 8.64649L40.0829 5.5Z" fill="currentColor"></path>
+													</svg>
+												</span>
+												<span class="button_label"> <?php esc_html_e( $sub_cat_name, 'gant' ); ?></span>
+											</a>
+										</div>
+										
+									</nav>
+								<?php endif; ?>
+								<?php if ($terms = get_the_terms($post->ID, 'product_cat')) { ?>
+									<nav class="breadcrumb_pdt">
+										<?php $referer = wp_get_referer();
+										
+										if($referer){
+											$ancestor = wdo_get_product_top_level_category($product->ID);
+											$ancestor_term = get_term_by( 'id', $ancestor, 'product_cat' );
+											echo '<a class="button_underline" href="/">'.__( 'בית', 'gant' ).'</a><span class="delimiter" aria-hidden="true">></span><a class="button_underline" href="' . get_term_link($ancestor_term->slug, 'product_cat') . '">' . $ancestor_term->name . '</a><span class="delimiter" aria-hidden="true">></span>';
+											foreach ($terms as $term) {
+												$referer_slug = (strpos($referer, $term->slug));
+												
+												//if ($referer_slug == true) {
+												if(get_term_link($term) == $referer){
+													$category_name = $term->name;
+													//echo $category_name.'</br>';
+													echo '<a class="button_underline" href="' . get_term_link($term->slug, 'product_cat') . '">' . $category_name . '</a><span class="delimiter" aria-hidden="true">></span>';
+										
+													// echo $before . '<a href="' . get_term_link($term->slug, 'product_cat') . '">' . $category_name . '</a>' . $after . $delimiter;
+												}
+											} 
+										}
+										else{
+											echo '<a class="button_underline" href="/">'.__( 'בית', 'gant' ).'</a><span class="delimiter" aria-hidden="true">></span>';
+										}
+										?>
+										<?php echo get_the_title().'<span class="delimiter" aria-hidden="true">></span>'; ?>
+									</nav>
+								<?php } ?>
 								<div class="product_detail_badge">
 									<?php if(has_term( '29', 'product_tag' )){ 
 										$term_data = get_term_by('id', '29', 'product_tag');
@@ -77,29 +110,105 @@ $group_values = get_field('dynamic_product_related');
 								<h1 class="product_title_mobile entry-title"><?php the_title(); ?></h1>
 							<?php  endif;?>
 							<div class="slider_gallery_wrapper">
-								<div class="gallery-thumbnail">
-									<a href="<?php echo get_permalink( $product->ID ).'#zoom_1'?>">
-										<img src="<?php echo wp_get_attachment_url( $product->get_image_id() ); ?>" data-slide="1" alt="">
-									</a>
-								</div> 
-								<?php 
-								$attimages_key = 2;
-								foreach ($attachment_ids as $image_id){ 
-									$attach_url = wp_get_attachment_url( $image_id);
-									if(strpos( $attach_url, 'thumb-fv-1') == false){?>
-										<div class="gallery-thumbnail">
-											<a href="<?php echo get_permalink( $product->ID ).'#zoom_'.$attimages_key;?>">
-												<img src="<?php echo  wp_get_attachment_url( $image_id ); ?>" data-slide="<?php echo $attimages_key;?>" alt="">
-											</a>
+								<div class="gallery-thumbnail-slider">
+									<div class="gallery-thumbnail" id="main_slider_1">
+										<a href="<?php echo get_permalink( $product->ID ).'#zoom_1'?>">
+											<img src="<?php echo wp_get_attachment_url( $product->get_image_id() ); ?>" data-slide="1" alt="<?php echo $product->get_title();?>">
+										</a>
+									</div> 
+									<?php 
+									$attimages_key = 2;
+									foreach ($attachment_ids as $image_id){ 
+										$attach_url = wp_get_attachment_url( $image_id);
+										if(strpos( $attach_url, 'thumb-fv-1') == false){?>
+											<div class="gallery-thumbnail" id="main_slider_<?php echo $attimages_key; ?>">
+												<a href="<?php echo get_permalink( $product->ID ).'#zoom_'.$attimages_key;?>">
+													<img src="<?php echo  wp_get_attachment_url( $image_id ); ?>" data-slide="<?php echo $attimages_key;?>" alt="<?php echo $product->get_title();?>">
+												</a>
+											</div>
+										<?php $attimages_key++;
+										}
+									} ?>
+								</div>
+								<?php if(!wp_is_mobile()): ?>
+									<?php if($product->get_image_id() != ''): ?>
+										<div class="small_img_slider">
+											<div class="product_zoom_thumbnail_item">
+												<a href="<?php echo get_permalink( $product->ID ).'#zoom_1';?>" data_main_slider="main_slider_1" class="small_img_active">
+													<img class="thumbnail_img" src="<?php echo wp_get_attachment_url($product->get_image_id())?>"  alt="<?php echo $product->get_title();?>">
+												</a>            		
+											</div> 
+											<?php
+											$key_thumb = 2;
+											foreach ($attachment_ids as $image_id){ 
+												$attach_url = wp_get_attachment_url( $image_id);
+												//dont display thumb image
+												if(strpos( $attach_url, 'thumb-fv-1') == false){?>
+													<div class="product_zoom_thumbnail_item">
+														<a href="<?php echo get_permalink( $product->ID ).'#zoom_'.$key_thumb;?>" data_main_slider="main_slider_<?php echo $key_thumb;?>">
+															<img class="thumbnail_img" src="<?php echo  wp_get_attachment_url( $image_id ); ?>" alt="<?php echo $product->get_title();?>">
+														</a>
+													</div>
+												<?php $key_thumb++;
+												}
+											} ?> 
 										</div>
-									<?php $attimages_key++;
-									}
-								} ?>
+									<?php endif;?>
+								<?php endif; ?>
 							</div>
 						</div>
 						<div class="l_side">
 							<div class="product_detail_side_bar ">
 								<?php if(!wp_is_mobile()): ?>
+									<?php if(isset($parent_cat_id) && false): ?>
+										<nav class="breadcrumb">
+											<div class="arrow_btn">
+												<a href="<?php  echo  $parent_term_slug; ?>" title="<?php echo $parent_term_name; ?>" class="button-secondary">
+													<span class="btn_icon">
+														<svg focusable="false" class="c-icon icon--arrow-button" viewBox="0 0 42 10" width="15px" height="15px">
+															<path fill-rule="evenodd" clip-rule="evenodd" d="M40.0829 5.5H0V4.5H40.0829L36.9364 1.35359L37.6436 0.646484L41.9971 5.00004L37.6436 9.35359L36.9364 8.64649L40.0829 5.5Z" fill="currentColor"></path>
+														</svg>
+													</span>
+													<span class="button_label"> <?php esc_html_e( $sub_cat_name, 'gant' ); ?></span>
+												</a>
+											</div>
+											
+										</nav>
+
+
+									<?php endif; ?>
+
+									<?php 
+									if ($terms = get_the_terms($post->ID, 'product_cat')) { ?>
+										<nav class="breadcrumb_pdt">
+											<?php $referer = wp_get_referer();
+											
+											if($referer){
+												$ancestor = wdo_get_product_top_level_category($product->ID);
+												$ancestor_term = get_term_by( 'id', $ancestor, 'product_cat' );
+												echo '<a class="button_underline" href="/">'.__( 'בית', 'gant' ).'</a><span class="delimiter" aria-hidden="true">></span><a class="button_underline" href="' . get_term_link($ancestor_term->slug, 'product_cat') . '">' . $ancestor_term->name . '</a><span class="delimiter" aria-hidden="true">></span>';
+												foreach ($terms as $term) {
+													$referer_slug = (strpos($referer, $term->slug));
+													
+													//if ($referer_slug == true) {
+													if(get_term_link($term) == $referer){
+														$category_name = $term->name;
+														//echo $category_name.'</br>';
+														echo '<a class="button_underline" href="' . get_term_link($term->slug, 'product_cat') . '">' . $category_name . '</a><span class="delimiter" aria-hidden="true">></span>';
+											
+														// echo $before . '<a href="' . get_term_link($term->slug, 'product_cat') . '">' . $category_name . '</a>' . $after . $delimiter;
+													}
+												} 
+											}
+											else{
+												echo '<a class="button_underline" href="/">'.__( 'בית', 'gant' ).'</a><span class="delimiter" aria-hidden="true">></span>';
+											}
+											?>
+											<?php echo get_the_title().'<span class="delimiter" aria-hidden="true">></span>'; ?>
+										</nav>
+										<?php
+									}
+									 ?>
 									<div class="product_detail_badge">
 										<?php if(has_term( '29', 'product_tag' )){ 
 											$term_data = get_term_by('id', '29', 'product_tag');
@@ -191,19 +300,31 @@ $group_values = get_field('dynamic_product_related');
 								<a class="section-title" href="#accordion-full-desc" title="<?php echo get_field('title_full_desc','option'); ?>"><?php echo get_field('title_full_desc','option'); ?></a>
 								<div id="accordion-full-desc" class="section-content">
 									<?php if(wp_is_mobile()):?>
+										<div class="product_detail_id">
+											<em>
+												<?php echo __('דגם מספר.','gant')?>
+												<?php echo $product->get_sku(); ?>
+											</em>
+										
+										</div>
 										<div class="excerpt_mobile">
-										<?php echo apply_filters( 'the_excerpt', $product->post->post_excerpt ); ?>
+											<?php echo apply_filters( 'the_excerpt', $product->post->post_excerpt ); ?>
 										</div>
 										
 									<?php endif;?>
 									<?php echo get_field('full_desc',$product->ID); ?>
-									<div class="product_detail_id">
-										<em>
-											<?php echo __('פריט מספר.','gant')?>
-											<?php echo $product->get_sku(); ?>
-										</em>
-									
-									</div>
+									<?php if(get_field('fabric_content',$product->ID)){ ?>
+										<div class="fabric_material">
+											<b><?php echo __('הרכב בד:','gant'); ?></b>
+											<?php echo get_field('fabric_content',$product->ID); ?>
+										</div>
+									<?php } ?>
+									<?php if(get_field('made_in',$product->ID)){ ?>
+										<div class="fabric_material">
+											<b><?php echo __('ארץ יצור:','gant'); ?></b>
+											<?php echo get_field('made_in',$product->ID); ?>
+										</div>
+									<?php } ?>
 									<?php if(has_term( '29', 'product_tag' )){ ?>
 										<div id="sustainable-choice">
 											<?php echo  get_field('full_desc_substainaibility','option');?>
@@ -229,7 +350,7 @@ $group_values = get_field('dynamic_product_related');
 														$care_icon = get_sub_field('care_icon');
 														$care_desc = get_sub_field('icon_desc');?>
 														<div class="icon_item tooltip">
-															<img src="<?php echo $care_icon; ?>" alt=""/>
+															<img src="<?php echo $care_icon; ?>" alt="<?php echo $care_desc; ?>"/>
 															<div class="tooltip_txt">
 																<?php echo $care_desc; ?>
 															</div>
@@ -263,7 +384,8 @@ $group_values = get_field('dynamic_product_related');
 									<h3><?php echo $categorie_title; ?></h3>
 								</div>
 							<?php endif; ?>
-							<?php if($radio_selected == 'select_pdts'):
+							<?php 
+							if($radio_selected == 'select_pdts'):
 								$featured_pdts =  $related_categories['select_products'];
 							else:
 								$selected_cat =  $related_categories['select_category'];
@@ -334,7 +456,7 @@ $group_values = get_field('dynamic_product_related');
 					<div class="slider_wrap slider_gallery">
                         <div class="product_zoom_thumbnail_item">
                             <a href="<?php echo get_permalink( $product->ID ).'#zoom_1';?>">
-                                <img class="thumbnail_img" src="<?php echo wp_get_attachment_url($product->get_image_id())?>"  alt="">
+                                <img class="thumbnail_img" src="<?php echo wp_get_attachment_url($product->get_image_id())?>"  alt="<?php echo $product->get_title(); ?>">
                             </a>            
                                     
                         </div> 
@@ -346,7 +468,7 @@ $group_values = get_field('dynamic_product_related');
 							if(strpos( $attach_url, 'thumb-fv-1') == false){?>
 								<div class="product_zoom_thumbnail_item">
 									<a href="<?php echo get_permalink( $product->ID ).'#zoom_'.$key_thumb;?>">
-										<img class="thumbnail_img" src="<?php echo  wp_get_attachment_url( $image_id ); ?>" alt="">
+										<img class="thumbnail_img" src="<?php echo  wp_get_attachment_url( $image_id ); ?>" alt="<?php echo $product->get_title(); ?>">
 									</a>
 								</div>
                         	<?php $key_thumb++;
@@ -362,14 +484,14 @@ $group_values = get_field('dynamic_product_related');
 			
 				<div class="modal-content">
                     <div class="product_zoom_image_wrapper" id="<?php echo 'zoom_1';?>" data-slide="1">
-                        <img src="<?php echo wp_get_attachment_url($product->get_image_id())?>" alt="">
+                        <img src="<?php echo wp_get_attachment_url($product->get_image_id())?>" alt="<?php echo $product->get_title(); ?>">
                     </div>
 					<?php $key_img = 2; foreach ($attachment_ids as $image_id) { 
 						$attach_url = wp_get_attachment_url( $image_id);
 						//dont display thumb image
 						if(strpos( $attach_url, 'thumb-fv-1') == false){?>
 							<div class="product_zoom_image_wrapper" id="<?php echo 'zoom_'.$key_img;?>" data-slide="<?php echo $key_img?>">
-								<img src="<?php echo wp_get_attachment_url($image_id)?>" alt="">
+								<img src="<?php echo wp_get_attachment_url($image_id)?>" alt="<?php echo $product->get_title(); ?>">
 							</div>
 						<?php $key_img++;
 						}

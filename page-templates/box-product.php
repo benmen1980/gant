@@ -30,7 +30,7 @@
             
         }
         ?>
-        <div class="box_product" id="<?php echo $product->get_id();?>">
+        <div class="box_product jj" id="<?php echo $product->get_id();?>">
             <a href="<?php echo $pdt_permalink; ?>" title="<?php echo $pdt_name;?>">
                 <?php if(!empty($sale_price)){ ?>
                     <div class="sale_tag">
@@ -38,18 +38,18 @@
                     </div>
                 <?php } ?>
                 <div class="thumbnail <?php echo !empty($first_image_url) ? 'has-hover' :'' ?>">
-                    <img src="<?php echo wp_get_attachment_url( $product->get_image_id() ); ?>" alt="">
+                    <img src="<?php echo wp_get_attachment_url( $product->get_image_id() ); ?>" alt="<?php echo $product->get_title(); ?>">
                 </div> 
-                <?//php if(!empty($first_image_url)): ?>
+                <?php if(!empty($first_image_url)): ?>
                     <div class="thumbnail-hover">
-                        <img src="<?php echo  $first_image_url; ?>" alt="">
+                        <img src="<?php echo  $first_image_url; ?>" alt="<?php echo $product->get_title(); ?>">
                     </div> 
-                <?//php endif; ?>
+                <?php endif; ?>
             </a>
-            <?php $group_values = get_field('dynamic_product_related',$product->get_id() ); ?>
+            <?php $group_values = get_post_meta( $product->get_id(), 'dynamic_product_related', true ); 
+            ?>
             <div class="product_details_wrapper">
-                <a  class="product_details <?php echo (!empty($group_values) && count($group_values) > 1)? 'has-hover': ''?>" href="<?php echo $pdt_permalink?>" title="<?php echo $pdt_name;?>">
-                    
+                <a class="product_details <?php echo (!empty($group_values) && count($group_values) > 1)? 'has-hover': ''?>" href="<?php echo $pdt_permalink?>" title="<?php echo $pdt_name;?>">
                     <?php if(has_term( '29', 'product_tag',$product->get_id() )){ 
                         $term_data = get_term_by('id', '29', 'product_tag');
                         ?>
@@ -57,9 +57,9 @@
                     <?php } ?>
                     <h3 class="name"><?php echo $pdt_name;?></h3>  
                     <div class="pdt_price_wrapper">
-                        <h4 class="regular_price <?php  echo (!empty($sale_price)) ? 'line-through' : '' ?>"><?php echo wc_price($regular_price); ?></h4>
+                        <p class="regular_price <?php  echo (!empty($sale_price)) ? 'line-through' : '' ?>"><?php echo wc_price($regular_price); ?></p>
                         <?php if(!empty($sale_price)): ?>
-                            <h4 class="sale_price"><?php echo wc_price($sale_price); ?></h4>
+                            <p class="sale_price"><?php echo wc_price($sale_price); ?></p>
                         <?php endif; ?>
                     </div> 
                 </a>
@@ -74,12 +74,15 @@
                             <?php  echo sprintf("+ %u",$shows); ?>
                         </a>
                         <?php endif; ?>
+
+                        <?php if(true): ?>
                         <div class="colors_wrapper">
                             <?php 
                             foreach($group_values as $product_id){
                                 $current_product = wc_get_product($product_id);
                                 $slug = get_permalink( $product_id );
                                 $color = get_field('grouped_color',$product_id);
+                                $color = get_post_meta( $product_id, 'grouped_color', true );
                                 $id = $current_product->get_id();
                                 $current_id = $product->get_id();
                                 $sku = $current_product->get_sku();
@@ -98,6 +101,7 @@
                                 </a>
                             <?php } ?>
                         </div>
+                        <?php endif; ?>
                     </div>
                 <?php } ?>
             </div>

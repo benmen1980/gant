@@ -1,4 +1,4 @@
-<section class="banner_2 section_wrap">
+<section class="banner_2 section_wrap banner_register-club">
     <?php if(get_sub_field('banner_register_club')):while(the_repeater_field('banner_register_club')):  
         $img_text_side = get_sub_field('img_txt_position');
         $title = get_sub_field('title');
@@ -39,7 +39,7 @@
                     <dl>
                     <?php while(the_repeater_field('club_advantage')): ?>
                         <div class="advantage_item">
-                            <dt><img src="<?php echo get_template_directory_uri();?>/dist/images/v.svg" aria-hidden="false" alt=""></dt>
+                            <dt><img src="<?php echo get_template_directory_uri();?>/dist/images/v.svg" aria-hidden="false" alt="<?php echo get_sub_field('advantage'); ?>"></dt>
                             <dd><?php echo get_sub_field('advantage'); ?></dd>
                         </div>
                     <?php endwhile;?>
@@ -57,7 +57,7 @@
                     $login_link_url = $login_page['url'];
                 ?>
                     <div class="btns_register_wrapper">
-                        <a target="<?php echo esc_attr( $register_link_target ); ?>" style="background-color:<?php echo $bg_color_register; ?>; color:<?php echo $bg_color_register; ?>; <?php echo (!empty($border_color_register)) ?  'border: 1px solid '.$border_color_register : 'border:0'?>" href="<?php echo $register_link_url; ?>" title="<?php echo $register_link_title; ?>" class="button-secondary register_modal_btn">
+                        <a target="<?php echo esc_attr( $register_link_target ); ?>" style="background-color:<?php echo $bg_color_register; ?>; color:<?php echo (empty($border_color_register)) ? $bg_color_register : $btn_text_color_register; ?>; <?php echo (!empty($border_color_register)) ?  'border: 1px solid '.$border_color_register : 'border:0'?>" href="<?php echo $register_link_url; ?>" title="<?php echo $register_link_title; ?>" class="<?php echo (empty($border_color_register)) ? 'button-secondary' : 'button-primary';?> register_modal_btn">
                             <span class="button_label" style="color:<?php echo $btn_text_color_register; ?>;"><?php echo $register_link_title; ?></span>
                             <?php if($btn_type == "arrow_btn"){?>
                                 <span class="btn_icon" style="color:<?php echo $btn_text_color_register; ?>;">
@@ -69,7 +69,7 @@
                             ?>
                         </a>
 
-                        <a target="<?php echo esc_attr( $login_link_target ); ?>" style="background-color:<?php echo $bg_color_login; ?>; color:<?php echo $bg_color_login; ?>; <?php echo (!empty($border_color_login)) ?  'border: 1px solid '.$border_color_login : 'border:0'?>" href="<?php echo $login_link_url; ?>" title="<?php echo $login_link_title; ?>" class="button-secondary">
+                        <a target="<?php echo esc_attr( $login_link_target ); ?>" style="background-color:<?php echo $bg_color_login; ?>; color:<?php echo (!empty($border_color_login)) ? $btn_text_color_login : $bg_color_login; ?>; " href="<?php echo $login_link_url; ?>" title="<?php echo $login_link_title; ?>" class="<?php echo (empty($border_color_login)) ? 'button-secondary' : 'button-primary';?>">
                             <span class="button_label" style="color:<?php echo $btn_text_color_login; ?>;"><?php echo $login_link_title; ?></span>
                             <?php if($btn_type == "arrow_btn"){?>
                                 <span class="btn_icon" style="color:<?php echo $btn_text_color_login; ?>;">

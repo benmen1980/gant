@@ -25,7 +25,43 @@ defined( 'ABSPATH' ) || exit;
 	<!-- <h2><?//php esc_html_e( 'Cart totals', 'woocommerce' ); ?></h2> -->
 
 	<table cellspacing="0" class="shop_table shop_table_responsive">
+		<tr>
+			<th class="product-name"><?php esc_html_e( 'Product', 'woocommerce' ); ?></th>
+			<th class="product-total"><?php esc_html_e( 'Subtotal', 'woocommerce' ); ?></th>
+		</tr>
+		<?php 
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 
+			if ( $_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters( 'woocommerce_checkout_cart_item_visible', true, $cart_item, $cart_item_key ) ) {
+				?>
+				<tr class="<?php echo esc_attr( apply_filters( 'woocommerce_cart_item_class', 'cart_item', $cart_item, $cart_item_key ) ); ?>">
+					<td class="product-name">
+						<?php echo apply_filters( 'woocommerce_cart_item_name', $_product->get_name(), $cart_item, $cart_item_key ) . '&nbsp;'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo apply_filters( 'woocommerce_checkout_cart_item_quantity', ' <strong class="product-quantity">' . sprintf( '&times;&nbsp;%s', $cart_item['quantity'] ) . '</strong>', $cart_item, $cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo wc_get_formatted_cart_item_data( $cart_item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</td>
+					<td class="product-total">
+						<?php 
+						$pdt_regular_price = $_product->get_regular_price();
+						//echo $pdt_regular_price;
+						if($cart_item['data']->get_price() != $pdt_regular_price){
+							$price = '<del>' . wc_price($pdt_regular_price * $cart_item['quantity']). '</del> <ins>' . apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $_product, $cart_item['quantity'] ), $cart_item, $cart_item_key ) . '</ins>'; ?>
+							<div data-sku="<?php echo $_product->get_sku(); ?>" class="product-sale-desc">
+									<?//php esc_attr_e( 'מבצע:', 'gant' ); ?>
+								</div>
+							<?php 
+						}
+						else
+							$price = apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $_product, $cart_item['quantity'] ), $cart_item, $cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
+						echo $price; ?>
+					</td>
+				</tr>
+				<?php
+			}
+		}
+
+		 ?>
 		<tr class="cart-subtotal">
 			<th><?php esc_html_e( 'Subtotal', 'woocommerce' ); ?></th>
 			<td data-title="<?php esc_attr_e( 'Subtotal', 'woocommerce' ); ?>"><?php wc_cart_totals_subtotal_html(); ?></td>
@@ -38,7 +74,7 @@ defined( 'ABSPATH' ) || exit;
 			</tr>
 		<?php endforeach; ?>
 		<!-- dana asker to hide shiiping method on cart page so add false to condition -->
-		<?php if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() && false) : ?>
+		<?php if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping()) : ?>
 
 			<?php do_action( 'woocommerce_cart_totals_before_shipping' ); ?>
 
@@ -56,9 +92,17 @@ defined( 'ABSPATH' ) || exit;
 		<?php endif; ?>
 
 		<?php foreach ( WC()->cart->get_fees() as $fee ) : ?>
-			<tr class="fee">
-				<th><?php echo esc_html( $fee->name ); ?></th>
-				<td data-title="<?php echo esc_attr( $fee->name ); ?>"><?php wc_cart_totals_fee_html( $fee ); ?></td>
+			<tr class="fee" data-fee="<?php echo $fee->name;?>">
+				<th><?php echo sprintf( esc_html__( ' %s', 'woocommerce' ), $fee->name ) ?></th>
+				<td data-title="<?php echo esc_attr( $fee->name ); ?>">
+					<?php wc_cart_totals_fee_html( $fee ); ?>
+					<?//php if(isset( $_SESSION['coupon_code'])): ?>
+					<?php if(isset($_SESSION['coupon_birthday_code']) && isset($_SESSION['coupon_code'])): ?>
+						<button class="remove_coupon" data-coupon-code = "<?php echo $_SESSION['coupon_birthday_code']; ?>" data-coupon="<?php echo $fee->name; ?>"><?php  echo __( '[הסר קופונים]', 'gant' )  ?></button>
+					<?php else: ?>
+						<button class="remove_coupon" data-coupon-code = "<?php echo $_SESSION['coupon_code']; ?>" data-coupon="<?php echo $fee->name; ?>"><?php  echo __( '[Remove]', 'woocommerce' )  ?></button>
+					<?php endif; ?>
+					</td>
 			</tr>
 		<?php endforeach; ?>
 
@@ -94,17 +138,17 @@ defined( 'ABSPATH' ) || exit;
 
 		<?php do_action( 'woocommerce_cart_totals_before_order_total' ); ?>
 
-		<?php if ( wc_coupons_enabled() ) { ?>
-			
-			<tr class="display_coupon_btn_wrapper">
-				<th>
-					<button type="button" class="button_underline display_coupon_btn">
-					<?php esc_html_e( 'הכנס קוד הנחה', 'woocommerce' ); ?></th>
-					</button>
-				<th>
-				<td></td>
-			</tr>
-			
+		<?//php if ( wc_coupons_enabled() ) { ?>
+			<?php if(!isset($_SESSION['coupon_code'])): ?>
+				<tr class="display_coupon_btn_wrapper">
+					<th>
+						<button type="button" class="button_underline display_coupon_btn">
+						<?php esc_html_e( 'הכנס קוד קופון', 'woocommerce' ); ?></th>
+						</button>
+					<th>
+					<td></td>
+				</tr>
+			<?php endif; ?>
 				
 				
 			<tr class="coupon">
@@ -125,8 +169,17 @@ defined( 'ABSPATH' ) || exit;
 				
 				
 		
-		<?php } ?>
+		<?//php } ?>
+		<?php  if( get_user_meta( get_current_user_id(), 'birthday_coupon', true ) != '' && !(isset($_SESSION['coupon_birthday_code']))) : ?>
+			<tr  class="birthday_coupon_wrapper">
+			<th >
+				<input type="checkbox" id="birthday_coupon" name="birthday_coupon" data-coupon="<?php echo esc_attr(get_user_meta( get_current_user_id(), 'birthday_coupon', true )); ?>">
+				<label for="birthday_coupon"><?php esc_html_e( 'הפעלת הנחה יום הולדת', 'woocommerce' ); ?></label>
+			</th>
+			<td></td>
+			</tr>
 
+		<?php endif;?>
 		<tr class="order-total">
 			<th><?php esc_html_e( 'Total', 'woocommerce' ); ?></th>
 			<td data-title="<?php esc_attr_e( 'Total', 'woocommerce' ); ?>"><?php wc_cart_totals_order_total_html(); ?></td>
