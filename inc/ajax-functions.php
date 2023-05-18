@@ -1378,7 +1378,6 @@ function apply_coupon_programatically() {
             $_SESSION['coupon_code'] = $coupon_code;
             $msg = __( 'Coupon code applied successfully.', 'woocommerce' );
             wc_add_notice( $msg );
-
             $product_status = 'publish';
             $passed_validation = true;
     
