@@ -1374,10 +1374,25 @@ function apply_coupon_programatically() {
         $result =  CardPOS::instance()->getCoupons($coupon_code );
         $error_code = $result["ErrorCode"];
         if ($error_code == 0) {
-            //get coupon value and set it in session to add it in fee
+            // //get coupon value and set it in session to add it in fee
             $_SESSION['coupon_code'] = $coupon_code;
             $msg = __( 'Coupon code applied successfully.', 'woocommerce' );
             wc_add_notice( $msg );
+
+            $product_status = 'publish';
+            $passed_validation = true;
+    
+            update_bag_after_sync($passed_validation,$product_status,$result);
+            $i = 0;
+            if ( WC()->cart->get_cart_contents_count() > 0 ) {
+                foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+                    if($i == 0){
+                        $last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+                        $i ++;
+                    }
+                }
+                echo wp_send_json($last_update_transaction);
+            }
         
         }
         //coupon code not valid or error
@@ -1422,8 +1437,8 @@ function apply_coupon_birthday_programatically() {
         //get coupon value and set it in session to add it in fee
         $_SESSION['coupon_birthday_code'] = $coupon_code;
         $msg = __( 'Coupon code applied successfully.', 'woocommerce' );
-        wc_add_notice( $msg );
-      
+        wc_add_notice( $msg ); 
+
     }
     //coupon code not valid or error
     else {
@@ -1489,6 +1504,22 @@ function remove_coupon_programatically() {
                     }
                 }
                 unset($_SESSION['coupon_code']);
+
+                
+                $product_status = 'publish';
+                $passed_validation = true;
+            
+                update_bag_after_sync($passed_validation,$product_status,$result);
+                $i = 0;
+                if ( WC()->cart->get_cart_contents_count() > 0 ) {
+                    foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+                        if($i == 0){
+                            $last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+                            $i ++;
+                        }
+                    }
+                    echo wp_send_json($last_update_transaction);
+                }
             }
             else{
         

@@ -91,20 +91,21 @@ defined( 'ABSPATH' ) || exit;
 
 		<?php endif; ?>
 
-		<?php foreach ( WC()->cart->get_fees() as $fee ) : ?>
+		<?//php foreach ( WC()->cart->get_fees() as $fee ) : ?>
 			<tr class="fee" data-fee="<?php echo $fee->name;?>">
-				<th><?php echo sprintf( esc_html__( ' %s', 'woocommerce' ), $fee->name ) ?></th>
-				<td data-title="<?php echo esc_attr( $fee->name ); ?>">
-					<?php wc_cart_totals_fee_html( $fee ); ?>
+				<th><?php echo $_SESSION['coupon_code']; ?></th>
+				<td data-title="<?php echo $_SESSION['coupon_code']; ?>">
+					<?//php wc_cart_totals_fee_html( $fee ); ?>
 					<?//php if(isset( $_SESSION['coupon_code'])): ?>
+						
 					<?php if(isset($_SESSION['coupon_birthday_code']) && isset($_SESSION['coupon_code'])): ?>
 						<button class="remove_coupon" data-coupon-code = "<?php echo $_SESSION['coupon_birthday_code']; ?>" data-coupon="<?php echo $fee->name; ?>"><?php  echo __( '[הסר קופונים]', 'gant' )  ?></button>
-					<?php else: ?>
+					<?php elseif (isset($_SESSION['coupon_code'])): ?>
 						<button class="remove_coupon" data-coupon-code = "<?php echo $_SESSION['coupon_code']; ?>" data-coupon="<?php echo $fee->name; ?>"><?php  echo __( '[Remove]', 'woocommerce' )  ?></button>
 					<?php endif; ?>
-					</td>
+				</td>
 			</tr>
-		<?php endforeach; ?>
+		<?//php endforeach; ?>
 
 		<?php
 		if ( wc_tax_enabled() && ! WC()->cart->display_prices_including_tax() ) {

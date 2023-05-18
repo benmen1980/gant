@@ -1651,8 +1651,9 @@ function display_pickup_store_on_order_item_totals( $total_rows, $order, $tax_di
 
 //Add  Custom Checkout Fields
 
-// add checkbox field
-add_action( 'woocommerce_after_checkout_billing_form', 'gift_wrap_checkbox' );
+// add checkbox field in checkout gift_wrap and greeting_cart
+//gatn ask to remove these fields
+//add_action( 'woocommerce_after_checkout_billing_form', 'gift_wrap_checkbox' );
 function gift_wrap_checkbox( $checkout ) {
 
 	woocommerce_form_field( 'gift_wrap', array(
@@ -1676,7 +1677,7 @@ function gift_wrap_checkbox( $checkout ) {
 }
 
 // save fields to order meta
-add_action( 'woocommerce_checkout_update_order_meta', 'save_gift_wrap' );
+//add_action( 'woocommerce_checkout_update_order_meta', 'save_gift_wrap' );
 function save_gift_wrap( $order_id ){
 	if( !empty( $_POST['gift_wrap'] ) && $_POST['gift_wrap'] == 1 )
 		update_post_meta( $order_id, 'gift_wrap', 1 );
@@ -1685,7 +1686,7 @@ function save_gift_wrap( $order_id ){
 }
 
 
-add_action( 'woocommerce_admin_order_data_after_billing_address', 'bbloomer_show_new_checkout_field_order', 10, 1 );
+//add_action( 'woocommerce_admin_order_data_after_billing_address', 'bbloomer_show_new_checkout_field_order', 10, 1 );
    
 function bbloomer_show_new_checkout_field_order( $order ) {    
    $order_id = $order->get_id();
@@ -2676,14 +2677,7 @@ add_filter('woocommerce_order_item_thumbnail_size', function($size) {
     return $size;
 });
 
-// add_filter( 'woocommerce_email_classes', 'custom_add_email_class' );
 
-// function custom_add_email_class( $email_classes ) {
-//     // Define a new email class for your custom email
-//     require_once( 'path/to/your/class/class-custom-email.php' );
-//     $email_classes['WC_Custom_Email'] = new WC_Custom_Email();
-//     return $email_classes;
-// }
 
 add_action( 'woocommerce_email_actions', 'custom_trigger_custom_email', 10, 1 );
 
@@ -2693,14 +2687,9 @@ function custom_trigger_custom_email( $actions ) {
     return $actions;
 }
 
-
-//change title "שלם עבור הזמנה"
-add_filter( 'the_title', 'change_pay_for_order_title' );
-function change_pay_for_order_title( $title ) {
-    if ( is_wc_endpoint_url( 'order-pay' ) ) {
-        return __('תשלום עבור הזמנה', 'woocommerce');
-    }
-    return $title;
+add_filter( 'woocommerce_endpoint_order-pay_title', 'change_checkout_order_pay_title' );
+function change_checkout_order_pay_title( $title ) {
+    return __( "תשלום עבור הזמנה", "gant" );
 }
 
 add_filter( 'registration_errors', 'redirect_to_login_on_error', 10, 3 );
@@ -2715,22 +2704,15 @@ function redirect_to_login_on_error( $errors, $sanitized_user_login, $user_email
 }
 
 
-function load_custom_fonts($init) {
 
-    $stylesheet_url = '/wp-content/theme/gant/sass/abstracts/variables/_fonts.scss';
-
-    if(empty($init['content_css'])) {
-        $init['content_css'] = $stylesheet_url;
-    } else {
-        $init['content_css'] = $init['content_css'].','.$stylesheet_url;
+add_filter('woocommerce_add_error', 'change_email_error');
+function change_email_error( $message ) {
+    if ($message == 'שם משתמש או אימייל לא תקפים.' ) {
+        //$message = 'new message test';
+        $message ==  __('שם משתמש או אימייל לא תקפים.', 'woocommerce');
+        $message.= '<a href="/register" class="need_signin_error">' . __( ' עליך להרשם ' ) . '</a>';
+       
     }
-
-    $font_formats = isset($init['font_formats']) ? $init['font_formats'] : 'Andale Mono=andale mono,times;Arial=arial,helvetica,sans-serif;Arial Black=arial black,avant garde;Book Antiqua=book antiqua,palatino;Comic Sans MS=comic sans ms,sans-serif;Courier New=courier new,courier;Georgia=georgia,palatino;Helvetica=helvetica;Impact=impact,chicago;Symbol=symbol;Tahoma=tahoma,arial,helvetica,sans-serif;Terminal=terminal,monaco;Times New Roman=times new roman,times;Trebuchet MS=trebuchet ms,geneva;Verdana=verdana,geneva;Webdings=webdings;Wingdings=wingdings,zapf dingbats';
-
-    $custom_fonts = ';'.'Be All Center=BeAllCenter;Be All Horizontal=BeAllHorizontal;Be All Lower=BeAllLower;Be All=BeAll;Be All Upper=BeAllUpper';
-
-    $init['font_formats'] = $font_formats . $custom_fonts;
-
-    return $init;
+    return $message;
 }
-add_filter('tiny_mce_before_init', 'load_custom_fonts');
+

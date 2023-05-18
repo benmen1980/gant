@@ -494,29 +494,6 @@ function validId($id){
 
 
 
-//add_action( 'pre_get_posts', 'hide_products_without_images_on_all_queries',9999999999999 );
-function hide_products_without_images_on_all_queries( $q ){
-    if( ! is_admin() && $q->is_main_query() ){
-        $meta_query = $q->get( 'meta_query' );
-        $meta_query = array(
-            array(
-                'key'     => '_thumbnail_id',
-                'compare' => 'EXISTS'
-            )
-        );
-        $q->set( 'meta_query', $meta_query );
-        
-        $tax_query = $q->get( 'tax_query' );
-        $tax_query = array(
-            array(
-                'taxonomy' => 'product_visibility',
-                'field'    => 'name',
-                'terms'    => 'exclude-from-catalog',
-                'operator' => 'NOT IN',
-            )
-        );
-        $q->set( 'tax_query', $tax_query );
-    }
-}
+
 
 

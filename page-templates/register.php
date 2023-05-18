@@ -95,7 +95,8 @@ get_header();
                     <span class="woocommerce-input-wrapper checkbox_wrapper">
                         <input id="want_club_registration" type="checkbox" name="want_club_registration"   <?php  checked( get_user_meta( $user->ID, 'want_club_registration', true ), '1' ); ?> >	
                         <label for="want_club_registration">
-                        <?php esc_html_e( 'הצטרף לחבר מועדון', 'gant' );?>
+                            <?php esc_html_e( 'הצטרף לחבר מועדון (לרגל ההשקה, הצטרפות למועדון היא בחינם) ', 'gant' );?>
+                            <?php ?>
                         </label>
                     </span>
                 </div>

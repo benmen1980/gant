@@ -123,7 +123,7 @@ $radio_selected = $related_product['select_cat_or_pdt'];
                 <div class="r_side">
                     <?php if(!empty($term)): ?>
                         <nav class="breadcrumb_pdt">
-                            <a class="button_underline" href="/"><?php echo __( 'בית', 'gant' ); ?></a>
+                            <a class="button_underline" href="/"><?php echo __( 'ראשי', 'gant' ); ?></a>
                             <span class="delimiter" aria-hidden="true">></span>
                             <?php if($parent_term_id): ?>
                                 <a class="button_underline" <?php echo $parent_term_name; ?> href="<?php  echo  $parent_term_slug; ?>">

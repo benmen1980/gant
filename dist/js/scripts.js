@@ -860,7 +860,7 @@ jQuery(document).on("ready", function(){
        
     }
 
-    if (window.location.href.indexOf("branch") > -1) {
+    if (window.location.href.indexOf("branch") > -1 || $('body.page-template-register').length > 0) {
         $("#register_modal").toggleClass('is_modal_showing');
         $('body').toggleClass('is_modal_open');
     }

@@ -76,7 +76,7 @@ $categories = get_the_terms( get_the_ID(), 'product_cat' );
 										if($referer){
 											$ancestor = wdo_get_product_top_level_category($product->ID);
 											$ancestor_term = get_term_by( 'id', $ancestor, 'product_cat' );
-											echo '<a class="button_underline" href="/">'.__( 'בית', 'gant' ).'</a><span class="delimiter" aria-hidden="true">></span><a class="button_underline" href="' . get_term_link($ancestor_term->slug, 'product_cat') . '">' . $ancestor_term->name . '</a><span class="delimiter" aria-hidden="true">></span>';
+											echo '<a class="button_underline" href="/">'.__( 'ראשי', 'gant' ).'</a><span class="delimiter" aria-hidden="true">></span><a class="button_underline" href="' . get_term_link($ancestor_term->slug, 'product_cat') . '">' . $ancestor_term->name . '</a><span class="delimiter" aria-hidden="true">></span>';
 											foreach ($terms as $term) {
 												$referer_slug = (strpos($referer, $term->slug));
 												
@@ -91,7 +91,7 @@ $categories = get_the_terms( get_the_ID(), 'product_cat' );
 											} 
 										}
 										else{
-											echo '<a class="button_underline" href="/">'.__( 'בית', 'gant' ).'</a><span class="delimiter" aria-hidden="true">></span>';
+											echo '<a class="button_underline" href="/">'.__( 'ראשי', 'gant' ).'</a><span class="delimiter" aria-hidden="true">></span>';
 										}
 										?>
 										<?php echo get_the_title().'<span class="delimiter" aria-hidden="true">></span>'; ?>
@@ -186,7 +186,7 @@ $categories = get_the_terms( get_the_ID(), 'product_cat' );
 											if($referer){
 												$ancestor = wdo_get_product_top_level_category($product->ID);
 												$ancestor_term = get_term_by( 'id', $ancestor, 'product_cat' );
-												echo '<a class="button_underline" href="/">'.__( 'בית', 'gant' ).'</a><span class="delimiter" aria-hidden="true">></span><a class="button_underline" href="' . get_term_link($ancestor_term->slug, 'product_cat') . '">' . $ancestor_term->name . '</a><span class="delimiter" aria-hidden="true">></span>';
+												echo '<a class="button_underline" href="/">'.__( 'ראשי', 'gant' ).'</a><span class="delimiter" aria-hidden="true">></span><a class="button_underline" href="' . get_term_link($ancestor_term->slug, 'product_cat') . '">' . $ancestor_term->name . '</a><span class="delimiter" aria-hidden="true">></span>';
 												foreach ($terms as $term) {
 													$referer_slug = (strpos($referer, $term->slug));
 													
@@ -201,7 +201,7 @@ $categories = get_the_terms( get_the_ID(), 'product_cat' );
 												} 
 											}
 											else{
-												echo '<a class="button_underline" href="/">'.__( 'בית', 'gant' ).'</a><span class="delimiter" aria-hidden="true">></span>';
+												echo '<a class="button_underline" href="/">'.__( 'ראשי', 'gant' ).'</a><span class="delimiter" aria-hidden="true">></span>';
 											}
 											?>
 											<?php echo get_the_title().'<span class="delimiter" aria-hidden="true">></span>'; ?>

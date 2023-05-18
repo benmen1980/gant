@@ -6365,48 +6365,73 @@ body.gallery_open {
     padding: 20px 10px 0;
   }
 }
-.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tr.cart_item, .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tr.cart-subtotal {
+.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody tr.cart_item, .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody tr.cart-subtotal {
   -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1) inset;
           box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1) inset;
 }
-.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tr.cart_item td ins, .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tr.cart-subtotal td ins {
+.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody tr.cart_item td ins, .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody tr.cart-subtotal td ins {
   background-color: transparent;
   color: red;
 }
-.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table td {
+@media screen and (max-width: 768px) {
+  .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody tr.cart_item, .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody tr.cart-subtotal {
+    display: table-row;
+  }
+}
+@media screen and (max-width: 768px) {
+  .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody tr:nth-child(1) {
+    display: table-row;
+  }
+}
+@media screen and (max-width: 768px) {
+  .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody th {
+    display: table-cell;
+  }
+}
+.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody td {
   border: 0;
   background-color: transparent;
 }
 @media screen and (max-width: 1023px) {
-  .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table td {
+  .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody td {
     padding: 0px 0px;
   }
 }
-.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table td ul#shipping_method li input {
+@media screen and (max-width: 768px) {
+  .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody td {
+    display: table-cell;
+    text-align: right !important;
+    padding: 9px 12px;
+    font-size: 16px;
+  }
+  .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody td:before {
+    content: none;
+  }
+}
+.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody td ul#shipping_method li input {
   vertical-align: middle;
   margin-top: 0;
 }
-.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table td ul#shipping_method select#storelist {
+.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody td ul#shipping_method select#storelist {
   margin: 20px 0;
   padding: 10px;
   display: block;
 }
-.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table th {
+.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody th {
   border: 0;
-  width: 60%;
   vertical-align: top;
 }
-.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table .order-total {
+.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody .order-total {
   font-size: 40px;
   font-weight: 900;
 }
 @media screen and (max-width: 1023px) {
-  .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table .order-total {
+  .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody .order-total {
     font-size: 30px;
     padding-top: 10px;
   }
 }
-.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table .order-total th {
+.woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals table.shop_table tbody .order-total th {
   font-weight: 900;
 }
 .woocommerce-cart .cart_content_wrap .cart_summary .cart_summary_content .cart_totals .wc-proceed-to-checkout {
@@ -6437,49 +6462,51 @@ body.gallery_open {
   }
 }
 
-.woocommerce-checkout-review-order .display_coupon_btn_wrapper th, .woocommerce-checkout-review-order .display_coupon_btn_wrapper td, .cart_summary_content .display_coupon_btn_wrapper th, .cart_summary_content .display_coupon_btn_wrapper td {
+.woocommerce-checkout-review-order .display_coupon_btn_wrapper th, .woocommerce-checkout-review-order .display_coupon_btn_wrapper td, .woocommerce-page .cart_summary_content table.shop_table_responsive .display_coupon_btn_wrapper th, .woocommerce-page .cart_summary_content table.shop_table_responsive .display_coupon_btn_wrapper td {
   display: none;
 }
-.woocommerce-checkout-review-order .display_coupon_btn_wrapper th:first-child, .cart_summary_content .display_coupon_btn_wrapper th:first-child {
+.woocommerce-checkout-review-order .display_coupon_btn_wrapper th:first-child, .woocommerce-page .cart_summary_content table.shop_table_responsive .display_coupon_btn_wrapper th:first-child {
   display: block;
   padding: 0 12px;
   width: 100%;
 }
-.woocommerce-checkout-review-order .birthday_coupon_wrapper, .cart_summary_content .birthday_coupon_wrapper {
+.woocommerce-checkout-review-order .birthday_coupon_wrapper, .woocommerce-page .cart_summary_content table.shop_table_responsive .birthday_coupon_wrapper {
   margin: 20px 0 0;
   display: block;
 }
-.woocommerce-checkout-review-order .birthday_coupon_wrapper th, .woocommerce-checkout-review-order .birthday_coupon_wrapper td, .cart_summary_content .birthday_coupon_wrapper th, .cart_summary_content .birthday_coupon_wrapper td {
+.woocommerce-checkout-review-order .birthday_coupon_wrapper th, .woocommerce-checkout-review-order .birthday_coupon_wrapper td, .woocommerce-page .cart_summary_content table.shop_table_responsive .birthday_coupon_wrapper th, .woocommerce-page .cart_summary_content table.shop_table_responsive .birthday_coupon_wrapper td {
   border-top: 0 !important;
 }
-.woocommerce-checkout-review-order .coupon, .cart_summary_content .coupon {
+.woocommerce-checkout-review-order .coupon, .woocommerce-page .cart_summary_content table.shop_table_responsive .coupon {
   display: none;
+  width: 60%;
 }
 @media screen and (max-width: 1023px) {
-  .woocommerce-checkout-review-order .coupon, .cart_summary_content .coupon {
+  .woocommerce-checkout-review-order .coupon, .woocommerce-page .cart_summary_content table.shop_table_responsive .coupon {
     -webkit-box-align: center;
         -ms-flex-align: center;
             align-items: center;
+    width: auto;
   }
 }
-.woocommerce-checkout-review-order .coupon th, .cart_summary_content .coupon th {
+.woocommerce-checkout-review-order .coupon th, .woocommerce-page .cart_summary_content table.shop_table_responsive .coupon th {
   width: 70%;
   display: block;
   border: 0 !important;
 }
 @media screen and (max-width: 1023px) {
-  .woocommerce-checkout-review-order .coupon th, .cart_summary_content .coupon th {
+  .woocommerce-checkout-review-order .coupon th, .woocommerce-page .cart_summary_content table.shop_table_responsive .coupon th {
     padding: 10px 0 0 10px;
     width: 50%;
   }
 }
-.woocommerce-checkout-review-order .coupon td, .cart_summary_content .coupon td {
+.woocommerce-checkout-review-order .coupon td, .woocommerce-page .cart_summary_content table.shop_table_responsive .coupon td {
   border: 0 !important;
 }
-.woocommerce-checkout-review-order .coupon td:before, .cart_summary_content .coupon td:before {
+.woocommerce-checkout-review-order .coupon td:before, .woocommerce-page .cart_summary_content table.shop_table_responsive .coupon td:before {
   content: none;
 }
-.woocommerce-checkout-review-order .coupon input#coupon_code, .cart_summary_content .coupon input#coupon_code {
+.woocommerce-checkout-review-order .coupon input#coupon_code, .woocommerce-page .cart_summary_content table.shop_table_responsive .coupon input#coupon_code {
   height: 56px;
   -webkit-box-shadow: 0 0 0 1px #cac3bd inset;
           box-shadow: 0 0 0 1px #cac3bd inset;
@@ -6493,15 +6520,15 @@ body.gallery_open {
   padding: 14px 40px 14px 20px;
 }
 @media screen and (max-width: 1023px) {
-  .woocommerce-checkout-review-order .coupon input#coupon_code, .cart_summary_content .coupon input#coupon_code {
+  .woocommerce-checkout-review-order .coupon input#coupon_code, .woocommerce-page .cart_summary_content table.shop_table_responsive .coupon input#coupon_code {
     height: 45px;
   }
 }
-.woocommerce-checkout-review-order .coupon input#coupon_code:hover, .cart_summary_content .coupon input#coupon_code:hover {
+.woocommerce-checkout-review-order .coupon input#coupon_code:hover, .woocommerce-page .cart_summary_content table.shop_table_responsive .coupon input#coupon_code:hover {
   -webkit-box-shadow: 0 0 0 2px #000 inset;
           box-shadow: 0 0 0 2px #000 inset;
 }
-.woocommerce-checkout-review-order .coupon .error_msg_coupon_empty, .cart_summary_content .coupon .error_msg_coupon_empty {
+.woocommerce-checkout-review-order .coupon .error_msg_coupon_empty, .woocommerce-page .cart_summary_content table.shop_table_responsive .coupon .error_msg_coupon_empty {
   color: #ce2325;
   font-style: italic;
   font-size: 16px;
@@ -7758,12 +7785,12 @@ table.shop_table tr.fee .remove_coupon {
   }
 }
 .section_banner_register .hero_type_2 .hero_content h3 {
-  font-size: 45px;
+  font-size: 26px;
   line-height: 1.3;
 }
 @media screen and (max-width: 1366px) {
   .section_banner_register .hero_type_2 .hero_content h3 {
-    font-size: 34px;
+    font-size: 20px;
   }
 }
 @media screen and (max-width: 1023px) {
@@ -9001,9 +9028,10 @@ table.shop_table tr.fee .remove_coupon {
 }
 @media screen and (max-width: 1023px) {
   .logged-in.woocommerce-edit-account .post-11 .entry-content .woocommerce .woocommerce-MyAccount-content .step3-form form.edit-account .form-row label {
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.4;
     padding-left: 5px;
+    margin-left: 0;
   }
 }
 .logged-in.woocommerce-edit-account .post-11 .entry-content .woocommerce .woocommerce-MyAccount-content .step3-form form.edit-account .form-row > input, .logged-in.woocommerce-edit-account .post-11 .entry-content .woocommerce .woocommerce-MyAccount-content .step3-form form.edit-account .form-row .password-input {
@@ -9030,6 +9058,11 @@ table.shop_table tr.fee .remove_coupon {
   position: absolute;
   bottom: 0;
   right: 0;
+}
+@media screen and (max-width: 1023px) {
+  .logged-in.woocommerce-edit-account .post-11 .entry-content .woocommerce .woocommerce-MyAccount-content .step3-form form.edit-account .form-row .msg_under_input {
+    font-size: 11px;
+  }
 }
 .logged-in.woocommerce-edit-account .post-11 .entry-content .woocommerce .woocommerce-MyAccount-content .step3-form form.edit-account .form-row:first-child {
   padding-top: 5px;
@@ -9399,7 +9432,6 @@ table.shop_table tr.fee .remove_coupon {
 .benefits_section .benefit_item h3 {
   margin-bottom: 10px;
   line-height: 1;
-  margin-top: 130px;
   font-size: 45px;
   font-weight: 900;
 }
@@ -9448,6 +9480,7 @@ table.shop_table tr.fee .remove_coupon {
   border-bottom: 1px solid #ccc;
   border-right: 0;
   width: 33.333%;
+  aspect-ratio: 1.8/1;
 }
 @media screen and (max-width: 1023px) {
   .page-template-register .benefits_section .benefit_item {
@@ -9834,6 +9867,7 @@ p.row_radio_wrapper .radio_wrapper label::before {
   border-top: none;
   border-right: none;
   position: relative;
+  aspect-ratio: 1.8/1;
 }
 .overview_page .benefits_section .benefit_item figure {
   position: absolute;

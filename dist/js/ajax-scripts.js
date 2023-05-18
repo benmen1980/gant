@@ -994,16 +994,27 @@ jQuery(document).ready(function($){
             // },
             success: function (response) {
                 console.log('success');
-                console.log(response);
+                //console.log(response);
                 //$('.fee').html( response );
-                if ($("body").hasClass("woocommerce-cart"))
-                    $('body').trigger('wc_update_cart');
-                if ($("body").hasClass("woocommerce-checkout"))
-                $('body').trigger('update_checkout');
+                if ($("body").hasClass("woocommerce-cart")){
+                    //$('body').trigger('wc_update_cart');
+                    //window.location.reload();
+                }
+                    
+                if ($("body").hasClass("woocommerce-checkout")){
+                    //$('body').trigger('update_checkout');
+                    //window.location.reload();
+                }
+                
 
                // window.location.reload();
-
+               localStorage.setItem("transaction_update", JSON.stringify(response));
                 
+            },
+            complete: function (response) {
+                console.log('complete');
+                //console.log(response);
+                window.location.reload();
             },
             error : function( data ) {
                 console.log( 'Error…' );
@@ -1037,6 +1048,7 @@ jQuery(document).ready(function($){
             success: function (response) {
                 console.log('success');
                 console.log(response);
+                localStorage.setItem("transaction_update", JSON.stringify(response));
                 //$('.fee').html( response );
                 if ($("body").hasClass("woocommerce-cart"))
                     $('body').trigger('wc_update_cart');

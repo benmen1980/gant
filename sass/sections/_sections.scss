@@ -251,10 +251,10 @@
             }
           }
           h3{
-            font-size: 45px;
+            font-size: 26px;
             line-height: 1.3;
             @media screen and (max-width: 1366px) {
-                font-size: 34px;
+                font-size: 20px;
             }
             @media screen and (max-width: 1023px) {
                 font-size: 18px;
@@ -1315,9 +1315,10 @@
                                     width: auto;
                                     margin-left: 20px;
                                     @media screen and (max-width: 1023px) {
-                                        font-size: 14px;
+                                        font-size: 13px;
                                         line-height: 1.4;
                                         padding-left: 5px;
+                                        margin-left: 0;
                                     }
                                 }
                                 & > input,.password-input{
@@ -1346,6 +1347,9 @@
                                     position: absolute;
                                     bottom: 0;
                                     right: 0;
+                                    @media screen and (max-width: 1023px) {
+                                        font-size: 11px;
+                                    }
                                 }
                                 &:first-child{
                                     padding-top: 5px;
@@ -1638,7 +1642,7 @@
             margin-bottom: 10px;
             line-height: 1; 
             //color: #1c2b49;
-            margin-top: 130px;
+            //margin-top: 130px;
             font-size: 45px;
             font-weight: 900;
             @media screen and (max-width: 1023px) {
@@ -1672,6 +1676,7 @@
             border-bottom: 1px solid #ccc;
             border-right: 0;
             width: 33.333%;
+            aspect-ratio: 1.8 / 1;
             @media screen and (max-width: 1023px) {
                 width: 100%;
                 min-height: unset;
@@ -2035,6 +2040,7 @@ p.row_radio_wrapper{
             border-top: none;
             border-right: none;
             position: relative;
+            aspect-ratio: 1.8 / 1;
             figure{
                 position: absolute;
                 top: 0;

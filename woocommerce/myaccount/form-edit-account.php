@@ -124,8 +124,15 @@ do_action( 'woocommerce_before_edit_account_form' ); ?>
 		<div class="clear"></div>
 
 		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-			<label for="account_email"><?php esc_html_e( 'Email address', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+			<label for="account_email bgg">
+				<?php esc_html_e( 'Email address', 'woocommerce' ); ?>&nbsp;<span class="required">*</span>
+			</label>
 			<input type="email" class="woocommerce-Input woocommerce-Input--email input-text" name="account_email" id="account_email" autocomplete="email" value="<?php echo esc_attr( $user->user_email ); ?>" />
+			<?//php if(get_user_meta( get_current_user_id(), 'has_to_edit_details', true ) == 1): ?>
+			<span class="msg_under_input">
+				<em><?php echo "אנא תבדוק שכתובת המייל תקינה ";?></em>
+			</span>
+			<?//php endif;?>
 		</p>
 
 		<div class="clear"></div>
@@ -152,15 +159,18 @@ do_action( 'woocommerce_before_edit_account_form' ); ?>
 		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 			<label for="password_1">
 			<?php if(get_user_meta( get_current_user_id(), 'has_to_edit_details', true ) == 1): ?>
-				
 				<?php esc_html_e( 'New password', 'woocommerce' ); ?>
 				<span class="required">*</span>
+				
 			<?php else:?>
 				<?php esc_html_e( 'New password (leave blank to leave unchanged)', 'woocommerce' ); ?>
 			<?php endif;?>
 			</label>
-				<input type="password" class="woocommerce-Input woocommerce-Input--password input-text" name="password_1" id="password_1" autocomplete="off" />
-		</p>
+			<input type="password" class="woocommerce-Input woocommerce-Input--password input-text" name="password_1" id="password_1" autocomplete="off" />
+			<?php if(get_user_meta( get_current_user_id(), 'has_to_edit_details', true ) == 1): ?>
+				<span class="msg_under_input"><em><?php esc_html_e( 'חובה להזין סיסמה חדשה', 'gant' ); ?></em></span>
+			<?php endif;?>
+			</p>
 		<div class="clear"></div>
 		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 			<label for="password_2">

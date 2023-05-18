@@ -244,56 +244,83 @@
                         @media screen and (max-width: 1023px) {
                             padding: 20px 10px 0;
                         }
-                        tr.cart_item,tr.cart-subtotal{
-                            box-shadow: 0 1px 0 rgba(0,0,0,.1) inset;
-                            td{
-                                ins{
-                                    background-color: transparent;
-                                    color: red;
-                                }
-                            }
-
-                        }
-                        td{
-                            border:0;
-                            background-color: transparent;
-                            @media screen and (max-width: 1023px) {
-                                padding: 0px 0px;
-                            }
-                            ul#shipping_method{
-                                li{
-                                    input{
-                                        vertical-align: middle;
-                                        margin-top: 0;
+                        tbody{
+                            tr{
+                                &.cart_item, &.cart-subtotal{
+                                    box-shadow: 0 1px 0 rgba(0,0,0,.1) inset;
+                                    td{
+                                        ins{
+                                            background-color: transparent;
+                                            color: red;
+                                        }
+                                    }
+                                    @media screen and (max-width: 768px) {
+                                        display: table-row;
                                     }
                                 }
-                                select#storelist{
-                                    margin: 20px 0;
-                                    padding: 10px;
-                                    display: block;
+                                &:nth-child(1){
+                                    @media screen and (max-width: 768px) {
+                                        display: table-row;
+                                    }
+                                }
+                               
+                            }
+                            th{
+                                @media screen and (max-width: 768px) {
+                                    display: table-cell;
+                                }
+                            }
+                            td{
+                                border:0;
+                                background-color: transparent;
+                                @media screen and (max-width: 1023px) {
+                                    padding: 0px 0px;
+                                }
+                                @media screen and (max-width: 768px) {
+                                    display: table-cell;
+                                    text-align: right!important;
+                                    padding: 9px 12px;
+                                    font-size: 16px;
+                                    &:before{
+                                        content:none;
+                                    }
+                                }
+                                ul#shipping_method{
+                                    li{
+                                        input{
+                                            vertical-align: middle;
+                                            margin-top: 0;
+                                        }
+                                    }
+                                    select#storelist{
+                                        margin: 20px 0;
+                                        padding: 10px;
+                                        display: block;
+                                    }
+                                }
+                            }
+                            th{
+                                border:0;
+                                //width: 60%;
+                                vertical-align: top;
+                            }
+                            // .fee + .display_coupon_btn_wrapper{
+                            //     display: none;
+                            // }
+    
+                            .order-total{
+                                font-size: 40px;
+                                font-weight: 900;
+                                @media screen and (max-width: 1023px) {
+                                    font-size: 30px;
+                                    padding-top: 10px;
+                                }
+                                th{
+                                    font-weight: 900;
                                 }
                             }
                         }
-                        th{
-                            border:0;
-                            width: 60%;
-                            vertical-align: top;
-                        }
-                        // .fee + .display_coupon_btn_wrapper{
-                        //     display: none;
-                        // }
-
-                        .order-total{
-                            font-size: 40px;
-                            font-weight: 900;
-                            @media screen and (max-width: 1023px) {
-                                font-size: 30px;
-                                padding-top: 10px;
-                            }
-                            th{
-                                font-weight: 900;
-                            }
-                        }
+                  
                     }
                     .wc-proceed-to-checkout{
                         padding: 0;
@@ -327,7 +354,8 @@
         }
     }
 }
-.woocommerce-checkout-review-order,.cart_summary_content{
+
+.woocommerce-checkout-review-order,.woocommerce-page .cart_summary_content table.shop_table_responsive{
     .display_coupon_btn_wrapper{
         th, td{
             display: none;
@@ -347,8 +375,10 @@
     }
     .coupon{
         display: none;
+        width: 60%;
         @media screen and (max-width: 1023px) {
             align-items: center;
+            width: auto;
         }
         th{
             width: 70%;
