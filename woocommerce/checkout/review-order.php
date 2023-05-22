@@ -86,26 +86,54 @@ defined( 'ABSPATH' ) || exit;
 
 		<?php endif; ?>
 
-		<?php foreach ( WC()->cart->get_fees() as $fee ) : ?>
+		<?php foreach ( WC()->cart->get_fees() as $fee ) :?>
 			<!-- <tr class="fee">
 				<th><?//php echo esc_html( $fee->name ); ?></th>
 				<td><?//php wc_cart_totals_fee_html( $fee ); ?></td>
 			</tr> -->
-			<tr class="<?php echo (($fee->name == 'הצטרפות לחבר מועדון') ? 'club_fee' :'fee'); ?>">
-				<th><?php echo sprintf( esc_html__( ' %s', 'woocommerce' ), $fee->name ) ?></th>
-				<td data-title="<?php echo esc_attr( $fee->name ); ?>">
-					<?php wc_cart_totals_fee_html( $fee ); ?>
-					<?php if(isset($_SESSION['coupon_birthday_code']) && isset($_SESSION['coupon_code'])): ?>
-						<button class="remove_coupon">
-							<?php  echo __( '[הסר קופונים]', 'gant' )  ?>
-						</button>
-					<?php else: ?>
-						<button class="remove_coupon" data-coupon="<?php echo $fee->name; ?>"><?php  echo __( '[Remove]', 'woocommerce' )  ?></button>
-					<?php endif; ?>
-				</td>
-			</tr>
-		<?php endforeach; ?>
+			<?php if($fee->name == 'הצטרפות לחבר מועדון'){ ?>
+				<tr class="<?php echo (($fee->name == 'הצטרפות לחבר מועדון') ? 'club_fee' :'fee'); ?>">
+					<th><?php echo sprintf( esc_html__( ' %s', 'woocommerce' ), $fee->name ) ?></th>
+					<td data-title="<?php echo esc_attr( $fee->name ); ?>">
+						<?php wc_cart_totals_fee_html( $fee ); ?>
+						<?php if(isset($_SESSION['coupon_birthday_code']) && isset($_SESSION['coupon_code'])): ?>
+							<button class="remove_coupon">
+								<?php  echo __( '[הסר קופונים]', 'gant' )  ?>
+							</button>
+						<?php else: ?>
+							<button class="remove_coupon" data-coupon="<?php echo $fee->name; ?>"><?php  echo __( '[Remove]', 'woocommerce' )  ?></button>
+						<?php endif; ?>
+					</td>
+				</tr>
+			<?php }
+			
+		endforeach; ?>
 
+		
+		<?php 
+		if ( WC()->cart->get_cart_contents_count() > 0 ) {
+			foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+				if($i == 0){
+					$last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+					$i ++;
+				}
+			} 
+			$coupons = $last_update_transaction['Coupons'];
+			if(!empty($coupons)){
+				foreach ($coupons as $coupon){
+					$coupon_code = $coupon['CouponCode'];
+					$coupon_desc = $coupon['Description']; ?>
+					<tr class="fee coupon_sale" data-fee="">
+						<th><?php echo $coupon_desc ?></th>
+						<td data-title="">
+							<button class="remove_coupon"  data-coupon="<?php echo $coupon_code; ?>"><?php  echo __( '[Remove]', 'woocommerce' )  ?></button>
+						</td>
+					</tr>
+				<?php }
+			}
+			
+		}
+		?>
 		<?php if ( wc_tax_enabled() && ! WC()->cart->display_prices_including_tax() ) : ?>
 			<?php if ( 'itemized' === get_option( 'woocommerce_tax_total_display' ) ) : ?>
 				<?php foreach ( WC()->cart->get_tax_totals() as $code => $tax ) : // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited ?>
@@ -125,16 +153,46 @@ defined( 'ABSPATH' ) || exit;
 		<?php do_action( 'woocommerce_review_order_before_order_total' ); ?>
 		
 		<?php if(true):  ?>
-			<?php if(!isset($_SESSION['coupon_code'])): ?>
-				<tr class="display_coupon_btn_wrapper">
-					<th>
-						<button type="button" class="button_underline display_coupon_btn">
-						<?php esc_html_e( 'הכנס קוד קופון', 'woocommerce' ); ?></th>
-						</button>
-					<th>
-					<td></td>
-				</tr>
-			<?php endif; ?>
+			<?php if ( WC()->cart->get_cart_contents_count() > 0 ) {
+				foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+					if($i == 0){
+						$last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+						$i ++;
+					}
+				} 
+				$coupons = $last_update_transaction['Coupons'];
+				if(!empty($coupons)){
+					foreach ($coupons as $coupon):
+						$coupon_code = $coupon['CouponCode'];
+						$coupon_desc = $coupon['Description'];
+						if($coupon_code == '0015'){
+						?>
+							<tr class="display_coupon_btn_wrapper">
+								<th>
+									<button type="button" class="button_underline display_coupon_btn">
+									<?php esc_html_e( 'הכנס קוד קופון', 'woocommerce' ); ?></th>
+									</button>
+								<th>
+								<td></td>
+							</tr>
+						<?php 
+						}
+					endforeach;
+
+				}
+				else{
+					?>
+					<tr class="display_coupon_btn_wrapper">
+						<th>
+							<button type="button" class="button_underline display_coupon_btn">
+							<?php esc_html_e( 'הכנס קוד קופון', 'woocommerce' ); ?></th>
+							</button>
+						<th>
+						<td></td>
+					</tr>
+				<?php
+				}
+			}?>
 			
 			<tr class="coupon">
 				<th>	
@@ -154,7 +212,7 @@ defined( 'ABSPATH' ) || exit;
 
 		<?php endif;?>
 
-		<?php  if( get_user_meta( get_current_user_id(), 'birthday_coupon', true ) != '' && !(isset($_SESSION['coupon_birthday_code']))) : ?>
+		<?php  if( get_user_meta( get_current_user_id(), 'birthday_coupon', true ) != '') : ?>
 			<tr  class="birthday_coupon_wrapper">
 			<th >
 				<input type="checkbox" id="birthday_coupon" name="birthday_coupon" data-coupon="<?php echo esc_attr(get_user_meta( get_current_user_id(), 'birthday_coupon', true )); ?>">

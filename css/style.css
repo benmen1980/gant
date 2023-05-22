@@ -6670,23 +6670,31 @@ table.shop_table tr.fee .remove_coupon {
   }
 }
 @media screen and (max-width: 1023px) {
-  .woocommerce-checkout .entry-content form #order_review table.shop_table td {
+  .woocommerce-checkout .entry-content form #order_review table.shop_table tr td {
     padding: 9px 0px 9px 5px;
     vertical-align: top;
   }
 }
-.woocommerce-checkout .entry-content form #order_review table.shop_table td ul#shipping_method li input {
+.woocommerce-checkout .entry-content form #order_review table.shop_table tr td ul#shipping_method li input {
   vertical-align: middle;
   margin-top: 0;
 }
-.woocommerce-checkout .entry-content form #order_review table.shop_table td ul#shipping_method li select#storelist {
+.woocommerce-checkout .entry-content form #order_review table.shop_table tr td ul#shipping_method li select#storelist {
   margin: 20px 0;
   padding: 10px;
 }
-.woocommerce-checkout .entry-content form #order_review table.shop_table th {
+.woocommerce-checkout .entry-content form #order_review table.shop_table tr th {
   width: 60%;
   vertical-align: top;
   padding: 9px 0 5px;
+}
+.woocommerce-checkout .entry-content form #order_review table.shop_table tr.coupon {
+  width: 100%;
+}
+@media screen and (max-width: 1023px) {
+  .woocommerce-checkout .entry-content form #order_review table.shop_table tr.coupon td {
+    padding-right: 9px;
+  }
 }
 .woocommerce-checkout .entry-content form #order_review table.shop_table .cart-subtotal th {
   padding: 9px 0 5px;

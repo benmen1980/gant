@@ -90,22 +90,46 @@ defined( 'ABSPATH' ) || exit;
 			</tr>
 
 		<?php endif; ?>
-
-		<?//php foreach ( WC()->cart->get_fees() as $fee ) : ?>
-			<tr class="fee" data-fee="<?php echo $fee->name;?>">
-				<th><?php echo $_SESSION['coupon_code']; ?></th>
-				<td data-title="<?php echo $_SESSION['coupon_code']; ?>">
-					<?//php wc_cart_totals_fee_html( $fee ); ?>
-					<?//php if(isset( $_SESSION['coupon_code'])): ?>
-						
+		<?php 
+		if ( WC()->cart->get_cart_contents_count() > 0 ) {
+			foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+				if($i == 0){
+					$last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+					$i ++;
+				}
+			} 
+			$coupons = $last_update_transaction['Coupons'];
+			if(!empty($coupons)){
+				foreach ($coupons as $coupon){
+					$coupon_code = $coupon['CouponCode'];
+					$coupon_desc = $coupon['Description']; ?>
+					<tr class="fee coupon_sale" data-fee="">
+						<th><?php echo $coupon_desc ?></th>
+						<td data-title="">
+							<button class="remove_coupon"  data-coupon="<?php echo $coupon_code; ?>"><?php  echo __( '[Remove]', 'woocommerce' )  ?></button>
+						</td>
+					</tr>
+				<?php }
+			}
+			
+		}
+		?>
+		<?php if((isset($_SESSION['coupon_birthday_code']) || isset($_SESSION['coupon_code'])) && false): ?>
+			<tr class="fee coupon_sale" data-fee="">
+				<th></th>
+				<td data-title="">
 					<?php if(isset($_SESSION['coupon_birthday_code']) && isset($_SESSION['coupon_code'])): ?>
-						<button class="remove_coupon" data-coupon-code = "<?php echo $_SESSION['coupon_birthday_code']; ?>" data-coupon="<?php echo $fee->name; ?>"><?php  echo __( '[הסר קופונים]', 'gant' )  ?></button>
+						<button class="remove_coupon" data-coupon-code ="<?php echo $_SESSION['coupon_birthday_code']; ?>" data-coupon="<?php echo $_SESSION['coupon_code']; ?>"><?php  echo __( '[הסר קופונים]', 'gant' )  ?></button>
 					<?php elseif (isset($_SESSION['coupon_code'])): ?>
-						<button class="remove_coupon" data-coupon-code = "<?php echo $_SESSION['coupon_code']; ?>" data-coupon="<?php echo $fee->name; ?>"><?php  echo __( '[Remove]', 'woocommerce' )  ?></button>
+						<button class="remove_coupon" data-coupon-code ="<?php echo $_SESSION['coupon_code']; ?>" data-coupon="<?php echo $_SESSION['coupon_code']; ?>"><?php  echo __( '[Remove]', 'woocommerce' )  ?></button>
+					<?php elseif (isset($_SESSION['coupon_birthday_code'])): ?>
+						<button class="remove_coupon" data-coupon="<?php echo $_SESSION['coupon_birthday_code']; ?>"><?php  echo __( '[Remove]', 'woocommerce' )  ?></button>
 					<?php endif; ?>
 				</td>
 			</tr>
-		<?//php endforeach; ?>
+		<?php endif;  ?>
+
+
 
 		<?php
 		if ( wc_tax_enabled() && ! WC()->cart->display_prices_including_tax() ) {
@@ -139,8 +163,35 @@ defined( 'ABSPATH' ) || exit;
 
 		<?php do_action( 'woocommerce_cart_totals_before_order_total' ); ?>
 
-		<?//php if ( wc_coupons_enabled() ) { ?>
-			<?php if(!isset($_SESSION['coupon_code'])): ?>
+		<?php if ( WC()->cart->get_cart_contents_count() > 0 ) {
+			foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+				if($i == 0){
+					$last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+					$i ++;
+				}
+			} 
+			$coupons = $last_update_transaction['Coupons'];
+			if(!empty($coupons)){
+				foreach ($coupons as $coupon):
+					$coupon_code = $coupon['CouponCode'];
+					$coupon_desc = $coupon['Description'];
+					if($coupon_code == '0015'){
+					?>
+						<tr class="display_coupon_btn_wrapper">
+							<th>
+								<button type="button" class="button_underline display_coupon_btn">
+								<?php esc_html_e( 'הכנס קוד קופון', 'woocommerce' ); ?></th>
+								</button>
+							<th>
+							<td></td>
+						</tr>
+					<?php 
+					}
+				endforeach;
+
+			}
+			else{
+				?>
 				<tr class="display_coupon_btn_wrapper">
 					<th>
 						<button type="button" class="button_underline display_coupon_btn">
@@ -149,7 +200,9 @@ defined( 'ABSPATH' ) || exit;
 					<th>
 					<td></td>
 				</tr>
-			<?php endif; ?>
+			<?php
+			}
+		}?>
 				
 				
 			<tr class="coupon">
@@ -171,7 +224,7 @@ defined( 'ABSPATH' ) || exit;
 				
 		
 		<?//php } ?>
-		<?php  if( get_user_meta( get_current_user_id(), 'birthday_coupon', true ) != '' && !(isset($_SESSION['coupon_birthday_code']))) : ?>
+		<?php  if( get_user_meta( get_current_user_id(), 'birthday_coupon', true ) != '') : ?>
 			<tr  class="birthday_coupon_wrapper">
 			<th >
 				<input type="checkbox" id="birthday_coupon" name="birthday_coupon" data-coupon="<?php echo esc_attr(get_user_meta( get_current_user_id(), 'birthday_coupon', true )); ?>">

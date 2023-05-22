@@ -104,32 +104,43 @@
                         font-size: 16px;
                         
                     }
-                    td{
-                        @media screen and (max-width: 1023px) {
-                            padding: 9px 0px 9px 5px;
-                            vertical-align: top;
-                        }
-                        //border:0;
-                        ul#shipping_method{
-                            li{
-                                input{
-                                    vertical-align: middle;
-                                    margin-top: 0;
-                                    
+                    tr{
+                        td{
+                            @media screen and (max-width: 1023px) {
+                                padding: 9px 0px 9px 5px;
+                                vertical-align: top;
+                            }
+                            //border:0;
+                            ul#shipping_method{
+                                li{
+                                    input{
+                                        vertical-align: middle;
+                                        margin-top: 0;
+                                        
+                                    }
+                                    select#storelist{
+                                        margin: 20px 0;
+                                        padding: 10px;
+                                    }
                                 }
-                                select#storelist{
-                                    margin: 20px 0;
-                                    padding: 10px;
+                            }
+                        }
+                        th{
+                            //border:0;
+                            width: 60%;
+                            vertical-align: top;
+                            padding: 9px 0 5px;
+                        }
+                        &.coupon{
+                            width: 100%;
+                            td{
+                                @media screen and (max-width: 1023px) {
+                                    padding-right: 9px;
                                 }
                             }
                         }
                     }
-                    th{
-                        //border:0;
-                        width: 60%;
-                        vertical-align: top;
-                        padding: 9px 0 5px;
-                    }
+  
                     .cart-subtotal{
                         th{
                             padding: 9px 0 5px;

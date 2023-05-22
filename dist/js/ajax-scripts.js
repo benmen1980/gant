@@ -899,9 +899,29 @@ jQuery(document).ready(function($){
         // },6000);
         // Retrieve data from local storage
         var transaction_data = JSON.parse(localStorage.getItem("transaction_update"));
+        console.log("🚀 ~ file: ajax-scripts.js:902 ~ $ ~ transaction_data:", transaction_data);
 
+        // if (localStorage.getItem('desc_sale') != undefined) {
+        //     var desc_sale = localStorage.getItem("desc_sale");
+        //     var desc_sale= desc_sale.replace(/['"]+/g, '');
+        // }
+        // if (localStorage.getItem('sale_sum') != undefined) {
+        //     var sale_sum = localStorage.getItem("sale_sum");
+        //     $('.fee.coupon_sale th').text(desc_sale);
+        //     $('.fee.coupon_sale td').prepend('₪' + sale_sum);
+        // }
+        
+
+       
+
+        
+        
+  
+      
+      
+        console.log('enter cart');
         // Do something with the data
-        console.log(transaction_data);
+        //console.log(transaction_data);
         // console.log(transaction_data.OrderItems);
         jQuery.each(transaction_data.OrderItems, function(index, item) {
            item_sale_desc = item.FirstSaleDescription;
@@ -915,7 +935,19 @@ jQuery(document).ready(function($){
     }
     jQuery(document).on('updated_checkout', function() {
         var transaction_data = JSON.parse(localStorage.getItem("transaction_update"));
+        console.log("🚀 ~ file: ajax-scripts.js:946 ~ jQuery ~ transaction_data:", transaction_data);
 
+        // if (localStorage.getItem('desc_sale') != undefined) {
+        //     var desc_sale = localStorage.getItem("desc_sale");
+        //     var desc_sale = desc_sale.replace(/['"]+/g, '');
+        // }
+        // if (localStorage.getItem('sale_sum') != undefined) {
+        //     var sale_sum = localStorage.getItem("sale_sum");
+        //     $('.fee.coupon_sale th').text(desc_sale);
+        //     $('.fee.coupon_sale td').prepend('₪' + sale_sum);
+        // }
+        
+       
         // Do something with the data
         console.log(transaction_data);
         // console.log(transaction_data.OrderItems);
@@ -987,34 +1019,32 @@ jQuery(document).ready(function($){
             url: ajax_obj.ajaxurl,
             data: data,
             // beforeSend: function (response) {
-            //     $thisbutton.addClass('loader_active');
+            //     $('body').trigger('wc_update_cart');
+            //     //$thisbutton.addClass('loader_active');
             // },
             // complete: function (response) {
             //     $thisbutton.removeClass('loader_active');
             // },
             success: function (response) {
                 console.log('success');
-                //console.log(response);
+                console.log(response);
+                //var desc_sale = response.desc_sale;
+                //var sale_sum = response.sale;
+            
                 //$('.fee').html( response );
-                if ($("body").hasClass("woocommerce-cart")){
-                    //$('body').trigger('wc_update_cart');
-                    //window.location.reload();
-                }
-                    
-                if ($("body").hasClass("woocommerce-checkout")){
-                    //$('body').trigger('update_checkout');
-                    //window.location.reload();
-                }
+                // if ($("body").hasClass("woocommerce-cart")){
+                //     //$('body').trigger('wc_update_cart');
+                // }  
+                // if ($("body").hasClass("woocommerce-checkout")){
+                //     //$('body').trigger('update_checkout');
+                // }
+            //    if(desc_sale != null && sale_sum!= null) {
+            //     localStorage.setItem("desc_sale", JSON.stringify(desc_sale));
+            //     localStorage.setItem("sale_sum", JSON.stringify(sale_sum));
+            //    }
+               localStorage.setItem("transaction_update", JSON.stringify(response.result));
+               window.location.reload();
                 
-
-               // window.location.reload();
-               localStorage.setItem("transaction_update", JSON.stringify(response));
-                
-            },
-            complete: function (response) {
-                console.log('complete');
-                //console.log(response);
-                window.location.reload();
             },
             error : function( data ) {
                 console.log( 'Error…' );
@@ -1046,15 +1076,20 @@ jQuery(document).ready(function($){
             //     $thisbutton.removeClass('loader_active');
             // },
             success: function (response) {
-                console.log('success');
+                console.log('success remove coupon');
                 console.log(response);
-                localStorage.setItem("transaction_update", JSON.stringify(response));
+                //localStorage.setItem("transaction_update", JSON.stringify(response));
+                //var desc_sale = response.desc_sale;
+                //var sale_sum = response.sale;
+                localStorage.setItem("transaction_update", JSON.stringify(response.result));
+                // localStorage.setItem("desc_sale", JSON.stringify(desc_sale));
+                // localStorage.setItem("sale_sum", JSON.stringify(sale_sum));
                 //$('.fee').html( response );
-                if ($("body").hasClass("woocommerce-cart"))
-                    $('body').trigger('wc_update_cart');
-                if ($("body").hasClass("woocommerce-checkout"))
-                    $('body').trigger('update_checkout');
-                //window.location.reload();
+                // if ($("body").hasClass("woocommerce-cart"))
+                //     $('body').trigger('wc_update_cart');
+                // if ($("body").hasClass("woocommerce-checkout"))
+                //     $('body').trigger('update_checkout');
+                window.location.reload();
 
                 
             },
@@ -1069,6 +1104,7 @@ jQuery(document).ready(function($){
         $('#checkbox_club').attr('checked', false).trigger('click');
         window.location.reload();
     });
+
     $("body").on("click", "#birthday_coupon", function(e){
         console.log('enter func');
         
@@ -1085,10 +1121,16 @@ jQuery(document).ready(function($){
             data: data,
             success: function (response) {
                 console.log('success1');
-                if ($("body").hasClass("woocommerce-cart"))
-                    $('body').trigger('wc_update_cart');
-                if ($("body").hasClass("woocommerce-checkout"))
-                    $('body').trigger('update_checkout');
+                var desc_sale = response.desc_sale;
+                var sale_sum = response.sale;
+                localStorage.setItem("transaction_update", JSON.stringify(response.result));
+                localStorage.setItem("desc_sale", JSON.stringify(desc_sale));
+                localStorage.setItem("sale_sum", JSON.stringify(sale_sum));
+                window.location.reload();
+                // if ($("body").hasClass("woocommerce-cart"))
+                //     $('body').trigger('wc_update_cart');
+                // if ($("body").hasClass("woocommerce-checkout"))
+                //     $('body').trigger('update_checkout');
             },
             error : function( data ) {
                 console.log( 'Error…' );

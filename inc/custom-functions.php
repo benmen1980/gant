@@ -1046,31 +1046,21 @@ function get_prices_filter($cat_id){
 //add_action('updated_post_meta', 'afterPostUpdated', 10, 4);
 
 function syncCatFilterAndPdtFilter(){
-    // $all_ids = get_posts( array(
-    //     'post_type' => 'product',
-    //     'numberposts' => -1,
-    //     'post_status' => 'publish',
-    //     'fields' => 'ids',
-    // ) );
-
-    global $wpdb;
+  
+    $categories = get_terms( array(
+        'taxonomy'   => 'product_cat',
+        'hide_empty' => false,
+    ) );
+    foreach($categories as $term){
+        write_custom_log('updating filter for category: '.$term->name);
+        $cat_id = $term->term_id;
+        get_colors_filter( $cat_id);
+        get_sizes_filter($cat_id);
+        get_cuts_filter($cat_id);
+        get_prices_filter($cat_id);
+        get_substainable_filter($cat_id);
+    }
    
-    $all_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product' AND post_status = 'publish'" );
-    foreach ( $all_ids as $post_id ) {
-        //sync categories filter
-        $terms = get_the_terms( $post_id, 'product_cat' );
-        foreach ($terms as $term) {
-            if($term->name != 'כללי'){
-                $product_cat_id = $term->term_id;
-                write_custom_log('updating filter for category: '.$term->name);
-                get_colors_filter( $product_cat_id);
-                get_sizes_filter($product_cat_id);
-                get_cuts_filter($product_cat_id);
-                get_prices_filter($product_cat_id);
-                get_substainable_filter($product_cat_id);
-            }
-        }     
-   }
 }
 
 add_action('syncCatFilterAndPdtFilter_cron_hook', 'syncCatFilterAndPdtFilter');
@@ -2353,14 +2343,39 @@ function load_variation_settings_fields( $variation ) {
 //add_action('init' ,'test_pdts');
 
 function test_pdts(){
-   echo 'enter here1';
+   //echo 'enter here1';
+   // Get the product category taxonomy
+    $taxonomy = 'product_cat';
+
+    // Get all categories in the taxonomy
+       $terms = get_terms( array(
+    'taxonomy'   => 'product_cat',
+    'hide_empty' => false,
+) );
+    echo '<pre>';
+    print_r( $terms);
+    echo '</pre>';
+  //$flashy = new wp_flashy();
+   //var_dump($flashy);
+//    $terms = get_terms( array(
+//     'taxonomy'   => 'pa_size',
+//     'hide_empty' => false,
+// ) );
+// foreach ($terms as $term){
+//     echo $term->name;
+//     echo "<br><br>";
+//   }
+
+// Get all categories
+//$categories = get_terms( 'product_cat' );
+//print_r( $categories);
    // $custom_item_data = get_post_meta( 16764, "temporary_transaction_num", true );
     //echo "temp numcheck: " . $custom_item_data[0];
-    echo 'count:'.WC()->cart->get_cart_contents_count();
-    foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
-        $temporarytransactionnumber = $cart_item['temporary_transaction_num'];
-        echo $temporarytransactionnumber;
-    }
+    // echo 'count:'.WC()->cart->get_cart_contents_count();
+    // foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+    //     $temporarytransactionnumber = $cart_item['temporary_transaction_num'];
+    //     echo $temporarytransactionnumber;
+    // }
     // $all_ids = get_posts( array(
     //     'post_type' => 'product',
     //     'numberposts' => -1,
@@ -2403,17 +2418,7 @@ function disable_shipping_calc_on_cart( $show_shipping ) {
 }
 add_filter( 'woocommerce_cart_ready_to_calc_shipping', 'disable_shipping_calc_on_cart', 99 );
 
-// hide coupon field if coupon already applied
-function hide_coupon_field_on_checkout( ) {
-    if(isset($_SESSION['coupon_code'])){
-        //echo 'enter';
-        //var_dump($_SESSION['coupon_birthday_code']);
-        die;
-		return false;
-	}
-	return true;
-}
-//add_filter( 'woocommerce_coupons_enabled', 'hide_coupon_field_on_checkout' );
+
 
 
 //add_action( 'init', 'check_custom_fee' );
@@ -2716,3 +2721,28 @@ function change_email_error( $message ) {
     return $message;
 }
 
+/**
+ * Automatically add gift product to cart
+ */
+function add_gift_product_to_cart() {
+    if(!is_admin()) {
+       
+        $gift_product_id = get_field('pdt_id_gift', 'option'); // Replace with the actual gift product ID
+        // Check if the gift product is not already in the cart
+        $gift_product_already_in_cart = false;
+        foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
+            echo 'enter'; die;
+            echo $cart_item['product_id'];
+            if ($cart_item['product_id'] == $gift_product_id) {
+                $gift_product_already_in_cart = true;
+                break;
+            }
+        }
+
+        // Add the gift product to the cart if it's not already present
+        // if (!$gift_product_already_in_cart) {
+        //     WC()->cart->add_to_cart($gift_product_id);
+        // }
+    }
+}
+//add_action('woocommerce_init', 'add_gift_product_to_cart');

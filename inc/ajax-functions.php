@@ -1370,6 +1370,7 @@ add_action('wp_ajax_nopriv_apply_coupon_programatically', 'apply_coupon_programa
         
 function apply_coupon_programatically() {
     if (isset($_POST['coupon_code'])){
+
         $coupon_code = $_POST['coupon_code'];
         $result =  CardPOS::instance()->getCoupons($coupon_code );
         $error_code = $result["ErrorCode"];
@@ -1390,7 +1391,25 @@ function apply_coupon_programatically() {
                         $i ++;
                     }
                 }
-                echo wp_send_json($last_update_transaction);
+                // $total_before_general_discount = $last_update_transaction["TotalBeforeGeneralDiscountIncludingVAT"];
+                // $total_after_general_discount = $last_update_transaction["TotalAfterGeneralDiscountIncludingVAT"];
+                // $general_discount_sum = $last_update_transaction["GeneralDiscountSum"];
+                // if(($total_after_general_discount < $total_before_general_discount) ){
+                //     $desc_sale = $last_update_transaction["FirstSaleDescription"];
+                //     if($last_update_transaction["SecondSaleDescription"] != ''){
+                //         $desc_sale = $last_update_transaction["FirstSaleDescription"].', '.$last_update_transaction["SecondSaleDescription"];
+                //     }
+                //     //$sale = $total_before_general_discount - $total_after_general_discount;
+                //     $sale = $general_discount_sum;
+                // }else{
+                //     unset($_SESSION['coupon_code']);
+                // }
+                //print_r($total_before_general_discount); die;
+                echo wp_send_json(array(
+                    'result' => $last_update_transaction,
+                    //'desc_sale' => $desc_sale,
+                    //'sale' => $sale
+                ));
             }
         
         }
@@ -1435,8 +1454,42 @@ function apply_coupon_birthday_programatically() {
     if ($error_code == 0) {
         //get coupon value and set it in session to add it in fee
         $_SESSION['coupon_birthday_code'] = $coupon_code;
-        $msg = __( 'Coupon code applied successfully.', 'woocommerce' );
+        $msg = __( 'Coupon code applied successfully.'.$_SESSION['coupon_birthday_code'], 'woocommerce' );
         wc_add_notice( $msg ); 
+
+        $product_status = 'publish';
+        $passed_validation = true;
+    
+        update_bag_after_sync($passed_validation,$product_status,$result);
+        $i = 0;
+        if ( WC()->cart->get_cart_contents_count() > 0 ) {
+            foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+                if($i == 0){
+                    $last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+                    $i ++;
+                }
+            }
+            // $total_before_general_discount = $last_update_transaction["TotalBeforeGeneralDiscountIncludingVAT"];
+            // $total_after_general_discount = $last_update_transaction["TotalAfterGeneralDiscountIncludingVAT"];
+            // $general_discount_sum = $last_update_transaction["GeneralDiscountSum"];
+            // if(($total_after_general_discount < $total_before_general_discount) ){
+            //     $desc_sale = $last_update_transaction["FirstSaleDescription"];
+            //     if($last_update_transaction["SecondSaleDescription"] != ''){
+            //         $desc_sale = $last_update_transaction["FirstSaleDescription"].', '.$last_update_transaction["SecondSaleDescription"];
+            //     }
+            //     //$sale = $total_before_general_discount - $total_after_general_discount;
+            //     $sale = $general_discount_sum;
+            // }
+            // else{
+            //     unset($_SESSION['coupon_birthday_code']);
+            // }
+            //print_r($total_before_general_discount); die;
+            echo wp_send_json(array(
+                'result' => $last_update_transaction,
+                //'desc_sale' => $desc_sale,
+                //'sale' => $sale
+            ));
+        }
 
     }
     //coupon code not valid or error
@@ -1467,12 +1520,10 @@ function apply_coupon_birthday_programatically() {
 
 add_action('wp_ajax_remove_coupon_programatically', 'remove_coupon_programatically');
 add_action('wp_ajax_nopriv_remove_coupon_programatically', 'remove_coupon_programatically');
-        
+
 function remove_coupon_programatically() {
-    if(isset($_SESSION['coupon_code'])){
-        WC()->cart->calculate_totals(); // Refresh cart
-        $coupon_code = $_SESSION['coupon_code'];
-   
+    if(isset($_REQUEST['coupon_code'])  && $_REQUEST['coupon_code'] != ''){
+        $coupon_code = $_REQUEST['coupon_code'];
         $result =  CardPOS::instance()->removeCoupons($coupon_code );
         $error_code = $result["ErrorCode"];
         if ($error_code == 0) {
@@ -1487,28 +1538,16 @@ function remove_coupon_programatically() {
             //print_r($result);die;
             //$error_src = $result['EdeaError']['ErrorSource'];
             if ($error_code == 0) {  
-                $total_before_general_discount = $result["Transaction"]["TotalBeforeGeneralDiscountIncludingVAT"];
-                $total_after_general_discount = $result["Transaction"]["TotalAfterGeneralDiscountIncludingVAT"];
-                //general sale
-                if($total_after_general_discount == $total_before_general_discount){
-                    $fees = WC()->cart->get_fees();
-                    foreach ($fees as $key => $fee) {
-                        if($fees[$key]->name === $_SESSION['api_fee']) {
-                            unset($fees[$key]);
-                            //remove coupon from session
-                           
-                            $msg = __( 'Coupon code removed successfully.', 'woocommerce' );
-                            wc_add_notice( $msg );
-                        }
-                    }
-                }
-                unset($_SESSION['coupon_code']);
+               
+                $msg = __( 'Coupon code removed successfully.', 'woocommerce' );
+                wc_add_notice( $msg );
 
                 
                 $product_status = 'publish';
                 $passed_validation = true;
             
                 update_bag_after_sync($passed_validation,$product_status,$result);
+                
                 $i = 0;
                 if ( WC()->cart->get_cart_contents_count() > 0 ) {
                     foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
@@ -1517,7 +1556,17 @@ function remove_coupon_programatically() {
                             $i ++;
                         }
                     }
-                    echo wp_send_json($last_update_transaction);
+                    //print_r($total_before_general_discount); die;
+                    echo wp_send_json(array(
+                        'result' => $last_update_transaction,
+                        //'desc_sale' => $desc_sale,
+                        //'sale' => $sale
+                    ));
+
+
+
+                    //echo wp_send_json($last_update_transaction);
+                    
                 }
             }
             else{
@@ -1550,6 +1599,124 @@ function remove_coupon_programatically() {
                 wp_mail( $multiple_recipients, $subj, $message );
                 }
         }
+        //unset($_SESSION['coupon_code']);
+    }
+}
+        
+function remove_coupon_programatically1() {
+    if(isset($_SESSION['coupon_code'])){
+        WC()->cart->calculate_totals(); // Refresh cart
+        $coupon_code = $_SESSION['coupon_code'];
+   
+        $result =  CardPOS::instance()->removeCoupons($coupon_code );
+        $error_code = $result["ErrorCode"];
+        if ($error_code == 0) {
+            global $woocommerce;
+            $form_name = 'Transactions';
+            $form_action = 'UpdateTransaction';
+            $data = CardPOS::instance()->openOrUpdateTransaction(0,0,0);
+            //print_r($data);die;
+            $data = json_encode($data);
+            $result = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
+            $error_code = $result["ErrorCode"];
+            //print_r($result);die;
+            //$error_src = $result['EdeaError']['ErrorSource'];
+            if ($error_code == 0) {  
+                $total_before_general_discount = $result["Transaction"]["TotalBeforeGeneralDiscountIncludingVAT"];
+                $total_after_general_discount = $result["Transaction"]["TotalAfterGeneralDiscountIncludingVAT"];
+                //general sale
+                // if($total_after_general_discount == $total_before_general_discount){
+                //     $fees = WC()->cart->get_fees();
+                //     foreach ($fees as $key => $fee) {
+                //         if($fees[$key]->name === $_SESSION['api_fee']) {
+                //             unset($fees[$key]);
+                //             //remove coupon from session
+                           
+                //             $msg = __( 'Coupon code removed successfully.', 'woocommerce' );
+                //             wc_add_notice( $msg );
+                //         }
+                //     }
+                // }
+                //remove coupon from session
+                //unset($fees[$key]);
+                
+
+                $msg = __( 'Coupon code removed successfully.', 'woocommerce' );
+                wc_add_notice( $msg );
+
+                
+                $product_status = 'publish';
+                $passed_validation = true;
+            
+                update_bag_after_sync($passed_validation,$product_status,$result);
+                
+                $i = 0;
+                if ( WC()->cart->get_cart_contents_count() > 0 ) {
+                    foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+                        if($i == 0){
+                            $last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+                            $i ++;
+                        }
+                    }
+
+                    $total_before_general_discount = $last_update_transaction["TotalBeforeGeneralDiscountIncludingVAT"];
+                    $total_after_general_discount = $last_update_transaction["TotalAfterGeneralDiscountIncludingVAT"];
+                    $general_discount_sum = $last_update_transaction["GeneralDiscountSum"];
+                    if(($total_after_general_discount < $total_before_general_discount) ){
+                        $desc_sale = $last_update_transaction["FirstSaleDescription"];
+                        if($last_update_transaction["SecondSaleDescription"] != ''){
+                            $desc_sale = $last_update_transaction["FirstSaleDescription"].', '.$last_update_transaction["SecondSaleDescription"];
+                        }
+                        //$sale = $total_before_general_discount - $total_after_general_discount;
+                        $sale = $general_discount_sum;
+                    }
+                    else{
+                        unset($_SESSION['coupon_code']);
+                    }
+                    //print_r($total_before_general_discount); die;
+                    echo wp_send_json(array(
+                        'result' => $last_update_transaction,
+                        'desc_sale' => $desc_sale,
+                        'sale' => $sale
+                    ));
+
+
+
+                    //echo wp_send_json($last_update_transaction);
+                    
+                }
+            }
+            else{
+        
+                $error_msg = $result['EdeaError']['DisplayErrorMessage'];
+                wc_add_notice( 'error in update transaction when removing coupon: '.$error_msg, 'error' );
+                $multiple_recipients = array(
+                    get_bloginfo('admin_email')
+                );
+                $subj = 'Error set coupon from priority';
+                wp_mail( $multiple_recipients, $subj, $error_msg );
+            }
+
+        }
+        //coupon code not valid
+        else {
+            $response = $result['EdeaError']['DisplayErrorMessage'];
+            if(!empty($result["FailedCoupons"]["FailedCouponsToRemove"])){
+                $failedCouponMsg = $result["FailedCoupons"]["FailedCouponsToRemove"][0]["CouponError"]["DisplayErrorMessage"];
+                wc_add_notice( $failedCouponMsg, 'error' );
+            }
+            // שגיאה כללית
+            else{
+                wc_add_notice( $response, 'error' );
+                
+                $multiple_recipients = array(
+                    get_bloginfo('admin_email')
+                );
+                $subj = 'Error remove coupon from priority';
+                wp_mail( $multiple_recipients, $subj, $message );
+                }
+        }
+        unset($_SESSION['coupon_code']);
 
     }
     if(isset($_SESSION['coupon_birthday_code'])){
@@ -1572,19 +1739,60 @@ function remove_coupon_programatically() {
                 $total_before_general_discount = $result["Transaction"]["TotalBeforeGeneralDiscountIncludingVAT"];
                 $total_after_general_discount = $result["Transaction"]["TotalAfterGeneralDiscountIncludingVAT"];
                 //general sale
-                if($total_after_general_discount == $total_before_general_discount){
-                    $fees = WC()->cart->get_fees();
-                    foreach ($fees as $key => $fee) {
-                        if($fees[$key]->name === $_SESSION['api_fee']) {
-                            unset($fees[$key]);
-                            //remove coupon from session
+                // if($total_after_general_discount == $total_before_general_discount){
+                //     $fees = WC()->cart->get_fees();
+                //     foreach ($fees as $key => $fee) {
+                //         if($fees[$key]->name === $_SESSION['api_fee']) {
+                //             unset($fees[$key]);
+                //             //remove coupon from session
                           
-                            $msg = __( 'Coupon code removed successfully.', 'woocommerce' );
-                            wc_add_notice( $msg );
+                //             $msg = __( 'Coupon code removed successfully.', 'woocommerce' );
+                //             wc_add_notice( $msg );
+                //         }
+                //     }
+                // }
+
+                $msg = __( 'Coupon code removed successfully.', 'woocommerce' );
+                wc_add_notice( $msg );
+                
+                
+                $product_status = 'publish';
+                $passed_validation = true;
+            
+                update_bag_after_sync($passed_validation,$product_status,$result);
+                
+                $i = 0;
+                if ( WC()->cart->get_cart_contents_count() > 0 ) {
+                    foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+                        if($i == 0){
+                            $last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+                            $i ++;
                         }
                     }
+
+                    $total_before_general_discount = $last_update_transaction["TotalBeforeGeneralDiscountIncludingVAT"];
+                    $total_after_general_discount = $last_update_transaction["TotalAfterGeneralDiscountIncludingVAT"];
+                    $general_discount_sum = $last_update_transaction["GeneralDiscountSum"];
+                    if(($total_after_general_discount < $total_before_general_discount) ){
+                        $desc_sale = $last_update_transaction["FirstSaleDescription"];
+                        if($last_update_transaction["SecondSaleDescription"] != ''){
+                            $desc_sale = $last_update_transaction["FirstSaleDescription"].', '.$last_update_transaction["SecondSaleDescription"];
+                        }
+                        //$sale = $total_before_general_discount - $total_after_general_discount;
+                        $sale = $general_discount_sum;
+                    }else{
+                        unset($_SESSION['coupon_birthday_code']);
+                    }
+                    //print_r($total_before_general_discount); die;
+                    echo wp_send_json(array(
+                        'result' => $last_update_transaction,
+                        'desc_sale' => $desc_sale,
+                        'sale' => $sale
+                    ));
+                    //echo wp_send_json($last_update_transaction);
+                    
                 }
-                unset($_SESSION['coupon_birthday_code']);
+                
             }
             else{
         
@@ -1596,6 +1804,7 @@ function remove_coupon_programatically() {
                 $subj = 'Error set coupon from priority';
                 wp_mail( $multiple_recipients, $subj, $error_msg );
             }
+            
 
         }
         //coupon code not valid
@@ -1616,6 +1825,7 @@ function remove_coupon_programatically() {
                 wp_mail( $multiple_recipients, $subj, $message );
                 }
         }
+        unset($_SESSION['coupon_birthday_code']);
 
     }
 
@@ -1633,13 +1843,13 @@ function remove_coupon_programatically() {
 function woo_add_cart_fee() {
    global $woocommerce;
    //remove coupon fee after logut because session is cleared
-   if( (WC()->cart->get_cart_contents_count() > 0) && (!isset( $_SESSION['coupon_code']) || !isset( $_SESSION['coupon_birthday_code']))){
-    foreach(  WC()->cart->get_fees() as $fee_key => $fee ) {
-        if ( $fee->amount < 0 ){
-            WC()->cart->remove_fee( $fee_key );
-        }
-    }
-   }
+//    if( (WC()->cart->get_cart_contents_count() > 0) && (!isset( $_SESSION['coupon_code']) || !isset( $_SESSION['coupon_birthday_code']))){
+//     foreach(  WC()->cart->get_fees() as $fee_key => $fee ) {
+//         if ( $fee->amount < 0 ){
+//             WC()->cart->remove_fee( $fee_key );
+//         }
+//     }
+//    }
    $data = CardPOS::instance()->openOrUpdateTransaction(0,0, 0 );
    $temporarytransactionnumber = $data['temporaryTransactionNumber'];
    $form_name = 'Transactions';
@@ -1650,10 +1860,10 @@ function woo_add_cart_fee() {
    else{
        $form_action = 'UpdateTransaction';
    }
-//    echo "<pre>";
-//    print_r($data);
-//    echo "</pre>";
-//    die;
+    //    echo "<pre>";
+    //    print_r($data);
+    //    echo "</pre>";
+    //    die;
    $data = json_encode($data);
    $result = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
    $error_code = $result["ErrorCode"];
@@ -1701,12 +1911,12 @@ function woo_add_cart_fee() {
        //exit;
    }
      
- }
- add_action( 'woocommerce_cart_calculate_fees', 'woo_add_cart_fee' );
+}
+add_action( 'woocommerce_cart_calculate_fees', 'woo_add_cart_fee' );
 
 
-//add_filter('woocommerce_checkout_cart_item_quantity','twf_display_custom_data_in_cart',1,3); 
-//add_filter('woocommerce_cart_item_price', 'twf_display_custom_data_in_cart',1,3);
+    //add_filter('woocommerce_checkout_cart_item_quantity','twf_display_custom_data_in_cart',1,3); 
+    //add_filter('woocommerce_cart_item_price', 'twf_display_custom_data_in_cart',1,3);
  
 function twf_display_custom_data_in_cart( $product_name, $values, $cart_item_key )
 {
