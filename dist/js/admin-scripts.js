@@ -115,4 +115,98 @@ jQuery(document).ready(function($){
 
         
     });
+
+
+    $('.set_pdt_badge').click(function(e) { 
+        console.log('enter badge func');
+        var loader = $(this).next('.loader_wrap');
+        loader.addClass('active');
+        $.ajax({
+            url: ajaxurl,
+            method: 'POST',
+            data: {
+            'action': 'set_pdt_badge',
+            },
+            success: function (data) {
+                console.log('success');
+                console.log(data);
+                loader.removeClass('active');
+            },
+            error: function (errorThrown) {
+                loader.removeClass('active');
+                console.log(errorThrown);
+            }
+        });
+    });
+
+    $('.set_pdt_badge_no_club').click(function(e) { 
+        console.log('enter badge no club func');
+        var loader = $(this).next('.loader_wrap');
+        loader.addClass('active');
+        $.ajax({
+            url: ajaxurl,
+            method: 'POST',
+            data: {
+            'action': 'set_pdt_badge_no_club',
+            },
+            success: function (data) {
+                console.log('success');
+                console.log(data);
+                loader.removeClass('active');
+            },
+            error: function (errorThrown) {
+                loader.removeClass('active');
+                console.log(errorThrown);
+            }
+        });
+
+        
+    });
+
+    $('.set_pdt_special_badge').click(function(e) { 
+        var loader = $(this).next('.loader_wrap');
+        loader.addClass('active');
+        $.ajax({
+            url: ajaxurl,
+            method: 'POST',
+            data: {
+            'action': 'set_pdt_special_badge',
+            },
+            success: function (data) {
+                console.log('success');
+                console.log(data);
+                loader.removeClass('active');
+            },
+            error: function (errorThrown) {
+                loader.removeClass('active');
+                console.log(errorThrown);
+            }
+        });
+
+        
+    });
+
+    $('.set_pdt_cat').click(function(e) { 
+        var loader = $(this).next('.loader_wrap');
+        loader.addClass('active');
+        $.ajax({
+            url: ajaxurl,
+            method: 'POST',
+            data: {
+            'action': 'set_pdt_cat',
+            },
+            success: function (data) {
+                console.log('success');
+                console.log(data);
+                loader.removeClass('active');
+            },
+            error: function (errorThrown) {
+                loader.removeClass('active');
+                console.log(errorThrown);
+            }
+        });
+
+        
+    });
+
 });

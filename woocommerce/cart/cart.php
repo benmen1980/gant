@@ -50,6 +50,15 @@ $count = $woocommerce->cart->cart_contents_count;
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 				$_product   = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 				$product_id = apply_filters( 'woocommerce_cart_item_product_id', $cart_item['product_id'], $cart_item, $cart_item_key );
+				$product = wc_get_product($product_id);
+
+				if ( $product->is_type( 'variable' ) ) {
+					$regular_price = $product->get_variation_regular_price();
+					$sale_price = ($regular_price != $product->get_variation_sale_price())? $product->get_variation_sale_price() : '';
+					if(!empty($sale_price)){
+						$percent = round((($regular_price - $sale_price)*100) / $regular_price) ;
+					}
+				}
 
 				if ( $_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters( 'woocommerce_cart_item_visible', true, $cart_item, $cart_item_key ) ) {
 					$product_permalink = apply_filters( 'woocommerce_cart_item_permalink', $_product->is_visible() ? $_product->get_permalink( $cart_item ) : '', $cart_item, $cart_item_key );
@@ -63,6 +72,22 @@ $count = $woocommerce->cart->cart_contents_count;
 						
 						<?php } else { ?>
 						<a href="<?php echo $product_permalink?>">
+							<?php 
+							$badge_from_excel = get_field('badge_from_file',$product_id); 
+							$badge_from_excel_no_club = get_field('badge_from_file_no_club',$product_id);					
+							$sale_bage_excel = (is_user_logged_in() ? $badge_from_excel : $badge_from_excel_no_club);
+							?>
+                
+							<?php if(strlen(trim($sale_bage_excel)) != 0 ):?>
+								<div class="sale_tag">
+									<?php echo $sale_bage_excel; ?>
+								</div>
+							<?php endif; ?>
+							<?php if(!empty($sale_price) && false){ ?>
+								<div class="sale_tag">
+									<?php echo $percent.'% off'; ?>
+								</div>
+							<?php } ?>
 							<img src="<?php echo wp_get_attachment_url( $_product->get_image_id() ); ?>" alt="">
 						</a>
 						<?php }
@@ -104,18 +129,10 @@ $count = $woocommerce->cart->cart_contents_count;
 							$price = $cart_item['data']->get_price() * $quantity;
 							//echo $_product->get_sale_price();
 							$pdt_regular_price = $_product->get_regular_price();
-							if($cart_item['data']->get_price() != $pdt_regular_price){ ?>
-								<div class="prices_wrapper">
-									<span class="original_price"><?php echo apply_filters( 'woocommerce_cart_item_price', wc_price($pdt_regular_price * $quantity), $cart_item, $cart_item_key ); ?></span>
-									<span class="sale_price"><?php echo apply_filters( 'woocommerce_cart_item_price', wc_price($price), $cart_item, $cart_item_key ); ?></span>
-								</div>
-								<div data-sku="<?php echo $_product->get_sku(); ?>" class="product-sale-desc">
-									<?//php esc_attr_e( 'מבצע:', 'gant' ); ?>
-								</div>
-							<? }
-							else{
-								echo apply_filters( 'woocommerce_cart_item_price', wc_price($price), $cart_item, $cart_item_key ); // PHPCS: XSS ok.
-							}
+			
+							
+							echo apply_filters( 'woocommerce_cart_item_price', wc_price($price), $cart_item, $cart_item_key ); // PHPCS: XSS ok.
+							
 							
 							?>
 						</div>
@@ -168,6 +185,9 @@ $count = $woocommerce->cart->cart_contents_count;
 			
 				<?php do_action( 'woocommerce_cart_contents' ); ?>
 				<div class="submit_form_wrapper">
+					<button type="button" id="delete_all_cart" class="button-secondary" name="delete_all_cart" value="<?php esc_attr_e( 'רוקן סל', 'gant' ); ?>">
+						<span class="button_label"><?php esc_attr_e( 'רוקן סל', 'gant' ); ?></span>
+					</button>
 					<button type="submit" class="button-secondary" name="update_cart" value="<?php esc_attr_e( 'Update cart', 'woocommerce' ); ?>">
 						<span class="button_label"><?php esc_html_e( 'Update cart', 'woocommerce' ); ?></span>
 					</button>
@@ -203,6 +223,7 @@ $count = $woocommerce->cart->cart_contents_count;
 
 <?php do_action( 'woocommerce_after_cart' ); ?>
 
+<?php if(false): ?>
 <div class="pdts_related_wrapper">
 	<?php 
 	$related_categories = get_field('related_pdt');
@@ -215,9 +236,10 @@ $count = $woocommerce->cart->cart_contents_count;
 				<h3><?php echo $categorie_title; ?></h3>
 			</div>
 		<?php endif; ?>
-		<?php if($radio_selected == 'select_pdts'):
+		<?php if($radio_selected == 'select_pdts'){
 			$featured_pdts =  $related_categories['select_products'];
-		else:
+		}
+		else{
 			$selected_cat =  $related_categories['select_category'];
 			$term = get_term( $selected_cat, 'product_cat' );
 			$slug = $term->slug;
@@ -236,7 +258,7 @@ $count = $woocommerce->cart->cart_contents_count;
 				)
 			);
 			$featured_pdts = get_posts( $args_cat );
-		endif;
+		}
 		if( $featured_pdts ): ?>
 			<div class="slider_pdts slider_wrap">
 				<?php 
@@ -250,3 +272,4 @@ $count = $woocommerce->cart->cart_contents_count;
 		<?php endif; ?>
 	</section>		
 </div>
+<?php endif; ?>

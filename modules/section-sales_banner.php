@@ -11,8 +11,9 @@
         $sale_color = $sale_banner['bg_txt'];
         $sale_bg_btn = $sale_banner['bg_btn_color'];
         $sale_clr_txt = $sale_banner['btn_color_txt'];
-        $sale_border_color = $sale_banner['btn_border_clr'];
         $links = $sale_banner['choose_sale_link'];
+        $sale_border_color = $sale_banner['btn_border_clr'];
+        $comment = $sale_banner['comments'];
         $counter_links = count($links);
         $current_term = get_queried_object();
         //print_r($current_term);
@@ -50,16 +51,19 @@
             </div>
             <?php 
             if($sale_txt_align == 'right'){
-                $margin = 'right';
+                $margin_left = "margin-left: auto;";
+                $margin_right = "margin-right: initial;";
             }
             elseif($sale_txt_align == 'left'){
-                $margin = 'left';
+                $margin_left = "margin-left: initial;";
+                $margin_right = "margin-right: auto;";
             }
             else{
-                $margin = 'auto';
+                $margin_left = "margin-left: auto;";
+                $margin_right = "margin-right: auto;";
             }
              ?>
-            <div class="sale_btns_wrapper" style="justify-content:<?php echo $sale_txt_align;?>;margin:<?php echo  $margin; ?>">
+            <div class="sale_btns_wrapper" style="justify-content:<?php echo $sale_txt_align;?>; <?php echo $margin_left . $margin_right; ?>">
                 <?php 
                 foreach($links as $link) {
                     $page = $link['choose_page'];
@@ -82,11 +86,14 @@
                     }
 
                 ?>
-                    <a class="button-secondary <?php echo  ($post_slug == $basename) ? 'active' : ''?>" target="<?php echo esc_attr( $link_target ); ?>" style="background-color:<?php echo $sale_bg_btn; ?>; color:<?php echo $sale_clr_txt; ?>; <?//php echo (!empty($sale_border_color)) ? 'border: 1px solid '.$sale_border_color : ''?>" 
+                    <a class="button-secondary <?php echo  ($post_slug == $basename) ? 'active' : ''?>" target="<?php echo esc_attr( $link_target ); ?>" style="background-color:<?php echo $sale_bg_btn; ?>; color:<?php echo (empty($sale_border_color)) ? $sale_bg_btn : $sale_clr_txt; ?>; <?//php echo (!empty($sale_border_color)) ? 'border: 1px solid '.$sale_border_color : ''?>" 
                     href="<?php echo $link_url; ?>" title="<?php echo $link_title; ?>">
                         <span class="button_label" style="color:<?php echo $sale_clr_txt; ?>;"><?php echo $link_title; ?></span>
                     </a>
                 <?php } ?>
+            </div>
+            <div class="comment_promotion font_hebrew" style="direction:rtl">
+                <span><?php echo $comment; ?></span>
             </div>
         </div>
        

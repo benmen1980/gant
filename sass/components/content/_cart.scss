@@ -86,6 +86,9 @@
                 align-items: center;
                 button{
                     font-size:20px;
+                    &:nth-child(1){
+                        margin-left: 10px;
+                    }
                 }
             }
             @media screen and (max-width: 1023px) {
@@ -110,6 +113,25 @@
                 //     margin-top: 50px;
                 // }
                 .cart_product_thumbnail{
+                    position: relative;
+                    .sale_tag{
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
+                        color: red;
+                        border: 1px solid;
+                        line-height: 1;
+                        padding: 1px 15px;
+                        font-size: 20px;
+                        background-color: #fff;
+                        direction: ltr;
+                        // width: 100px;
+                        @media screen and (max-width: 1023px){
+                            font-size: 12px;
+                            padding: 1px 3px;
+                            width: auto;
+                        }
+                    }
                     @media screen and (max-width: 1023px) {
                         flex-basis: 40%;
                         max-width: 40%;
@@ -319,6 +341,16 @@
                                     font-weight: 900;
                                 }
                             }
+                            .accumulated_point{
+                                th{
+                                    border-top: 0;
+                                    color: red;
+                                    @media screen and (max-width: 768px) {
+                                        font-size: 16px;
+                                    }
+                                }
+                                
+                            }
                         }
                   
                     }
@@ -375,7 +407,7 @@
     }
     .coupon{
         display: none;
-        width: 60%;
+        width: 70%;
         @media screen and (max-width: 1023px) {
             align-items: center;
             width: auto;
@@ -403,7 +435,7 @@
             border: 0;
             appearance: none;
             width: 100%;
-            padding: 14px 40px 14px 20px;
+            padding: 14px 20px 14px 20px;
             @media screen and (max-width: 1023px) {
                 height: 45px;
             }

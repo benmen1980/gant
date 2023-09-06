@@ -1,8 +1,9 @@
 <?php global $product; 
 //if ((!$product->is_type('variable') && $product->is_in_stock()) || ($product->is_type('variable') && !is_variable_product_out_of_stock($product))):?>
+    <?php if(!empty($product)){     ?>
     <div class="search_suggestions_product">
         <?php 
-        $pdt_name = $product->get_name();
+        $pdt_name = $product->get_title();
         $pdt_permalink = get_permalink( $product->get_id() );
         //print_r($product);
         if ( $product->is_type( 'variable' ) ) {
@@ -22,19 +23,42 @@
             //check if image has hover image    
             if(strpos(wp_get_attachment_url( $attachment_ids[0] ), 'model-bv-1') !== false){
                 $first_image_url = wp_get_attachment_url( $attachment_ids[0] );
-            }
-
-
-       
-
-            
+            }   
         }
+
+        // $elect_badge = get_field('select_badge_products',$product->get_id());
+        // $elect_badge_value = $elect_badge['value'];
+        // $elect_badge_label = $elect_badge['label'];
+
+        $special_bage = get_field("special_badge_from_file", $product->get_id() );
+
         ?>
-        <div class="box_product jj" id="<?php echo $product->get_id();?>">
+        <div class="box_product" id="<?php echo $product->get_id();?>">
             <a href="<?php echo $pdt_permalink; ?>" title="<?php echo $pdt_name;?>">
-                <?php if(!empty($sale_price)){ ?>
+                <?php if(!empty($sale_price ) && false){ ?>
                     <div class="sale_tag">
-                        <?php echo $percent.'%'; ?>
+                        <?php echo $percent.'% off'; ?>
+                    </div>
+                <?php } ?>
+                <?php 
+                $badge_from_excel = get_field('badge_from_file',$product->get_id());
+                $badge_from_excel_no_club = get_field('badge_from_file_no_club',$product->get_id());					
+                $sale_bage_excel = (is_user_logged_in() ? $badge_from_excel : $badge_from_excel_no_club);
+                 ?>
+                
+                <?php if(strlen(trim($sale_bage_excel)) != 0 ){ ?>
+                    <div class="sale_tag">
+                        <?php echo $sale_bage_excel; ?>
+                    </div>
+                <?php } ?>
+                <?php if(!empty($elect_badge) && false){ ?>
+                    <div class="custom_bage">
+                        <?php echo $elect_badge_label; ?>
+                    </div>
+                <?php } ?>
+                <?php if(!empty($special_bage)){ ?>
+                    <div class="custom_bage">
+                        <?php echo $special_bage; ?>
                     </div>
                 <?php } ?>
                 <div class="thumbnail <?php echo !empty($first_image_url) ? 'has-hover' :'' ?>">
@@ -57,8 +81,8 @@
                     <?php } ?>
                     <h3 class="name"><?php echo $pdt_name;?></h3>  
                     <div class="pdt_price_wrapper">
-                        <p class="regular_price <?php  echo (!empty($sale_price)) ? 'line-through' : '' ?>"><?php echo wc_price($regular_price); ?></p>
-                        <?php if(!empty($sale_price)): ?>
+                        <p class="regular_price <?//php  echo (!empty($sale_price) ) ? 'line-through' : '' ?>"><?php echo wc_price($regular_price); ?></p>
+                        <?php if(!empty($sale_price) && false): ?>
                             <p class="sale_price"><?php echo wc_price($sale_price); ?></p>
                         <?php endif; ?>
                     </div> 
@@ -107,4 +131,5 @@
             </div>
         </div>
     </div>
+    <?php } ?>
 <?//php endif; ?>

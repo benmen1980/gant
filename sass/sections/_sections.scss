@@ -102,6 +102,10 @@
                 margin-left: 20px;
                 width:100%;
                 font-size: 22px;
+                @media screen and (max-width: 1440px){
+                    width: 100%;
+                    margin-left: 10px;
+                }
                 @media screen and (max-width: 768px){
                     width: calc(50% - 10px);
                     margin-left: 10px;
@@ -224,6 +228,11 @@
             column-gap: 10px;
             row-gap: 10px;
             grid-template-columns: 1fr 1fr;
+
+            @media screen and (min-width: 1440px){
+                column-gap: 20px;
+                row-gap: 20px;
+            }
         }
     }
 
@@ -233,20 +242,20 @@
 //banner registration
 .section_banner_register{
     .hero_type_2{
-        //height: auto;
+        height: auto !important;
         .hero_content{
           &> *{
             max-width: 100%;
           } 
           h2{
-            font-size: 75px;
+            font-size: 72px;
             margin-bottom: 40px;
             margin-top: 20px;
             @media screen and (max-width: 1366px) {
-                font-size: 59px;
+                font-size: 55px;
             }
             @media screen and (max-width: 1023px) {
-                font-size: 40px;
+                font-size: 38px;
                 margin: 0;
             }
           }
@@ -259,6 +268,7 @@
             @media screen and (max-width: 1023px) {
                 font-size: 18px;
                 margin-bottom: 40px;
+                margin-left: 5px;
             }
           } 
         }
@@ -941,10 +951,10 @@
     button.dropbtn{
         border: 0;
         background-color: transparent;   
-        font-size: 20px;
+        font-size: 18px;
         cursor: pointer;
         border-radius: 0;
-        padding: 10px 30px;
+        padding: 0px!important;
         display: flex;
         align-items: center;
         &:hover{
@@ -1093,7 +1103,7 @@
     }
 }
 .count_wrapper{
-    font-size: 20px;
+    font-size: 18px;
    #count{
     padding-left: 5px;
    } 
@@ -1102,9 +1112,9 @@
     .dropdown{
         margin-left:0;
         margin-right: 30px;
-        button.dropbtn{
-            padding:10px;
-        }
+        // button.dropbtn{
+        //     padding:10px;
+        // }
         .dropdown_wrapper{
             right: auto;
             left: 0;
@@ -1892,10 +1902,16 @@
     &.condition_accept_wrapper{
         display: block;
         width: 100%;
+        @media screen and (max-width: 768px) {
+            position: relative;
+        }
         // .checkbox_wrapper label{
         //     padding-top: 4px;
         //     line-height: 1;
         // }
+        .required {
+            display: none;
+        }
     }
 }
 
@@ -2271,6 +2287,19 @@ nav.breadcrumb{
     }
 }
 
+#ui-datepicker-div{
+    z-index: 9999!important;
+}
+
+.woocommerce-error{
+    li{
+        a.showlogin{
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+    }
+}
 
 
 

@@ -23,7 +23,7 @@
             <div class="hero_background">
                 <?php if($img):?>
                     <div class="img_wrapper">
-                        <img src="<?php echo $img; ?>" alt="<?php echo $title;?>" />
+                        <img src="<?php echo $img; ?>" alt="<?php echo $title;?>" style="object-position: 50% 50%;"/>
                     </div> 
                 <?php endif;?>
             </div>

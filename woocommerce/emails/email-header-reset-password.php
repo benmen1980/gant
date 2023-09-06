@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                                 <tr>
                                                     <td align="left" width="100" style="text-align: right;">
                                                         <div class="link_account" >
-                                                            <a href="https://gant.ussl.co.il/my-account/" target="_blank">
+                                                            <a href="https://dev-gant.tmpurl.co.il/my-account/" target="_blank">
                                                                 <span class="btn_icon">
                                                                     <img border="0" width="10" height="12" src="<?php echo get_template_directory_uri();?>/dist/images/account.png" aria-hidden="false" alt="" style="margin-left:0;">
                                                                 </span>

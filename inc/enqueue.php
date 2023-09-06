@@ -11,10 +11,12 @@ function gant_custom_scripts() {
     
     wp_enqueue_style( 'slick-css', get_template_directory_uri() . '/dist/css/slick.css' );
 	wp_enqueue_style( 'slick-theme-css', get_template_directory_uri() . '/dist/css/slick-theme.css' );
-	wp_enqueue_style( 'gant-style-min', get_template_directory_uri() . '/dist/css/style.min.css' );
+	wp_enqueue_style( 'jquery-ui', get_template_directory_uri() . '/dist/css/jquery-ui-1.13.2.min.css' );
+    wp_enqueue_style( 'gant-style-min', get_template_directory_uri() . '/dist/css/style.min.css' );
     wp_enqueue_style( 'gant-style', get_template_directory_uri() . '/dist/css/style.min.css' );
 	wp_enqueue_script('jquery', get_template_directory_uri() . '/js/jquery-3.6.0.min.js', false, '1.12.4',true);
-    wp_enqueue_script( 'gant-scripts', get_template_directory_uri() . '/dist/js/scripts.js', array(), '1.0' );
+    wp_enqueue_script('jquery-ui-datepicker', get_template_directory_uri() . '/js/jquery-ui-1.13.2.min.js', false, '1.13.2',true);
+    wp_enqueue_script( 'gant-scripts', get_template_directory_uri() . '/dist/js/scripts.js', array(), '1.0.9' );
     wp_enqueue_script( 'gant-slick', get_template_directory_uri() . '/dist/js/slick.min.js', array(), '', false );
 	
 

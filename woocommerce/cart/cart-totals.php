@@ -102,8 +102,12 @@ defined( 'ABSPATH' ) || exit;
 			if(!empty($coupons)){
 				foreach ($coupons as $coupon){
 					$coupon_code = $coupon['CouponCode'];
+					$unique_num = $coupon['UniqueNumber'];
+					if($unique_num != ""){
+						$coupon_code = $coupon_code.'-'.$unique_num;
+					}
 					$coupon_desc = $coupon['Description']; ?>
-					<tr class="fee coupon_sale" data-fee="">
+					<tr class="fee coupon_sale gg" data-fee="">
 						<th><?php echo $coupon_desc ?></th>
 						<td data-title="">
 							<button class="remove_coupon"  data-coupon="<?php echo $coupon_code; ?>"><?php  echo __( '[Remove]', 'woocommerce' )  ?></button>
@@ -238,7 +242,22 @@ defined( 'ABSPATH' ) || exit;
 			<th><?php esc_html_e( 'Total', 'woocommerce' ); ?></th>
 			<td data-title="<?php esc_attr_e( 'Total', 'woocommerce' ); ?>"><?php wc_cart_totals_order_total_html(); ?></td>
 		</tr>
-
+		<tr class="accumulated_point">
+			<?php  if( is_user_logged_in()) : 
+				if ( WC()->cart->get_cart_contents_count() > 0 ) {
+					foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+						if($i == 0){
+							$last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+							$i ++;
+						}
+					} 
+				}
+				$points = number_format($last_update_transaction['AccumulatedClubPointsValue'],2);?>
+				<th><?php printf( __( 'ברכישה זו תצבור %s נקודות' ),  $points );  ?></th>
+			<?php else: ?>
+				<th><?php esc_html_e( 'חברי מועדון צוברים 15% בנקודות', 'woocommerce' ); ?></th>
+			<?php endif;?>
+		</tr>
 		<?php do_action( 'woocommerce_cart_totals_after_order_total' ); ?>
 
 	</table>

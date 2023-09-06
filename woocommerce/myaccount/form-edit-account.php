@@ -192,21 +192,24 @@ do_action( 'woocommerce_before_edit_account_form' ); ?>
 				<input type="date" class="woocommerce-Input woocommerce-Input--text input-text" name="reg_birthday" id="edit_birthday" autocomplete="reg_birthday" value="<?php echo ( ! empty( $_POST['reg_birthday'] ) ) ? esc_attr( wp_unslash( $_POST['reg_birthday'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
 			</p>
 			<div class="clear"></div>
-			<div class="row_checkbox_wrapper condition_accept_wrapper">
-				<span class="woocommerce-input-wrapper checkbox_wrapper">
-					<input id="read_club_condition" type="checkbox" name="read_club_condition" <?php  checked( get_user_meta( $user->ID, 'read_club_condition', true ), '1' ); ?>>	
-					<label for="read_club_condition">
-						<?php echo get_field('checkbox_read_club_condition','option');?>
-						<span class="required">*</span>
-					</label>
-				</span>
-			</div>
-			<div class="clear"></div>
+			<?php if(false): ?>
+				<div class="row_checkbox_wrapper condition_accept_wrapper">
+					<span class="woocommerce-input-wrapper checkbox_wrapper">
+						<input id="read_club_condition" type="checkbox" name="read_club_condition" <?php  checked( get_user_meta( $user->ID, 'read_club_condition', true ), '1' ); ?>>	
+						<label for="read_club_condition">
+							<?php echo get_field('checkbox_read_club_condition','option');?>
+							<span class="required">*</span>
+						</label>
+					</span>
+				</div>
+				<div class="clear"></div>
+			<?php endif;?>
 			<div class="row_checkbox_wrapper condition_accept_wrapper">
 				<span class="woocommerce-input-wrapper checkbox_wrapper">
 					<input id="confirm_club_registration"  type="checkbox" name="want_club_registration"   <?php  checked( get_user_meta( $user->ID, 'want_club_registration', true ), '1' ); ?> >	
 					<label for="confirm_club_registration">
-						<?php esc_html_e( 'אישור  חברות למועדון', 'gant' );?>
+						<?php echo get_field('checkbox_read_club_condition','option');?>
+						<?//php esc_html_e( 'אישור  חברות למועדון', 'gant' );?>
 						<span class="required">*</span>
 					</label>
 				</span>

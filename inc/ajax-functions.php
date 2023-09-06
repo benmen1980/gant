@@ -11,7 +11,7 @@ function gant_ajax_enqueue() {
 	wp_localize_script('gant-ajax-scripts', 'ajax_obj', array( 
         'ajaxurl' => admin_url( 'admin-ajax.php' ),
         'current_page' => get_query_var( 'paged' ) ? get_query_var('paged') : 1,
-        'woo_shop_url' => get_permalink( wc_get_page_id( 'cart' ) )
+        'woo_shop_url' => wc_get_cart_url()
     ));
 }
 
@@ -168,6 +168,7 @@ function check_user_data_and_club(){
                 $config = json_decode(stripslashes($raw_option));
                 $branch_num = $config->BranchNumber;
                 $unique_id = $config->UniqueIdentifier;
+                $ChannelCode = $config->ChannelCode;
                 $pos_num = $config->POSNumber;
 
                 $priority_customer_number = get_user_meta($user_id, 'priority_customer_number', true);
@@ -178,7 +179,7 @@ function check_user_data_and_club(){
                     "BranchNumber" => $branch_num,
                     "POSNumber" => $pos_num,
                     "UniqueIdentifier" => $unique_id,
-                    "ChannelCode" => "",
+                    "ChannelCode" => $ChannelCode,
                     "VendorCode" => "",
                     "ExternalAccountID" => ""
                 ];
@@ -492,6 +493,8 @@ function filter_products(){
         $cat = $_REQUEST["categories"];
         foreach($cat as $item){
             $cat_name[] = get_the_category_by_ID($item);
+            $category = get_term_by('id', $item, 'product_cat');
+            $cat_slug[] = $category->slug;
         }
 
     }
@@ -518,8 +521,11 @@ function filter_products(){
         unset($tax_qry);
         $post_parent_in=[];
         $post_parent_in2 = [];
-        foreach( $cat_name as $name){
-            $post_parent_in1    = array_merge($post_parent_in,get_variation_parent_ids_from_term($name, 'product_cat', 'name' )); // Variations
+        // foreach( $cat_name as $name){
+        //     $post_parent_in1    = array_merge($post_parent_in,get_variation_parent_ids_from_term($name, 'product_cat', 'name' )); // Variations
+        // }
+        foreach( $cat_slug as $slug){
+            $post_parent_in1    = array_merge($post_parent_in,get_variation_parent_ids_from_term($slug, 'product_cat', 'slug' )); // Variations
         }
         if (isset( $_REQUEST['substainility'] )  && $_REQUEST['substainility'] != ''){ 
             $post_parent_in2    = get_variation_parent_ids_from_term('sustainable-choice', 'product_tag', 'slug' );
@@ -582,6 +588,7 @@ function filter_products(){
         'orderby'  => array(
             $order_by => $order,
             'menu_order'      => 'ASC',
+            'ID'   => 'DESC'
         ),
         //'orderby' => $order_by. ' menu_order',
         //'order' => $order,
@@ -607,6 +614,7 @@ function filter_products(){
         'orderby'  => array(
             $order_by => $order,
             'menu_order'      => 'ASC',
+            'ID'   => 'DESC'
         ),
         // 'orderby' => $order_by. ' menu_order',
         // 'order' => $order,
@@ -772,7 +780,7 @@ function product_remove() {
     //save in temporary array the new bag 
     $data = CardPOS::instance()->openOrUpdateTransaction(0,0,0);
     $data['temporaryTransactionNumber'] = $temporarytransactionnumber ;
-    $check = $temporarytransactionnumber;
+    $data['Transaction']['TransactionBasicDetails']['TemporaryTransactionNumber'] = $temporarytransactionnumber;
     $form_name = 'Transactions';
 
     $form_action = 'UpdateTransaction';
@@ -837,20 +845,74 @@ function product_remove() {
     exit();
 }
 
-// add_action( 'wp_ajax_update_cart_item_quantity', 'update_cart_item_quantity' );
-// add_action( 'wp_ajax_nopriv_update_cart_item_quantity', 'update_cart_item_quantity' );
+add_action( 'wp_ajax_delete_all_cart', 'delete_all_cart' );
+add_action( 'wp_ajax_nopriv_delete_all_cart', 'delete_all_cart' );
+function delete_all_cart() {
+    global $wpdb, $woocommerce;
+    $count = $woocommerce->cart->get_cart_contents_count();
 
-// function update_cart_item_quantity() {
-//     $product_id = intval( $_POST['product_id'] );
-//     $quantity = intval( $_POST['quantity'] );
-//     $cart_item_key = WC()->cart->generate_cart_id( $product_id );
-//     $cart_item = WC()->cart->get_cart_item( $cart_item_key );
-//     if ( $cart_item ) {
-//         WC()->cart->set_quantity( $cart_item_key, $quantity );
-//         echo 'success';
-//     }
-//     wp_die();
-// }
+    
+    //before removing check if bag is locked 
+    $form_name = 'Transactions';
+    $form_action = 'UpdateTransaction';
+    $data = CardPOS::instance()->openOrUpdateTransaction(0,0,0);
+    $data = json_encode($data);
+    $result = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
+    $error_code = $result["ErrorCode"];
+    //print_r($result);die;
+    //$error_src = $result['EdeaError']['ErrorSource'];
+    if ($error_code != 0) {
+        // the order is locked so cancel
+        if($error_code == 59){
+            CardPOS::instance()->cancel_transaction();
+            
+        }
+    }
+    foreach (WC()->cart->get_cart_contents() as $cart_item ) {
+        if($i == 0){
+            $temporarytransactionnumber = $cart_item['temporary_transaction_num'];
+            $i ++;
+        }
+    }
+    $cart = WC()->cart;
+    $cart->empty_cart();
+    //save in temporary array the new bag 
+    $data = CardPOS::instance()->openOrUpdateTransaction(0,0,0);
+    
+    $check = $temporarytransactionnumber;
+    $data['temporaryTransactionNumber'] = $temporarytransactionnumber ;
+    $data['Transaction']['TransactionBasicDetails']['TemporaryTransactionNumber'] = $temporarytransactionnumber;
+    //remove also הצטרפות למועדון if exist
+    $data['Transaction']['OrderItems'] = [];
+    $form_name = 'Transactions';
+
+    $form_action = 'UpdateTransaction';
+    $data = json_encode($data);
+    
+    //print_r($data);die();
+    $result = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action,  ['body' => $data], true);
+    $passed_validation = apply_filters('woocommerce_add_to_cart_validation', true, $product_id, $quantity,$cart_item_data);
+    $product_status = get_post_status($product_id);
+        //$result =  CardPOS::instance()->openOrUpdateTransaction($product_id,$quantity, $variation_id );
+    $error_code = $result["ErrorCode"];
+    if ($error_code == 0) {
+        //update_bag_after_sync($passed_validation,$product_status,$result);
+        //WC_AJAX :: get_refreshed_fragments();
+    }
+    
+    else{
+        
+        $error_msg = $result['EdeaError']['DisplayErrorMessage'];
+        wc_add_notice( 'error in update transaction when removing all products from bag: '.$error_msg, 'error' );
+        exit;
+    }
+
+
+    
+    exit();
+}
+
+
 
 
 
@@ -861,6 +923,65 @@ add_action('wp_ajax_nopriv_update_bag', 'update_bag');
         
 function update_bag() {
     global $woocommerce;
+
+    // when update bag, update also user point and birthday
+    if ( is_user_logged_in()) {
+        $user_id = get_current_user_id();
+        //update user points and birthday
+        $raw_option = WooAPI::instance()->option('setting-config');
+        $raw_option = str_replace(array("\n", "\t", "\r"), '', $raw_option);
+        $config = json_decode(stripslashes($raw_option));
+        $branch_num = $config->BranchNumber;
+        $unique_id = $config->UniqueIdentifier;
+        $pos_num = $config->POSNumber;
+
+        $priority_customer_number = get_user_meta($user_id, 'priority_customer_number', true);
+
+        $data["POSCustomerNumber"] = $priority_customer_number;
+        $data["ClubCode"] = "01";
+        $data['UniquePOSIdentifier'] = [
+            "BranchNumber" => $branch_num,
+            "POSNumber" => $pos_num,
+            "UniqueIdentifier" => $unique_id,
+            "ChannelCode" => "",
+            "VendorCode" => "",
+            "ExternalAccountID" => ""
+        ];
+
+        $form_name =  'PosCustomers';
+
+        $form_action = 'GetPOSCustomerWithExtendedDetails';
+
+        $body_array = CardPOS::instance()->makeRequestCardPos('POST', $form_name , $form_action, ['body' => json_encode($data)], true);
+        $error_code = $body_array["ErrorCode"];
+        if($error_code == 0){
+            if(!empty($body_array["POSCustomerExtendedDetails"]["PointsPerPointsTypeDetails"])){
+                $points = $body_array["POSCustomerExtendedDetails"]["PointsPerPointsTypeDetails"][0]["TotalPoints"];
+                update_user_meta( $user_id, 'points_club', $points);
+            } 
+            if(!empty($body_array["POSCustomerExtendedDetails"]["CouponEligibilities"])){
+                $coupon = $body_array["POSCustomerExtendedDetails"]["CouponEligibilities"][0]["OriginalCouponDescription"];
+                $coupon_code = $body_array["POSCustomerExtendedDetails"]["CouponEligibilities"][0]["CouponCode"];
+                if($coupon == "יומהולדת"){
+                    update_user_meta( $user_id, 'birthday_coupon', $coupon_code);
+                }
+
+            }
+            else{
+                if(get_user_meta( $user_id, 'birthday_coupon', true ))
+                    delete_user_meta( $user_id, 'birthday_coupon' );
+            }
+        }
+        else{
+            $message = $body_array['EdeaError']['DisplayErrorMessage'];
+            $multiple_recipients = array(
+                get_bloginfo('admin_email'),
+                'elisheva.g@simplyct.co.il'
+            );
+            $subj = 'Error sync user with extended details when update bag: '.$user_id;
+            wp_mail( $multiple_recipients, $subj, $message );
+        }
+    }
 
     $data = CardPOS::instance()->openOrUpdateTransaction(0,0, 0 );
     $temporarytransactionnumber = $data['temporaryTransactionNumber'];
@@ -905,6 +1026,7 @@ function update_bag() {
                 $config = json_decode(stripslashes($raw_option));
                 $branch_num = $config->BranchNumber;
                 $unique_id = $config->UniqueIdentifier;
+                $ChannelCode = $config->ChannelCode;
                 $pos_num = $config->POSNumber;
                 //retrieve approve result from cart to send it to cancel to allow adding product to bag after that te btransaction was locked
                 $data = $cart_item['lastapprove_transaction'];
@@ -912,7 +1034,7 @@ function update_bag() {
                     "BranchNumber" => $branch_num,
                     "POSNumber" => $pos_num,
                     "UniqueIdentifier" => $unique_id,
-                    "ChannelCode" => "",
+                    "ChannelCode" => $ChannelCode,
                     "VendorCode" => "",
                     "ExternalAccountID" => ""
                 ];
@@ -1005,6 +1127,7 @@ function update_transaction_from_cart(){
     $config = json_decode(stripslashes($raw_option));
     $branch_num = $config->BranchNumber;
     $unique_id = $config->UniqueIdentifier;
+    $ChannelCode = $config->ChannelCode;
     $pos_num = $config->POSNumber;
 
     if (is_user_logged_in() ) {
@@ -1121,7 +1244,7 @@ function update_transaction_from_cart(){
         "BranchNumber" => $branch_num,
         "POSNumber" => $pos_num,
         "UniqueIdentifier" => $unique_id,
-        "ChannelCode" => "",
+        "ChannelCode" => $ChannelCode,
         "VendorCode" => "",
         "ExternalAccountID" => ""
     ];
@@ -1164,7 +1287,7 @@ function update_transaction_from_cart(){
                     "BranchNumber" => $branch_num,
                     "POSNumber" => $pos_num,
                     "UniqueIdentifier" => $unique_id,
-                    "ChannelCode" => "",
+                    "ChannelCode" => $ChannelCode,
                     "VendorCode" => "",
                     "ExternalAccountID" => ""
                 ];
@@ -1271,18 +1394,21 @@ function woocommerce_ajax_add_to_cart() {
 }
 
 function update_bag_after_sync($passed_validation,$product_status,$result){
-    $transaction_number = $result["Transaction"]["TemporaryTransactionNumber"]; //T0771012198
+    $transaction_number = $result["Transaction"]["TemporaryTransactionNumber"]; 
     $cart_item_data = array('temporary_transaction_num' => $transaction_number);
 
     $result_order_items = $result["Transaction"]["OrderItems"];
-    //print_r($result_order_items);
+
     //before adding to bag , remove all products from bag
+    // if ( WC()->cart->get_cart_contents_count() > 0 ) {
+    //     foreach ( WC()->cart->get_cart_contents() as $key => $cart_item ) {
+    //         WC()->cart->remove_cart_item($key);
+    //     }
+    // }
     if ( WC()->cart->get_cart_contents_count() > 0 ) {
-        foreach ( WC()->cart->get_cart_contents() as $key => $cart_item ) {
-            WC()->cart->remove_cart_item($key);
-        }
+        $cart = WC()->cart;
+        $cart->empty_cart();
     }
-   // echo 'enter here1';
    if(!empty($result_order_items)){
     foreach($result_order_items as $key=>$item){
         //echo 'enter here2';
@@ -1423,6 +1549,7 @@ function apply_coupon_programatically() {
                 if(!empty($result["FailedCoupons"]["FailedCouponsToAdd"])){
                     $failedCouponMsg = $result["FailedCoupons"]["FailedCouponsToAdd"][0]["CouponError"]["DisplayErrorMessage"];
                     wc_add_notice( $failedCouponMsg, 'error' );
+                    
                 }
                 // שגיאה כללית
                 else{
@@ -1843,13 +1970,13 @@ function remove_coupon_programatically1() {
 function woo_add_cart_fee() {
    global $woocommerce;
    //remove coupon fee after logut because session is cleared
-//    if( (WC()->cart->get_cart_contents_count() > 0) && (!isset( $_SESSION['coupon_code']) || !isset( $_SESSION['coupon_birthday_code']))){
-//     foreach(  WC()->cart->get_fees() as $fee_key => $fee ) {
-//         if ( $fee->amount < 0 ){
-//             WC()->cart->remove_fee( $fee_key );
-//         }
-//     }
-//    }
+    //    if( (WC()->cart->get_cart_contents_count() > 0) && (!isset( $_SESSION['coupon_code']) || !isset( $_SESSION['coupon_birthday_code']))){
+    //     foreach(  WC()->cart->get_fees() as $fee_key => $fee ) {
+    //         if ( $fee->amount < 0 ){
+    //             WC()->cart->remove_fee( $fee_key );
+    //         }
+    //     }
+    //    }
    $data = CardPOS::instance()->openOrUpdateTransaction(0,0, 0 );
    $temporarytransactionnumber = $data['temporaryTransactionNumber'];
    $form_name = 'Transactions';

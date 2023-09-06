@@ -63,7 +63,7 @@ get_header();
 
                 <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
                     <label for="reg_birthday"><?php esc_html_e( 'תאריך לידה', 'gant' ); ?> <span class="required">*</span></label>
-                    <input type="date" class="woocommerce-Input woocommerce-Input--text input-text" name="reg_birthday" id="reg_birthday" autocomplete="reg_birthday" value="<?php echo ( ! empty( $_POST['reg_birthday'] ) ) ? esc_attr( wp_unslash( $_POST['reg_birthday'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
+                    <input type="text" placeholder="dd/mm/yyyy" class="woocommerce-Input woocommerce-Input--text input-text" name="reg_birthday" id="reg_birthday" autocomplete="reg_birthday" value="<?php echo ( ! empty( $_POST['reg_birthday'] ) ) ? esc_attr( wp_unslash( $_POST['reg_birthday'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
                 </p>
 
 
@@ -83,32 +83,45 @@ get_header();
                     <label for="reg_id"><?php esc_html_e( 'ת"ז', 'gant' ); ?>&nbsp;<span class="required">*</span></label>
                     <input type="text" class="woocommerce-Input woocommerce-Input--id input-text" name="account_id" id="reg_id" value="<?php echo ( ! empty( $_POST['account_id'] ) ) ? esc_attr( wp_unslash( $_POST['account_id'] ) ) : ''; ?>" />
                 </p>
-                <div class="row_checkbox_wrapper condition_accept_wrapper">
-                    <span class="woocommerce-input-wrapper checkbox_wrapper">
-                        <input id="read_club_condition" type="checkbox" name="read_club_condition" <?php  checked( get_user_meta( $user->ID, 'read_club_condition', true ), '1' ); ?>>	
-                        <label for="read_club_condition">
-                        <?php echo get_field('checkbox_read_club_condition','option');?>
-                        </label>
+                <?php if ( 'no' === get_option( 'woocommerce_registration_generate_password' ) ) : ?>
+                    
+                    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide pswd_field_wrapper">
+                    <label for="reg_password"><?php esc_html_e( 'Password', 'woocommerce' ); ?> <span class="required">*</span></label>
+                    <span class="password-input">
+                        <input type="password" class="woocommerce-Input woocommerce-Input--text input-text" name="password" id="reg_password" autocomplete="new-password" value="<?php echo ( ! empty( $_POST['password'] ) ) ? esc_attr( wp_unslash( $_POST['password'] ) ) : ''; ?>"/> 
                     </span>
+                    <span><?php esc_html_e( 'סיסמה זו תשמש אותך להתחברות לאתר', 'gant' ); ?></span>
+                </p>
+
+                <?php else : ?>
+
+                    <p class="send_pswd_msg"><?php esc_html_e( 'סיסמה תישלח לכתובת המייל שלך.', 'gant' ); ?></p>
+
+                <?php endif; ?>
+                <div class="row_before_submit">
+                    <?php echo get_field('desc_before_submit','option');?>
                 </div>
+                <?php if(false): ?>
+                    <div class="row_checkbox_wrapper condition_accept_wrapper">
+                        <span class="woocommerce-input-wrapper checkbox_wrapper">
+                            <input id="read_club_condition" type="checkbox" name="read_club_condition" <?php  checked( get_user_meta( $user->ID, 'read_club_condition', true ), '1' ); ?>>	
+                            <label for="read_club_condition">
+                            <?php echo get_field('checkbox_read_club_condition','option');?>
+                            </label>
+                        </span>
+                    </div>
+                <?php endif; ?>
                 <div class="row_checkbox_wrapper condition_accept_wrapper">
                     <span class="woocommerce-input-wrapper checkbox_wrapper">
                         <input id="want_club_registration" type="checkbox" name="want_club_registration"   <?php  checked( get_user_meta( $user->ID, 'want_club_registration', true ), '1' ); ?> >	
                         <label for="want_club_registration">
-                            <?php esc_html_e( 'הצטרף לחבר מועדון (לרגל ההשקה, הצטרפות למועדון היא בחינם) ', 'gant' );?>
+                        <?php echo get_field('checkbox_read_club_condition','option');?>
+                            <?//php esc_html_e( 'הצטרף לחבר מועדון (לרגל ההשקה, הצטרפות למועדון היא בחינם) ', 'gant' );?>
                             <?php ?>
                         </label>
                     </span>
                 </div>
-                <div class="row_checkbox_wrapper condition_accept_wrapper">
-                    <span class="woocommerce-input-wrapper checkbox_wrapper">
-                        <input id="agree_business_owner" type="checkbox" name="agree_business_owner"   <?php  checked( get_user_meta( $user->ID, 'agree_business_owner', true ), 'on' ); ?> >	
-                        <label for="agree_business_owner">
-                            <?php echo get_field('checkbox_privacy','option');?>
-                        </label>
-                    </span>
-                </div>
-                
+      
                 <div class="row_checkbox_wrapper condition_accept_wrapper">
                     <span class="woocommerce-input-wrapper checkbox_wrapper">
                         <input id="read_site_condition" type="checkbox" name="read_site_condition" <?php  checked( get_user_meta( $user->ID, 'read_site_condition', true ), '1'); ?>>	
@@ -118,23 +131,17 @@ get_header();
                     </span>
                 </div>
                 
-                
-                <div class="row_before_submit">
-                    <?//php echo get_field('desc_before_submit','option');?>
+                <div class="row_checkbox_wrapper condition_accept_wrapper">
+                    <span class="woocommerce-input-wrapper checkbox_wrapper">
+                        <input id="agree_business_owner" type="checkbox" name="agree_business_owner"   <?php  checked( get_user_meta( $user->ID, 'agree_business_owner', true ), 'on' ); ?> >	
+                        <label for="agree_business_owner">
+                            <?php echo get_field('checkbox_privacy','option');?>
+                        </label>
+                    </span>
                 </div>
+                
 
-                <?php if ( 'no' === get_option( 'woocommerce_registration_generate_password' ) ) : ?>
-                    
-                    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-                    <label for="reg_password"><?php esc_html_e( 'Password', 'woocommerce' ); ?> <span class="required">*</span></label>
-                    <input type="password" class="woocommerce-Input woocommerce-Input--text input-text" name="password" id="reg_password" autocomplete="new-password" />
-                    </p>
-
-                <?php else : ?>
-
-                    <p class="send_pswd_msg"><?php esc_html_e( 'סיסמה תישלח לכתובת המייל שלך.', 'gant' ); ?></p>
-
-                <?php endif; ?>
+                <div class="all_error_msg"></div>
                 <?php if($registration_store  == false): ?>
                     <div class="validation_token_wrapper">
                         <button type="button" class="send_validation_sms">
@@ -157,13 +164,13 @@ get_header();
         
                 <p class="woocommerce-FormRow form-row form-row-submit">
                     <?php wp_nonce_field( 'woocommerce-register', 'woocommerce-register-nonce' ); ?>
-                    <?php if($registration_store  == true): ?>
+                    <?//php if($registration_store  == true): ?>
                         <button type="submit" class="button-secondary register_btn" name="register" value="<?php esc_attr_e( 'Register', 'woocommerce' ); ?>">
                             <span class="button_label">
                                 <?php esc_html_e( 'Register', 'woocommerce' ); ?>
                             </span>
                         </button>
-                    <?php endif; ?>    
+                    <?//php endif; ?>    
                 </p>
         
                 <?php do_action( 'woocommerce_register_form_end' ); ?>

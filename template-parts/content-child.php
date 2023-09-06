@@ -21,13 +21,15 @@ $args_cat = array(
     'post_type' =>  array('product', 'product_variation'),
     'post_status' => array('publish'),
     //'product_cat' => $current_term->slug,
-    'posts_per_page' => $posts_per_page,
+    //'posts_per_page' => $posts_per_page,
+    'posts_per_page' => (isset($_REQUEST['page'])) ?  ((int)get_option('posts_per_page') * $_REQUEST['page']) :  $posts_per_page ,
     'paged' => 1,
     'meta_key'       => 'total_sales',
     //'orderby'        => 'meta_value_num menu_order',
     'orderby'  => array(
 		'meta_value_num' => 'DESC',
 		'menu_order'      => 'ASC',
+        'ID'   => 'DESC'
 	),
     'meta_query' => array(
         'relation'		=> 'AND',
@@ -283,11 +285,11 @@ $radio_selected = $related_product['select_cat_or_pdt'];
                         <span class="count_result"><?php echo $total_count ?></span>
                         <span><?php echo __('מוצרים','gant')?></span>
                     </p>
-                    <button type="button" class="button-secondary load_more_pdts" data-cat="<?php echo $current_term_id ?>" data-paged="1" total_pdts="<?php echo $count;?>" posts_per_page="<?php echo $posts_per_page;?>" max_page="<?php echo $max_page;?>">
+                    <button type="button" class="button-secondary load_more_pdts" data-cat="<?php echo $current_term_id ?>" data-paged="<?php echo (isset($_REQUEST['page'])) ? $_REQUEST['page'] : 1; ?>" total_pdts="<?php echo $count;?>" posts_per_page="<?php echo $posts_per_page;?>" max_page="<?php echo $max_page;?>">
                         <span class="button_label">
-                            <span> <?php echo __('הצג','gant')?></span>
-                            <span class="more_pdt_to_show"> <?php echo (($total_count - $current_count) <  $posts_per_page) ? ($total_count - $current_count) : $posts_per_page; ?></span>
-                            <span class="more_pdt_title"> <?php echo ($total_count - $current_count == 1) ?  __('מוצר נוסף','gant') : __('מוצרים נוספים','gant')?></span>
+                            <!-- <span> <?//php echo __(' הצג ' ,'gant').' '; ?></span> -->
+                            <!-- <span class="more_pdt_to_show"> <?//php echo (($total_count - $current_count) <  $posts_per_page) ? ($total_count - $current_count) : $posts_per_page; ?></span> -->
+                            <span class="more_pdt_title"> <?php echo ($total_count - $current_count == 1) ?  __('הצג מוצר נוסף','gant') : __('הצג מוצרים נוספים','gant');?></span>
                         </span>
                         <div class="loader_wrap">
                             <div class="loader_spinner">

@@ -19,11 +19,65 @@
 
 	<?php wp_head(); ?>
 
-	<!-- HolyClock.com <HEAD> code for dev-gant.tmpurl.co.il -->
-	<script>/*<![CDATA[*/_holyclock_id="5afa1b48ce4ac7fe1f18443494e52348";_holyclock_tag='<s'+'cript src\x3d"//www.holyclock.com/holyclock.js?'+Math.floor(+new Date/864E5)+'">\x3c/script>';null!==document.cookie.match(/(?:^|;)\s*_holyclock_qr=\s*\w/)&&null===window.location.hash.match(/#holyclock=qr(?=#|$)/)&&document.write(_holyclock_tag);//]]></script>
-	<!-- HolyClock.com <HEAD> code for dev-gant.tmpurl.co.il -->
-</head>
 
+	<!-- HolyClock.com <HEAD> code for gant.co.il -->
+	<script>/*<![CDATA[*/_holyclock_id="1960691770ac8ac79cfddc91e4f9872f";_holyclock_tag='<s'+'cript src\x3d"//www.holyclock.com/holyclock.js?'+Math.floor(+new Date/864E5)+'">\x3c/script>';null!==document.cookie.match(/(?:^|;)\s*_holyclock_qr=\s*\w/)&&null===window.location.hash.match(/#holyclock=qr(?=#|$)/)&&document.write(_holyclock_tag);//]]></script>
+
+	<!-- Hotjar Tracking Code for GANT -->
+	<script>
+		(function(h,o,t,j,a,r){
+
+			h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+
+			h._hjSettings={hjid:3505960,hjsv:6};
+
+			a=o.getElementsByTagName('head')[0];
+
+			r=o.createElement('script');r.async=1;
+
+			r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+
+			a.appendChild(r);
+
+		})(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+	</script>
+</head>
+<!-- Accessibility Code for "gant.co.il" -->
+<script>
+window.interdeal = {
+    "sitekey": "5eed781575ffc4d7a65c9c1d8a495b42",
+    "Position": "Left",
+    "Menulang": "HE",
+    "domains": {
+        "js": "https://js.nagich.co.il/",
+        "acc": "https://access.nagich.co.il/"
+    },
+    "btnStyle": {
+        "vPosition": [
+            "80%",
+            null
+        ],
+        "scale": [
+            "0.6",
+            "0.6"
+        ],
+        "icon": {
+            "type": 11,
+            "shape": "circle",
+            "outline": true
+        }
+    }
+};
+(function(doc, head, body){
+	var coreCall             = doc.createElement('script');
+	coreCall.src             = interdeal.domains.js + 'core/4.5.8/accessibility.js';
+	coreCall.defer           = true;
+	coreCall.integrity       = 'sha512-edRZXolhkUWHM/uu0oiEu0tD39SPOhnl5a2KM+62YWIfb4M5oSMjvyl2NPXtGq8McfJl88bKtaxljjViGqQXtA==';
+	coreCall.crossOrigin     = 'anonymous';
+	coreCall.setAttribute('data-cfasync', true );
+	body? body.appendChild(coreCall) : head.appendChild(coreCall);
+})(document, document.head, document.body);
+</script>
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 <div id="page" class="site">

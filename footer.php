@@ -13,7 +13,7 @@
 	<?php if ( !is_user_logged_in() && !is_account_page() && !is_page_template('page-templates/register.php') ) : 
 		get_template_part('modules/section','banner_register');
 	endif; ?>
-	<footer id="colophon" class="site-footer">
+	<footer id="colophon" class="site-footer ggg">
 		<div class="footer_content">
 			<?php 
 				for ($i = 1; $i < 6; $i++) {
@@ -47,30 +47,30 @@
 			<div class="r_side">
 				<button class="open_language_modal">
 					<div class="current_lang_wrapper">
-						<img src="<?php echo get_template_directory_uri();?>/dist/images/Isreal.svg" alt="">
+						<img src="<?php echo get_template_directory_uri();?>/dist/images/Isreal.svg" alt="<?php esc_html_e( 'ישראל', 'gant' ); ?>">
 						<?php esc_html_e( 'ישראל', 'gant' ); ?>
 					</div>
 				</button>
 				<a class="find_store_wrap" href="/store" title="<?php esc_html_e( 'מצא חנויות', 'gant' ); ?>">
-					<img src="<?php echo get_template_directory_uri();?>/dist/images/map.svg" alt="">
+					<img src="<?php echo get_template_directory_uri();?>/dist/images/map.svg" alt="<?php esc_html_e( 'מצא חנויות', 'gant' ); ?>">
 					<?php esc_html_e( 'מצא חנויות', 'gant' ); ?>
 				</a>
 			</div>
 			<div class="center_logo">
 				<a href="/" title="גאנט ישראל">
-					<img src="<?php echo get_template_directory_uri();?>/dist/images/GANT-Logo.svg" aria-hidden="false" alt="">
+					<img src="<?php echo get_template_directory_uri();?>/dist/images/GANT-Logo.svg" aria-hidden="false" alt="גאנט ישראל">
 				</a>
 			</div>
 			<div class="l_side">
 				<div class="social_link_wrap">
 					<a href="<?php echo get_field('instagram_link','option'); ?>" target="_blank" ari-label="<?php esc_html_e( 'איסטגרם', 'gant' ); ?>">
-						<img src="<?php echo get_template_directory_uri();?>/dist/images/instagram.svg" aria-hidden="false" alt="">
+						<img src="<?php echo get_template_directory_uri();?>/dist/images/instagram.svg" aria-hidden="false" alt="<?php esc_html_e( 'איסטגרם', 'gant' ); ?>">
 					</a>
 					<a href="<?php echo get_field('youtube_link','option'); ?>" target="_blank" ari-label="<?php esc_html_e( 'יוטיוב', 'gant' ); ?>">
-						<img src="<?php echo get_template_directory_uri();?>/dist/images/youtube.svg" aria-hidden="false" alt="">
+						<img src="<?php echo get_template_directory_uri();?>/dist/images/youtube.svg" aria-hidden="false" alt="<?php esc_html_e( 'יוטיוב', 'gant' ); ?>">
 					</a>
 					<a href="<?php echo get_field('facebook_link','option'); ?>" target="_blank" ari-label="<?php esc_html_e( 'פייסבוק', 'gant' ); ?>">
-						<img src="<?php echo get_template_directory_uri();?>/dist/images/facebook.svg" aria-hidden="false" alt="">
+						<img src="<?php echo get_template_directory_uri();?>/dist/images/facebook.svg" aria-hidden="false" alt="<?php esc_html_e( 'פייסבוק', 'gant' ); ?>">
 					</a>
 				</div>
 				<div class="copyright_wrap">
@@ -108,7 +108,7 @@
 									$name = get_sub_field('country_name'); ?>
 									<li class="country_selector_item">
 										<a href="<?php echo $site; ?>">
-											<img src="<?php echo $icon;?>" alt="">
+											<img src="<?php echo $icon;?>" alt="<?php echo $name; ?>">
 											<span><?php echo $name; ?></span>
 										</a>
 									</li>
@@ -130,7 +130,9 @@
 
 <?php wp_footer(); ?>
 <!-- HolyClock.com <BODY> code -->
+
 <script>document.write(typeof _holyclock_tag=="string"?_holyclock_tag:'HolyClock \x26lt;head\x26gt; tag missing!');</script>
+
 <!-- HolyClock.com <BODY> code -->
 
 <!-- Start of Glassix Chat Widget -->

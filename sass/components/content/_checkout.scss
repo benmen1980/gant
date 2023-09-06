@@ -1,236 +1,283 @@
 .woocommerce-checkout{
-   .entry-header{
-    @media screen and (max-width: 1023px) {
-        border-bottom: 1px solid #000;
-    }
-        h1{
-            font-size: 90px;
-            font-weight: 900;
-            padding: 0 30px;
-            @media screen and (max-width: 1023px) {
-                font-size: 45px;
-                padding: 0 20px;
-            }
-        }
-    }
-    .entry-content{
-        margin-top: 0;
-        @media screen and (max-width: 1023px) {
-            padding: 10px 15px 20px;
-        }
-        .woocommerce-form-coupon-toggle{
-            .woocommerce-info{
-                margin-bottom: 0;
-            }
-        }
-        form{
-            .checkout_summary_wrap{
-                display: flex;
-                border-top: 1px solid #000;
-                input.input-text, textarea{
-                    text-align: right;
-                    padding: 14px 20px;
-                }
-                @media screen and (max-width: 1023px) {
-                    display: block;
-                    border-top: 0;
-                }
-            }
-            
-            
-            #customer_details.col2-set{
-                flex-basis: 62.5%;
-                max-width: 62.5%;
-                padding: 60px 40px 80px;
-                border-left: 1px solid #000;
-                @media screen and (max-width: 1023px) {
-                    border-left: 0;
-                    max-width: none;
-                    width: 100%;
-                    padding: 0;
-                }
-                .woocommerce-billing-fields{
-                    h3{
-                        font-size: 50px;
-                        font-weight: 900;
-                        @media screen and (max-width: 1023px) {
-                            font-size: 35px;
+    .entry-header{
+     @media screen and (max-width: 1023px) {
+         border-bottom: 1px solid #000;
+     }
+         h1{
+             font-size: 90px;
+             font-weight: 900;
+             padding: 0 30px;
+             @media screen and (max-width: 1023px) {
+                 font-size: 45px;
+                 padding: 0 20px;
+             }
+         }
+     }
+     .entry-content{
+         margin-top: 0;
+         @media screen and (max-width: 1023px) {
+             padding: 10px 15px 20px;
+         }
+         .woocommerce-form-coupon-toggle{
+             .woocommerce-info{
+                 margin-bottom: 0;
+             }
+         }
+         form{
+             .checkout_summary_wrap{
+                 display: flex;
+                 border-top: 1px solid #000;
+                 input.input-text, textarea{
+                     text-align: right;
+                     padding: 14px 20px;
+                 }
+                 @media screen and (max-width: 1023px) {
+                     display: block;
+                     border-top: 0;
+                 }
+             }
+             
+             
+             #customer_details.col2-set{
+                 flex-basis: 62.5%;
+                 max-width: 62.5%;
+                 padding: 60px 40px 80px;
+                 border-left: 1px solid #000;
+                 @media screen and (max-width: 1023px) {
+                     border-left: 0;
+                     max-width: none;
+                     width: 100%;
+                     padding: 0;
+                 }
+                 .woocommerce-billing-fields{
+                     h3{
+                         font-size: 50px;
+                         font-weight: 900;
+                         @media screen and (max-width: 1023px) {
+                             font-size: 35px;
+                         }
+                     }
+                     .form-row#billing_address_1_field,.form-row#billing_city_field{
+                         input{
+                             text-align: right;
+                             padding: 14px 20px 14px 20px;
+                         }
+                     }
+ 
+                 }
+                 .woocommerce_checkout_shipping{
+                     margin-top: 50px;
+                     h3#ship-to-different-address{
+                         font-size: 20px;
+                         font-weight: 900;
+                     }
+                     #gift_wrap_field .optional,#greeting_card_field .optional{
+                         display: none;
+                     }
+                 }
+             }
+             #order_review{
+                 flex-basis: 37.5%;
+                 max-width: 37.5%;
+                 padding: 60px 40px 80px;
+                 @media screen and (max-width: 1023px) {
+                     max-width: none;
+                     width: 100%;
+                     padding: 0px;
+                 }
+                 h3#order_review_heading{
+                     font-size: 50px;
+                     font-weight: 900;
+                     @media screen and (max-width: 1023px) {
+                         font-size: 35px;
+                         border-top: 1px solid;
+                         padding-top: 20px;
+                         margin-top: 20px;
+                     }
+                 }
+                 table.shop_table{
+                     border: 0;
+                     border-bottom: 1px solid #d3ced2;
+                     border-radius: 0;
+                     font-size: 18px;
+                     @media screen and (max-width: 1023px) {
+                         font-size: 16px;
+                         
+                     }
+                     tr{
+                         td{
+                             @media screen and (max-width: 1023px) {
+                                 padding: 9px 0px 9px 5px;
+                                 vertical-align: top;
+                             }
+                             //border:0;
+                             ul#shipping_method{
+                                 li{
+                                     input{
+                                         vertical-align: middle;
+                                         margin-top: 0;
+                                         
+                                     }
+                                     select#storelist{
+                                         margin: 20px 0;
+                                         padding: 10px;
+                                     }
+                                 }
+                             }
+                         }
+                         th{
+                             //border:0;
+                             width: 60%;
+                             vertical-align: top;
+                             padding: 9px 0 5px;
+                         }
+                         &.coupon{
+                             width: 100%;
+                             td{
+                                 @media screen and (max-width: 1023px) {
+                                     padding-right: 9px;
+                                 }
+                             }
+                         }
+                     }
+   
+                     .cart-subtotal{
+                         th{
+                             padding: 9px 0 5px;
+                         }
+ 
+                     }
+                     .order-total{
+                         font-size: 40px;
+                         font-weight: 900;
+                         @media screen and (max-width: 1023px) {
+                             font-size: 25px;
+                         }
+                         th{
+                             font-weight: 900;
+                         }
+                     }
+                    .accumulated_point{
+                        th{
+                            border-top: 0;
+                            color: red;
                         }
-                    }
-                    .form-row#billing_address_1_field,.form-row#billing_city_field{
-                        input{
-                            text-align: right;
-                            padding: 14px 20px 14px 20px;
-                        }
-                    }
-
-                }
-                .woocommerce_checkout_shipping{
-                    margin-top: 50px;
-                    h3#ship-to-different-address{
-                        font-size: 20px;
-                        font-weight: 900;
-                    }
-                    #gift_wrap_field .optional,#greeting_card_field .optional{
-                        display: none;
-                    }
-                }
-            }
-            #order_review{
-                flex-basis: 37.5%;
-                max-width: 37.5%;
-                padding: 60px 40px 80px;
-                @media screen and (max-width: 1023px) {
-                    max-width: none;
-                    width: 100%;
-                    padding: 0px;
-                }
-                h3#order_review_heading{
-                    font-size: 50px;
-                    font-weight: 900;
-                    @media screen and (max-width: 1023px) {
-                        font-size: 35px;
-                        border-top: 1px solid;
-                        padding-top: 20px;
-                        margin-top: 20px;
-                    }
-                }
-                table.shop_table{
-                    border: 0;
-                    border-bottom: 1px solid #d3ced2;
-                    border-radius: 0;
-                    font-size: 18px;
-                    @media screen and (max-width: 1023px) {
-                        font-size: 16px;
                         
                     }
-                    tr{
-                        td{
-                            @media screen and (max-width: 1023px) {
-                                padding: 9px 0px 9px 5px;
-                                vertical-align: top;
-                            }
-                            //border:0;
-                            ul#shipping_method{
-                                li{
-                                    input{
-                                        vertical-align: middle;
-                                        margin-top: 0;
-                                        
-                                    }
-                                    select#storelist{
-                                        margin: 20px 0;
-                                        padding: 10px;
-                                    }
-                                }
-                            }
-                        }
-                        th{
-                            //border:0;
-                            width: 60%;
-                            vertical-align: top;
-                            padding: 9px 0 5px;
-                        }
-                        &.coupon{
-                            width: 100%;
-                            td{
+                 }
+                 .display_coupon_btn{
+                     display: none;
+                 }
+                 .display_coupon_btn_wrapper{
+                     & > th{
+                         padding: 0 12px;
+                         width: 100%;
+                         .display_coupon_btn{
+                             padding: 0px;
+                             margin: 12px 0;
+                             border: 0;
+                             display: block;
+                             text-align: right;
+                         }
+                     }
+                     &> *{
+                         border: 0!important;
+                     }
+                 }
+ 
+ 
+                 #payment{
+                     font-size: 19px;
+                     background: #fff;
+                     h3.checkout_payment_type{
+                         font-size: 30px;
+                         font-weight: 900;
+                         padding: 0px 15px;
+                         @media screen and (max-width: 1023px) {
+                             font-size: 25px;
+                             font-weight: 900;
+                             padding: 0px 0px;
+                         }
+                     }
+                     .place-order{
+                         @media screen and (max-width: 1023px) {
+                             padding: 0px 0px;
+                             font-size: 16px;
+                             .woocommerce-terms-and-conditions-wrapper{
+                                 margin-bottom: 10px;
+                             }
+                         }
+                     }
+                     .wc_payment_methods{
+                         @media screen and (max-width: 1023px) {
+                             padding-left: 0;
+                             padding-right: 0;
+                         }
+ 
+                     }
+                     .newsletter_accept_wrapper {
+                        .checkbox_wrapper {
+                            display: flex;
+                            align-items: flex-start;
+                            -webkit-box-align: start;
+                    
+                            input {
+                                margin-top: 11px;
+                                margin-left: 12px;
+                    
                                 @media screen and (max-width: 1023px) {
-                                    padding-right: 9px;
+                                    margin-top: 8px;
+                                    margin-left: 10px;
+                                }
+                    
+                            }
+                        }
+                    }
+                    
+                    .woocommerce-terms-and-conditions-wrapper {
+                        display: flex;
+                        align-items: center;
+                        -webkit-box-align: center;
+                        flex-wrap: nowrap; 
+                        margin: 10px 0 20px 0;                 
+                        p.form-row.validate-required {
+                            margin: 0px;
+                    
+                            input {
+                                margin-left: 10px;
+                                @media screen and (max-width: 1440px) {
+                                    margin-top: -27px !important;
+                                }
+                                @media screen and (max-width: 1023px) {
+                                    margin-top: -24px !important;
+                                    margin-left: 6px !important;
                                 }
                             }
                         }
                     }
-  
-                    .cart-subtotal{
-                        th{
-                            padding: 9px 0 5px;
-                        }
-
-                    }
-                    .order-total{
-                        font-size: 40px;
-                        font-weight: 900;
-                        @media screen and (max-width: 1023px) {
-                            font-size: 25px;
-                        }
-                        th{
-                            font-weight: 900;
-                        }
-                    }
-                }
-                .display_coupon_btn{
-                    display: none;
-                }
-                .display_coupon_btn_wrapper{
-                    & > th{
-                        padding: 0 12px;
-                        width: 100%;
-                        .display_coupon_btn{
-                            padding: 0px;
-                            margin: 12px 0;
-                            border: 0;
-                            display: block;
-                            text-align: right;
-                        }
-                    }
-                    &> *{
-                        border: 0!important;
-                    }
-                }
-
-
-                #payment{
-                    font-size: 18px;
-                    background: #fff;
-                    h3.checkout_payment_type{
-                        font-size: 30px;
-                        font-weight: 900;
-                        padding: 0px 15px;
-                        @media screen and (max-width: 1023px) {
-                            font-size: 25px;
-                            font-weight: 900;
-                            padding: 0px 0px;
-                        }
-                    }
-                    .place-order{
-                        @media screen and (max-width: 1023px) {
-                            padding: 0px 0px;
-                            font-size: 16px;
-                            .woocommerce-terms-and-conditions-wrapper{
-                                margin-bottom: 10px;
-                            }
-                        }
-                    }
-                    .wc_payment_methods{
-                        @media screen and (max-width: 1023px) {
-                            padding-left: 0;
-                            padding-right: 0;
-                        }
-
-                    }
                 }
             }
         }
     }
-    .woocommerce-shipping-fields{
-        #shipping_tiles{
-            a{
-                @include button_underline;
-                font-size: 20px;
-                margin-top: 20px;
-                display: inline-block;
-            }
-        }
-    }
-
-
-}
-.btn-continue.address-wrapper > a.th-btn.button, .btn-continue.address-wrapper > a.th-btn.button:hover {
-    background-color: transparent;
-    padding: 0;
-    text-decoration: underline;
-    font-weight: bold;
-    font-size: 15px;
-    color: #000;
-    cursor: pointer;
-}
+     .woocommerce-shipping-fields{
+         #shipping_tiles{
+             a{
+                 @include button_underline;
+                 font-size: 20px;
+                 margin-top: 20px;
+                 display: inline-block;
+             }
+         }
+     }
+ 
+ 
+ }
+ .btn-continue.address-wrapper > a.th-btn.button, .btn-continue.address-wrapper > a.th-btn.button:hover {
+     background-color: transparent;
+     padding: 0;
+     text-decoration: underline;
+     font-weight: bold;
+     font-size: 15px;
+     color: #000;
+     cursor: pointer;
+ }

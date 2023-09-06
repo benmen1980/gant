@@ -31,47 +31,66 @@ function wpbsearchform( $form ) {
 add_shortcode('wpbsearch', 'wpbsearchform');
 
 // add WooCommerce SKU to search query
-function extend_search_by_sku( $search, &$query_vars ) {
+function extend_header_search_by_sku( $search, $query ) {
     global $wpdb;
-    //var_dump($query_vars->query['s']);
-    if(isset($query_vars->query['s']) && !empty($query_vars->query['s'])){
-        //echo 'enterr';
-        $args = array(
-            'posts_per_page'  => -1,
-            'post_type' => array('product', 'product_variation'),
-            'post_status' => 'publish',
-            'meta_query' => array(
-                'relation' => 'OR',
-                array(
-                    'key' => '_sku',
-                    'value' => $query_vars->query['s'],
-                    'compare' => '='
-                ),
-                array(
-                    'key' => '_variable_sku',
-                    'value' => $query_vars->query['s'],
-                    'compare' => '='
-                )
-            )
-        );
-      
-        $posts = get_posts($args);
-        //print_r( $posts);
-        if(empty($posts)) return $search;
-        $get_post_ids = array();
-        foreach($posts as $post){
+
+    if (!$query->is_search || is_admin()) {
+        return $search;
+    }
+    if (empty($search)) {
+        return $search;
+    }
+    
+        
+    $args = array(
+        'posts_per_page'  => -1,
+        'post_type' => array('product', 'product_variation'),
+        'post_status' => 'publish',
+        'meta_query' => array(
+            'relation' => 'OR',
+            array(
+                'key' => '_sku',
+                'value' => get_search_query(),
+                'compare' => '='
+            ),
+            array(
+                'key' => '_variable_sku',
+                'value' => get_search_query(),
+                'compare' => '='
+            ),
+            array(
+                'key' => 'model',
+                'value' => get_search_query(),
+                'compare' => '=',
+            ),
+        )
+    );
+    
+    $posts = get_posts($args);
+    
+    //print_r( $posts);
+    if(empty($posts)) return $search;
+    $get_post_ids = array();
+    foreach($posts as $post){
+        $get_post_ids[] = $post->ID;
+        //echo $post->ID.':parent'.$post->post_parent.'</br>';
+        if($post->post_parent != 0 ){
+            $get_post_ids[] = $post->post_parent;
+        }
+        else{
             $get_post_ids[] = $post->ID;
         }
-        //print_r($get_post_ids);
-        if(sizeof( $get_post_ids ) > 0 ) {
-            $search = str_replace( 'AND (((', "AND ((({$wpdb->posts}.ID IN (" . implode( ',', $get_post_ids ) . ")) OR (", $search);
-        }
-        //var_dump($search);
     }
+    
+    if(sizeof( $get_post_ids ) > 0 ) {
+        $search = str_replace( 'AND (((', "AND ((({$wpdb->posts}.ID IN (" . implode( ',', $get_post_ids ) . ")) OR (", $search);
+    }
+        
+    
     return $search;
     
 }
-add_filter( 'posts_search', 'extend_search_by_sku', 999, 2 );
+add_filter( 'posts_search', 'extend_header_search_by_sku', 999, 2 );
 
 
 
@@ -114,10 +133,10 @@ function wooc_validate_extra_register_fields( $username, $email, $validation_err
     if ( empty($_POST['read_site_condition'])  ){
         $validation_errors->add( 'read_site_condition_error', __( 'קריאת תקנון אתר הינו שדה חובה', 'gant' ) );  
     }
-    if ( empty($_POST['read_club_condition']) ){
+    // if ( empty($_POST['read_club_condition']) ){
         
-        $validation_errors->add( 'read_club_condition_error', __( 'קריאת תקנון מועדון  הינו שדה חובה', 'gant' ) );  
-    }
+    //     $validation_errors->add( 'read_club_condition_error', __( 'קריאת תקנון מועדון  הינו שדה חובה', 'gant' ) );  
+    // }
     if ( empty($_POST['want_club_registration']) ){
         
         $validation_errors->add( 'want_club_registration_error', __( 'הרשמה למועדון  הינו שדה חובה', 'gant' ) );  
@@ -135,21 +154,71 @@ function wooc_validate_extra_register_fields( $username, $email, $validation_err
         $PosCustomersResult = $result["POSCustomersMembershipDetails"][0];
         if(!empty($PosCustomersResult)){
             $is_club = $PosCustomersResult["ClubsMemberships"];
-            //if already exist and he is club, check data 
-            if(!empty($is_club)){
+            ///if already exist , check data: telephone and id match 
+            //if(!empty($is_club)){
                 $user_birthId = $PosCustomersResult["POSCustomerBasicDetails"]["BirthID"];
                 if($user_birthId != $_POST['account_id']){
                     $validation_errors->add( 'data_match_error', get_field('popup_content_error_data','option') ); 
                 }
-            }
+            //}
         }
+        else{
+            $result = CardPOS::instance()->check_user_by_phone($_POST['username']);
+            $error_code = $result["ErrorCode"];
+            if ($error_code == 0) {
+                $PosCustomersResult = $result["POSCustomersMembershipDetails"][0];
+                if(!empty($PosCustomersResult)){
+                    $is_club = $PosCustomersResult["ClubsMemberships"];
+                    //if already exist , check data: telephone and id match
+                    //if(!empty($is_club)){
+                        $user_birthId = $PosCustomersResult["POSCustomerBasicDetails"]["BirthID"];
+                        if($user_birthId != $_POST['account_id']){
+                            $validation_errors->add( 'data_match_error', get_field('popup_content_error_data','option') ); 
+                        }
+                    //}
+                }
+                else{
+                    $result = CardPOS::instance()->check_user_by_id_num($_POST['account_id']);
+                    $error_code = $result["ErrorCode"];
+                    if ($error_code == 0) {
+                        $PosCustomersResult = $result["POSCustomersMembershipDetails"][0];
+                        if(!empty($PosCustomersResult)){
+                            $is_club = $PosCustomersResult["ClubsMemberships"];
+                            //if already exist , check data: telephone and id match
+                            //if(!empty($is_club)){
+                                $user_phone = $PosCustomersResult["POSCustomerBasicDetails"]["MobileNumber"];
+                                if($user_phone != $_POST['username']){
+                                    $validation_errors->add( 'data_match_error', get_field('popup_content_error_data','option') ); 
+                                }
+                            //}
+                        }
+                    }
+                    else{
+                        $message = $result['EdeaError']['DisplayErrorMessage'];
+                        $multiple_recipients = array(
+                            get_bloginfo('admin_email')
+                        );
+                        $subj = 'Error check user exist in priority by phone in registration form for user '.$username;
+                        wp_mail( $multiple_recipients, $subj, $message );
+                    }
+                }
+            }
+            else{
+                $message = $result['EdeaError']['DisplayErrorMessage'];
+                $multiple_recipients = array(
+                    get_bloginfo('admin_email')
+                );
+                $subj = 'Error check user exist in priority by phone in registration form for user '.$username;
+                wp_mail( $multiple_recipients, $subj, $message );
+            }
+        } 
     }
     else{
         $message = $result['EdeaError']['DisplayErrorMessage'];
         $multiple_recipients = array(
             get_bloginfo('admin_email')
         );
-        $subj = 'Error check user exist in priority  in registration form';
+        $subj = 'Error check user exist in priority by mobile phone in registration form for user: '.$username;
         wp_mail( $multiple_recipients, $subj, $message );
     }
 
@@ -226,8 +295,8 @@ function my_account_saving_extra_field( $user_id ) {
         update_user_meta( $user_id, 'read_site_condition', '1' );
 
    
-    if( isset($_POST['read_club_condition']) && $_POST['read_club_condition'] == 'on' )
-        update_user_meta( $user_id, 'read_club_condition', '1' );
+    // if( isset($_POST['read_club_condition']) && $_POST['read_club_condition'] == 'on' )
+    //     update_user_meta( $user_id, 'read_club_condition', '1' );
     // if( isset($_POST['club_fee_paid']) )
     //     update_user_meta( $user_id, 'club_fee_paid', 1 );
     // else{
@@ -286,12 +355,6 @@ function add_extra_fields( $user )
                 <th><label for="read_site_condition"><?php echo __('סמן קריאת תקנון אתר','gant')?></label></th>
                 <td> 
                     <input type="checkbox" name="read_site_condition"  <?php  checked( get_user_meta( $user->ID, 'read_site_condition', true ), '1' ); ?> value = '1'  />
-                </td>   
-            </tr>
-            <tr>
-                <th><label for="read_club_condition"><?php echo __('סמן קריאת תקנון מועדון','gant')?></label></th>
-                <td> 
-                    <input type="checkbox" name="read_club_condition"  <?php  checked( get_user_meta( $user->ID, 'read_club_condition', true ), '1' ); ?> value = '1' />
                 </td>   
             </tr>
             <tr>
@@ -803,8 +866,13 @@ function get_cuts_filter($cat_id){
         )
     );
     $arr_posts = new WP_Query( $args_cat );
-
+    $count = 0;
     while ( $arr_posts->have_posts() ) :
+        $count++;
+        if ($count % 50 == 0) {
+            // Pause for 1 second (1,000,000 microseconds)
+            usleep(1000000);
+        }
         $arr_posts->the_post();
         //$_product = wc_get_product( get_the_id() );
         $post_id = get_the_id();
@@ -815,6 +883,7 @@ function get_cuts_filter($cat_id){
             
     endwhile; 
     update_term_meta($cat_id, 'cut_filter',array_count_values($cuts));
+    write_custom_log('updating filter size for cat: '.$cat_id);
 }
 function get_colors_filter($cat_id){
     $colors = array();
@@ -837,8 +906,13 @@ function get_colors_filter($cat_id){
         )
     );
     $arr_posts = new WP_Query( $args_cat );
-
+    $count = 0;
     while ( $arr_posts->have_posts() ) :
+        $count++;
+        if ($count % 50 == 0) {
+            // Pause for 1 second (1,000,000 microseconds)
+            usleep(1000000);
+        }
         $arr_posts->the_post();
         //$_product = wc_get_product( get_the_id() );
         $post_id = get_the_id();
@@ -850,7 +924,7 @@ function get_colors_filter($cat_id){
             
     endwhile; 
     update_term_meta($cat_id, 'color_filter',array_count_values($colors));
-    write_custom_log('updating filter colors: '.implode(array_count_values($colors)));
+    write_custom_log('updating filter colors for cat: '.$cat_id);
 }
 
 
@@ -876,7 +950,13 @@ function  get_substainable_filter($cat_id){
     );
     $arr_posts = new WP_Query( $args_cat );
     $counter = 0;
+    $count = 0;
     while ( $arr_posts->have_posts() ) :
+        $count++;
+        if ($count % 50 == 0) {
+            // Pause for 1 second (1,000,000 microseconds)
+            usleep(1000000);
+        }
         $arr_posts->the_post();
         $terms = get_the_terms( get_the_ID(), 'product_tag' );
         if(!empty($terms)){
@@ -888,6 +968,7 @@ function  get_substainable_filter($cat_id){
         }   
     endwhile; 
     update_term_meta($cat_id, 'substainable_filter',$counter);
+    write_custom_log('updating substainable_filter for cat: '.$cat_id);
 }
 //reorder size adult
 function getOrderedBySize($data) {
@@ -937,7 +1018,13 @@ function get_sizes_filter($cat_id){
     $arr_posts = new WP_Query( $args_cat );
     //$post_ids = wp_list_pluck( $arr_posts->posts, 'ID' );
     //print_r($post_ids);
+    $count = 0;
     while ( $arr_posts->have_posts() ) :
+        $count++;
+        if ($count % 50 == 0) {
+            // Pause for 1 second (1,000,000 microseconds)
+            usleep(1000000);
+        }
         $arr_posts->the_post();
         $_product = wc_get_product( get_the_id() );
         if ( $_product->is_type( 'variable' )) {
@@ -950,8 +1037,10 @@ function get_sizes_filter($cat_id){
         }
     endwhile;
     update_term_meta($cat_id, 'size_filter', array_count_values($sizes));
-   
+    write_custom_log('updating filter size for cat: '.$cat_id);
 }
+   
+
 function get_prices_filter($cat_id){
     $prices = array();
     $term = get_term_by('id', $cat_id , 'product_cat' );
@@ -973,8 +1062,13 @@ function get_prices_filter($cat_id){
         )
     );
     $arr_posts = new WP_Query( $args_cat );
-
+    $count = 0;
     while ( $arr_posts->have_posts() ) :
+        $count++;
+        if ($count % 50 == 0) {
+            // Pause for 1 second (1,000,000 microseconds)
+            usleep(1000000);
+        }
         $arr_posts->the_post();
         global $product;
         if ( $product->is_type( 'variable' ) && !is_variable_product_out_of_stock($product)) {
@@ -986,6 +1080,7 @@ function get_prices_filter($cat_id){
             $sale_price = $product->get_sale_price();
         }
         $price = (!empty($sale_price) ? $sale_price : $regular_price);
+        $price = $regular_price;
         if(!empty($price))
             array_push($prices, $price );
             
@@ -1045,6 +1140,34 @@ function get_prices_filter($cat_id){
 // }
 //add_action('updated_post_meta', 'afterPostUpdated', 10, 4);
 
+function syncCatFilterAndPdtFilter1(){
+    // $all_ids = get_posts( array(
+    //     'post_type' => 'product',
+    //     'numberposts' => -1,
+    //     'post_status' => 'publish',
+    //     'fields' => 'ids',
+    // ) );
+
+    global $wpdb;
+   
+    $all_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product' AND post_status = 'publish'" );
+    foreach ( $all_ids as $post_id ) {
+        //sync categories filter
+        $terms = get_the_terms( $post_id, 'product_cat' );
+        foreach ($terms as $term) {
+            if($term->name != 'כללי'){
+                $product_cat_id = $term->term_id;
+                write_custom_log('updating filter for category: '.$term->name);
+                get_colors_filter( $product_cat_id);
+                get_sizes_filter($product_cat_id);
+                get_cuts_filter($product_cat_id);
+                get_prices_filter($product_cat_id);
+                get_substainable_filter($product_cat_id);
+            }
+        }     
+   }
+}
+
 function syncCatFilterAndPdtFilter(){
   
     $categories = get_terms( array(
@@ -1093,6 +1216,7 @@ function syncPdtWithoutImgToDraft(){
 }
 
 add_action('syncPdtWithoutImgToDraft_cron_hook', 'syncPdtWithoutImgToDraft');
+
 
 function syncRelatedPdtFilter(){
     global $wpdb;
@@ -1297,12 +1421,12 @@ add_filter('woocommerce_dropdown_variation_attribute_options_html', 'variation_r
  
 
 function variation_check($active, $variation) {
-    if(!$variation->is_in_stock() && !$variation->backorders_allowed()) {
+    if($variation->get_stock_quantity() == 0) {
         return false;
     }
     return $active;
 }
-add_filter('woocommerce_variation_is_active', 'variation_check', 10, 2);
+add_filter('woocommerce_variation_is_active', 'variation_check', 9999999, 2);
 
 // change order of description
 remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_excerpt', 20 );
@@ -1341,15 +1465,16 @@ function check_if_variable_first()
                     //     $price = '<del>' . $saleprice . $product->get_price_suffix() . '</del> <ins>' . $price . $product->get_price_suffix() . '</ins>';
                     // }
                     // ?>
-                    <?//php
-                    // echo '<p class="price">' . $price . '</p>';
+                    <?php if(false):
+                        echo '<p class="price">' . $price . '</p>';
+                    endif;
 
                     $regular_price = $product->get_variation_regular_price();
                     $sale_price = ($regular_price != $product->get_variation_sale_price())? $product->get_variation_sale_price() : '';
-                    if($product->is_on_sale())
-                        $price = '<del>' . wc_price($regular_price). '</del> <ins>' . wc_price($sale_price) . '</ins>';
-                    else
-                        $price = wc_price($regular_price);
+                    // if($product->is_on_sale())
+                    //     $price = '<del>' . wc_price($regular_price). '</del> <ins>' . wc_price($sale_price) . '</ins>';
+                    // else
+                    $price = wc_price($regular_price);
                     echo '<p class="price">' . $price . '</p>';
                 endif;
             }
@@ -1532,6 +1657,37 @@ function misha_add_to_cart_fragment( $fragments ) {
  	return $fragments;
 }
 
+//Hide Shipping Fields for Local Pickup
+add_action( 'woocommerce_after_checkout_form', 'bbloomer_disable_shipping_local_pickup' );
+  
+function bbloomer_disable_shipping_local_pickup( $available_gateways ) {
+    
+    // Part 1: Hide shipping based on the static choice 
+ 
+   $chosen_methods = WC()->session->get( 'chosen_shipping_methods' );
+   $chosen_shipping = $chosen_methods[0];
+   if ( 0 === strpos( $chosen_shipping, 'local_pickup' ) ) { ?>
+      <script type="text/javascript">
+         jQuery('#customer_details .woocommerce-shipping-fields').fadeOut();
+      </script>
+    <?php  } 
+
+   // Part 2: Hide shipping based on the dynamic choice @ Checkout ?>
+        <script type="text/javascript">
+            jQuery('form.checkout').on('change','input[name^="shipping_method"]',function() {
+                var val = $( this ).val();
+                console.log("🚀 ~ file: custom-functions.php:1548 ~ jQuery ~ val:", val);
+                if (val.match("^local_pickup")) {
+                        jQuery('#customer_details .woocommerce-shipping-fields').fadeOut();
+                } else {
+                jQuery('#customer_details .woocommerce-shipping-fields').fadeIn();
+                }
+            });
+        </script>
+   <?php
+  
+}
+
 
 
 // Output dropdown Store list
@@ -1547,9 +1703,10 @@ function output_dropdown_stores_list( $shipping_rate, $index )  {
             $counter =0;while( have_rows('stores',771) ) {
                 the_row(); 
                 $store_name = get_sub_field('store_name');
+                $store_adress = get_sub_field('address');
                 $store_can_shipping = get_sub_field('can_ship');
                 if($store_can_shipping == 1){
-                    $stores_array[] =  $store_name;
+                    $stores_array[$store_name] =  $store_adress;
                 }
             }
         }
@@ -1560,16 +1717,19 @@ function output_dropdown_stores_list( $shipping_rate, $index )  {
         <select id="storelist" name="storelist">
             <option value=""><?php _e("בחר סניף", "gant"); ?></option>
         <?php foreach( $stores_array as $key => $store ) {
-            echo '<option value="'.$store.'">'.$store.'</option>';
+            echo '<option value="'.$store.'">'.$key.'</option>';
         } ?>
         </select>
         <script>
-        jQuery(function($){
-            var label = '<?php echo $shipping_rate->label; ?>';
-            $(document.body).on('change', 'select#storelist', function(){
-                $(this).parent().find('label').text(label+': '+$(this).val());
+            jQuery(function($){
+                var label = '<?php echo $shipping_rate->label; ?>';
+                $(document.body).on('change', 'select#storelist', function(){
+                    if($(this).val() != '')
+                        $(this).parent().find('label').text(label+': '+ $(this).find("option:selected").text());
+                    else
+                        $(this).parent().find('label').text(label);
+                });
             });
-        });
         </script>
         <?php
         endif;
@@ -1694,7 +1854,7 @@ function bbloomer_show_new_checkout_field_order( $order ) {
  */
   
   
-add_action( 'woocommerce_after_checkout_form', 'bbloomer_conditionally_hide_show_new_field', 9999 );
+//add_action( 'woocommerce_after_checkout_form', 'bbloomer_conditionally_hide_show_new_field', 9999 );
   
 function bbloomer_conditionally_hide_show_new_field() {
     
@@ -1753,6 +1913,10 @@ function bbloomer_shipping_phone_checkout( $fields ) {
       'autocomplete' => 'tel',
       'priority' => 25,
    );
+
+   //limit character order nore field
+   $fields['order']['order_comments']['maxlength'] = 120;
+
    return $fields;
 }
   
@@ -1837,6 +2001,8 @@ function ml_woocommerce_email_header( $email_heading, $email ) {
 if ( is_admin() ) {
     add_action( 'admin_menu', 'add_products_menu_entry_description', 100 );
     add_action( 'admin_menu', 'add_products_menu_entry_care_icon', 100 );
+    add_action( 'admin_menu', 'add_products_menu_entry_badge', 100 );
+    add_action( 'admin_menu', 'add_products_menu_entry_cat', 100 );
 }
 function add_products_menu_entry_care_icon() {
     add_submenu_page(
@@ -1859,7 +2025,26 @@ function add_products_menu_entry_description() {
         'set_product_desc'
     );
 }
-
+function add_products_menu_entry_badge() {
+    add_submenu_page(
+        'edit.php?post_type=product',
+        __( 'Set product badge' ),
+        __( 'Set product badge' ),
+        'manage_woocommerce', // Required user capability
+        'set-product-badge',
+        'set_product_badge'
+    );
+}
+function add_products_menu_entry_cat() {
+    add_submenu_page(
+        'edit.php?post_type=product',
+        __( 'Set product category' ),
+        __( 'Set product category' ),
+        'manage_woocommerce', // Required user capability
+        'set-product-cat',
+        'set_product_cat'
+    );
+}
 function set_product_care_icon(){ ?>
     <div class="btns_wrapper_desc">
         <button type='button' class='set_product_care_icon'>הגדר אייקוני הוראות כביסה של המוצר </button>
@@ -1876,6 +2061,28 @@ function set_product_desc(){ ?>
         <button type='button' class='set_product_long_desc'>הגדר תיאור ארוך של המוצר </button>
         <button type='button' class='set_product_short_desc'>הגדר תיאור קצר של המוצר </button>
         <button type='button' class='set_product_model_desc'>הגדר תיאור דוגמן של המוצר </button>
+        <div class="loader_wrap">
+            <div class="loader_spinner">
+                <img src="<?php echo get_template_directory_uri();?>/dist/images/loader.svg" alt="">
+            </div>
+        </div>
+<?php }
+
+function set_product_badge(){ ?>
+    <div class="btns_wrapper_desc">
+        <button type='button' class='set_pdt_badge'>הגדר תויות למוצר למועדון ולמצטרפים חדשים</button>
+        <button type='button' class='set_pdt_badge_no_club'>הגדר תויות למוצר ללא מועדון</button>
+        <button type='button' class='set_pdt_special_badge'>הגדר תויות מיוחדות למוצר</button>
+        <div class="loader_wrap">
+            <div class="loader_spinner">
+                <img src="<?php echo get_template_directory_uri();?>/dist/images/loader.svg" alt="">
+            </div>
+        </div>
+<?php }
+
+function set_product_cat(){ ?>
+    <div class="btns_wrapper_desc">
+        <button type='button' class='set_pdt_cat'>הגדר קטגוריה למוצר</button>
         <div class="loader_wrap">
             <div class="loader_spinner">
                 <img src="<?php echo get_template_directory_uri();?>/dist/images/loader.svg" alt="">
@@ -2051,6 +2258,135 @@ function set_pdt_model_desc(){
 }
 
 
+//תויות למוצר לדגם צבע מאקסל
+add_action( 'wp_ajax_set_pdt_badge', 'set_pdt_badge' );
+// for non-logged in users:
+add_action( 'wp_ajax_nopriv_set_pdt_badge', 'set_pdt_badge' );
+
+function set_pdt_badge(){  
+    $csv = get_field('badge_file', 'option')['url'];
+    $row = 1;
+    if(($handle = fopen($csv, "r")) !== FALSE) {
+        $count=0;
+        while(($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+
+            $sku = $data[0];
+            $pdt_id = wc_get_product_id_by_sku( $sku );
+            $desc = $data[1];
+           // $length = count($data);
+            //var_dump(sizeof($length));
+
+            //$desc = $data[1];
+    
+            if ( $pdt_id ) {
+                //wp_update_post( array('ID' => $pdt_id, 'post_excerpt' => '' ) );
+                if($desc)
+                    update_field( 'badge_from_file',$desc, $pdt_id );
+                else
+                    delete_field( 'badge_from_file', $pdt_id );
+            }
+       
+        }	
+        fclose($handle);
+    }
+}
+
+
+//תויות למוצר לדגם צבע מאקסל
+add_action( 'wp_ajax_set_pdt_badge_no_club', 'set_pdt_badge_no_club' );
+// for non-logged in users:
+add_action( 'wp_ajax_nopriv_set_pdt_badge_no_club', 'set_pdt_badge_no_club' );
+
+function set_pdt_badge_no_club(){  
+    $csv = get_field('badge_file_no_club', 'option')['url'];
+    $row = 1;
+    if(($handle = fopen($csv, "r")) !== FALSE) {
+        $count=0;
+        while(($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+
+            $sku = $data[0];
+            $pdt_id = wc_get_product_id_by_sku( $sku );
+            $desc = $data[1];
+           // $length = count($data);
+            //var_dump(sizeof($length));
+
+            //$desc = $data[1];
+    
+            if ( $pdt_id ) {
+                //wp_update_post( array('ID' => $pdt_id, 'post_excerpt' => '' ) );
+                if($desc)
+                    update_field( 'badge_from_file_no_club',$desc, $pdt_id );
+                else
+                    delete_field( 'badge_from_file_no_club', $pdt_id );
+            }
+       
+        }	
+        fclose($handle);
+    }
+}
+
+
+add_action( 'wp_ajax_set_pdt_special_badge', 'set_pdt_special_badge' );
+// for non-logged in users:
+add_action( 'wp_ajax_nopriv_set_pdt_special_badge', 'set_pdt_special_badge' );
+
+function set_pdt_special_badge(){  
+    $csv = get_field('special_badge_file', 'option')['url'];
+    $row = 1;
+    if(($handle = fopen($csv, "r")) !== FALSE) {
+        $count=0;
+        while(($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+
+            $sku = $data[0];
+            $pdt_id = wc_get_product_id_by_sku( $sku );
+            $desc = $data[1];
+           // $length = count($data);
+            //var_dump(sizeof($length));
+
+            //$desc = $data[1];
+    
+            if ( $pdt_id ) {
+                //wp_update_post( array('ID' => $pdt_id, 'post_excerpt' => '' ) );
+                if($desc)
+                    update_field( 'special_badge_from_file',$desc, $pdt_id );
+                else
+                    delete_field( 'special_badge_from_file', $pdt_id );
+            }
+       
+        }	
+        fclose($handle);
+    }
+}
+
+add_action( 'wp_ajax_set_pdt_cat', 'set_pdt_cat' );
+// for non-logged in users:
+add_action( 'wp_ajax_nopriv_set_pdt_cat', 'set_pdt_cat' );
+
+function set_pdt_cat(){  
+    $csv = get_field('cat_file', 'option')['url'];
+    $row = 1;
+    if(($handle = fopen($csv, "r")) !== FALSE) {
+        $count=0;
+        while(($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+
+            $sku = $data[0];
+            $pdt_id = wc_get_product_id_by_sku( $sku );
+            $category_slug = $data[1];
+            $category = get_term_by('slug', $category_slug, 'product_cat');
+            if ($category) {
+                $category_id = $category->term_id;
+            }
+    
+            if ( $pdt_id ) {
+                //wp_update_post( array('ID' => $pdt_id, 'post_excerpt' => '' ) );
+                if($category)
+                    wp_set_post_terms($pdt_id, $category_id, 'product_cat', true);
+            }
+       
+        }	
+        fclose($handle);
+    }
+}
 
 /**
  * Add order again button in my orders actions.
@@ -2094,7 +2430,8 @@ function disable_pagination_in_menu_meta_box($obj) {
 function SendSMS($message_text,$recepients) {
     $sms_user = "gus123456"; // User Name (Provided by Inforu)
     $sms_apitoken = get_option('sms_token'); // Password (Provided by Inforu)
-    $sms_sender = "GANT"; //
+    $sms_sender = "GANT"; 
+    $ignore_subscribe = "true";
     $message_text = preg_replace( "/\r|\n/", "", $message_text); // remove line breaks
     $xml = '';
     $xml .= '<Inforu>'.PHP_EOL;
@@ -2110,6 +2447,7 @@ function SendSMS($message_text,$recepients) {
     $xml .= ' </Recipients>'.PHP_EOL;
     $xml .= ' <Settings>'.PHP_EOL;
     $xml .= ' <Sender>'.htmlspecialchars($sms_sender).'</Sender>'.PHP_EOL;
+    $xml .= '<IgnoreUnsubscribeCheck>'.$ignore_subscribe.'</IgnoreUnsubscribeCheck>'.PHP_EOL;
     $xml .= ' </Settings>'.PHP_EOL;
     $xml .= '</Inforu>';
     $ch = curl_init();
@@ -2131,7 +2469,9 @@ function SendSMS($message_text,$recepients) {
 add_filter('gettext', 'mycustom_func');
 function mycustom_func($translated_text){
     if($translated_text == 'קיים כבר משתמש שרשום תחת שם משתמש זה. יש לבחור שם אחר.'){
-        $translated_text = 'קיים כבר משתמש שרשום תחת טלפון זה. יש לבחור טלפון אחר';
+        $translated_text = 'קיים כבר משתמש שרשום תחת טלפון זה.';
+        $translated_text.= ' יש לנסות לבצע <a href="/my-account" class="custom_msg_error">' . __( 'התחברות לחשבונך' ) . '</a> תחת טלפון זה או ליצור קשר עם ';
+        $translated_text.= ' <a target="_blank" class="custom_msg_error" href="https://api.whatsapp.com/send?phone=97235412323">שירות הלקוחות</a> ';
     }
     if($translated_text == 'אנא הכנס שם משתמש קיים'){
         $translated_text = 'אנא הכנס טלפון נייד';
@@ -2245,21 +2585,21 @@ function custom_checkout_field_update_order_meta( $order, $data ) {
     //         update_user_meta( get_current_user_id(), 'is_club', $value );
     //     }    
     // }
-    foreach ( $order->get_fees() as $fee ) {
-        $fee_name = $fee->get_name();
-        if ( $fee_name === 'הצטרפות לחבר מועדון' ){
-            if ( get_current_user_id() > 0 ) {
-                update_user_meta( get_current_user_id(), 'is_club', $value );
-                //update_user_meta( get_current_user_id(), 'club_fee_paid', 1 );
-            }
-        }
-    }
+    // foreach ( $order->get_fees() as $fee ) {
+    //     $fee_name = $fee->get_name();
+    //     if ( $fee_name === 'הצטרפות לחבר מועדון' ){
+    //         if ( get_current_user_id() > 0 ) {
+    //             update_user_meta( get_current_user_id(), 'is_club', $value );
+    //             //update_user_meta( get_current_user_id(), 'club_fee_paid', 1 );
+    //         }
+    //     }
+    // }
 
 }
-add_action('woocommerce_thankyou',  'update_user_club_payment');
+add_action('woocommerce_thankyou',  'update_user_club_payment',999,1);
 
 function update_user_club_payment($order_id){
-
+ 
     $order = wc_get_order( $order_id );
 
     //check if order has club checked
@@ -2268,16 +2608,22 @@ function update_user_club_payment($order_id){
     foreach ( $order->get_fees() as $fee ) {
         $fee_name = $fee->get_name();
         if ( $fee_name === 'הצטרפות לחבר מועדון' ){
-            if ( get_current_user_id() > 0 ) {
+            $user_id = $order->get_user_id();
+            if ( $user_id != 0 ) {
+                global $current_user;
+                
+                
                 //update_user_meta( get_current_user_id(), 'is_club', $value );
-                update_user_meta( get_current_user_id(), 'club_fee_paid', 1 );
+                update_user_meta( $user_id, 'club_fee_paid', 1 );
+                update_user_meta( $user_id, 'is_club', 1 );
+                //wp_mail( 'elisheva.g@simplyct.co.il', 'check user after club registration',  $user_id );
                 
                 // we need now to  update the list_user_club with this user, because just after this order he became club member
                 global $wpdb;
                 $table_club = $wpdb->prefix . 'list_user_club';
 
-                $priority_customer_number = get_user_meta(get_current_user_id(), 'priority_customer_number', true );
-                $id_number = get_user_meta( get_current_user_id(), 'account_id', true );
+                $priority_customer_number = get_user_meta($user_id, 'priority_customer_number', true );
+                $id_number = get_user_meta( $user_id, 'account_id', true );
                 $user_phone = wp_get_current_user()->user_login;
                 $ip_address = $_SERVER['REMOTE_ADDR'];
                 $user_agent = $_SERVER['HTTP_USER_AGENT'];
@@ -2290,11 +2636,79 @@ function update_user_club_payment($order_id){
                     'user_agent' => $user_agent
                 ]);
                 if ( $result === false ) {
-                    wp_mail( 'elisheva.g@simplyct.co.il', 'insert into list error', $wpdb->last_error );
+                    wp_mail( 'elisheva.g@simplyct.co.il', 'insert into list error', $wpdb->last_error.' in registration club for user:'.$user_id );
                 }
+
+                //flashy
+                $flashy = flashy();
+       
+                //get into the after user register action and try to connect to flashy to update two fields
+                //one for accept marketing and the other for loyalty membership
+                //main contacts list
+                $list_id = get_option('flashy_list_id');
+            
+
+                $customer = [
+                    "email" => $current_user->user_email,
+                    "loyalty_membership" => true 
+                    ];  
+                
+                $flashy->api->contacts->create($customer, 'email', false,true);
             }
         }
     }
+
+    //update newsletter registration from checkout to table
+    $accept_newsletter = get_post_meta( $order_id, 'agree_business_owner', true );
+    //update flashy list
+    $billing_email  = $order->get_billing_email();
+    $billing_phone = $order->get_billing_phone();
+    $flashy = flashy();
+    $list_id = get_option('flashy_list_id');
+    if($accept_newsletter == 'on'){
+        global $wpdb;
+        $table = $wpdb->prefix . 'list_user_subscribe_newsletter';
+        // Get user agent data
+        $ip_address = $_SERVER['REMOTE_ADDR'];
+        $user_agent = $_SERVER['HTTP_USER_AGENT'];
+
+        if ( get_current_user_id() > 0 ) {
+            $current_user = wp_get_current_user();
+            $user_id = get_current_user_id(); 
+            $user_phone = $current_user->user_login;
+            $id_number = get_user_meta( $user_id, 'account_id', true );
+            $priority_customer_number = get_user_meta( $user_id, 'priority_customer_number', true );
+        }
+        else{
+            $user_phone = $billing_phone;
+            $id_number = "";
+            $priority_customer_number = "";
+        }   
+
+        $result = $wpdb->insert($table, [
+            'priority_customer_number' => $priority_customer_number,
+            'id_number' => $id_number,
+            'customer_phone' =>  $user_phone,
+            'ip_address' => $ip_address,
+            'user_agent' => $user_agent
+        ]);
+
+        $customer = [
+            "email" => $billing_email,
+            "lists" => [ $list_id => true ], //true or false depending on accept marketing checkbox
+        ];
+
+
+       
+    }
+    else{
+        $customer = [
+            "email" => $billing_email,
+            "lists" => [ $list_id => false ], //true or false depending on accept marketing checkbox
+        ];
+
+    }
+    $flashy->api->contacts->create($customer, 'email', false,true);
 
 }
 
@@ -2340,121 +2754,36 @@ function load_variation_settings_fields( $variation ) {
     return $variation;
 }
 
-//add_action('init' ,'test_pdts');
-
-function test_pdts(){
-   //echo 'enter here1';
-   // Get the product category taxonomy
-    $taxonomy = 'product_cat';
-
-    // Get all categories in the taxonomy
-       $terms = get_terms( array(
-    'taxonomy'   => 'product_cat',
-    'hide_empty' => false,
-) );
-    echo '<pre>';
-    print_r( $terms);
-    echo '</pre>';
-  //$flashy = new wp_flashy();
-   //var_dump($flashy);
-//    $terms = get_terms( array(
-//     'taxonomy'   => 'pa_size',
-//     'hide_empty' => false,
-// ) );
-// foreach ($terms as $term){
-//     echo $term->name;
-//     echo "<br><br>";
-//   }
-
-// Get all categories
-//$categories = get_terms( 'product_cat' );
-//print_r( $categories);
-   // $custom_item_data = get_post_meta( 16764, "temporary_transaction_num", true );
-    //echo "temp numcheck: " . $custom_item_data[0];
-    // echo 'count:'.WC()->cart->get_cart_contents_count();
-    // foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
-    //     $temporarytransactionnumber = $cart_item['temporary_transaction_num'];
-    //     echo $temporarytransactionnumber;
-    // }
-    // $all_ids = get_posts( array(
-    //     'post_type' => 'product',
-    //     'numberposts' => -1,
-    //     'post_status' => 'publish',
-    //     'fields' => 'ids',
-    // ) );
-    // global $post;
-    // foreach ( $all_ids as $id ) {
-
-    //     $model = get_field('model', $id);
-    //     if(!empty($model)){
-    //         $args = array(
-    //             "post_type" => "product",
-    //             'posts_per_page' => -1,
-    //             'meta_key'=> 'model', 
-    //             'meta_value'	=> $model, 
-    //         );
-    //         $posts = get_posts( $args );
-    //         //print_r($posts);
-
-    //         $pdts_related = array();
-    //         foreach( $posts as $post ) : 
-    //             setup_postdata( $post );
-    //             $pdt_id = $post->ID;
-    //             array_push($pdts_related,$pdt_id);  
-    //         endforeach;
-    //         wp_reset_postdata(); 
-    //         //print_r($pdts_related);
-    //         update_post_meta( $id, "dynamic_product_related", $pdts_related );
-    //     }
-    // }
-}
 
 //remove Shipping from a WooCommerce cart
+//<!-- dana ask to hide shiiping method on cart page
 function disable_shipping_calc_on_cart( $show_shipping ) {
     if( is_cart() ) {
         return false;
     }
     return $show_shipping;
 }
-add_filter( 'woocommerce_cart_ready_to_calc_shipping', 'disable_shipping_calc_on_cart', 99 );
+//add_filter( 'woocommerce_cart_ready_to_calc_shipping', 'disable_shipping_calc_on_cart', 99 );
 
 
 
 
 //add_action( 'init', 'check_custom_fee' );
 function check_custom_fee() {
-    $term = get_term_by('id', 2095 ,'product_cat' );
-    $product_cat = $term->slug;
+    $the_order = wc_get_order( 31505 );
+    // Iterating through order fee items ONLY
+    foreach( $the_order->get_items('fee') as $item_id => $item_fee ){
 
+        // The fee name
+        $fee_name = $item_fee->get_name(); ?>
+        <div class="check_order_fee" style="display:none"><?php echo $fee_name; ?></div>
 
-    $args_cat = array(
-        'post_type' => 'product',
-        'product_cat' => "נעליים-נשים",
-        'posts_per_page' => -1,
-        // 'meta_query' => array(
-        //     array(
-        //         'key' => '_stock_status',
-        //         'value' => 'instock',
-        //         'compare' => '=',
-        //     )
-        // )
-    );
-    $arr_posts = new WP_Query( $args_cat );
+        <?php // The fee total amount
+        $fee_total = $item_fee->get_total();
 
-    while ( $arr_posts->have_posts() ) :
-        $arr_posts->the_post();
-        //$_product = wc_get_product( get_the_id() );
-        $post_id = get_the_id();
-        echo $post_id;
-        //$color = get_field('color', $post_id );
-        $color = strtolower(get_field('grouped_color', $post_id ));
-        echo $color.',';
-        if(!empty($color))
-            array_push($colors, $color );
-            
-    endwhile; 
-  
-  
+        // The fee total tax amount
+        $fee_total_tax = $item_fee->get_total_tax();
+    }
 }
 
 function save_user_agent_data($user_id) {
@@ -2476,18 +2805,8 @@ function save_user_agent_data($user_id) {
 }
 add_action('user_register', 'save_user_agent_data');
 
-//add_action('init','set_paid');
-function set_paid(){
-    //$payment_method = get_post_meta(18172, '_payment_method', true);
-    //$post_done = get_post_meta(18182, '_post_done', true);
-    //echo wc_get_product_id_by_sku('4300087-116');
-    // $order = wc_get_order( 18121 ); 
-    // $statuses = ["processing"];
-    // $is_status = in_array($order->get_status(), $statuses);
-    //var_dump( $post_done);
 
-  var_dump(get_user_meta(222, 'want_club_registration', true)); 
-}
+
 
 //add_filter( 'woocommerce_gateway_icon', 'change_payment_method_title', 10, 2 );
 function change_payment_method_title( $icon_html, $gateway_id ) {
@@ -2505,7 +2824,7 @@ add_filter( 'woocommerce_save_account_details_required_fields', 'misha_make_fiel
 function misha_make_field_required( $required_fields ){
 
 	if(get_user_meta( get_current_user_id(), 'has_to_edit_details', true ) == 1): 
-        $required_fields[ 'read_club_condition' ] = __( 'אישור תקנון מועדון', 'gant' ) ;
+        //$required_fields[ 'read_club_condition' ] = __( 'אישור תקנון מועדון', 'gant' ) ;
         $required_fields[ 'read_site_condition' ] = __( 'אישור תקנון אתר', 'gant' );
         $required_fields[ 'want_club_registration' ] = __( 'אישור חברות למועדון', 'gant' );
         $required_fields[ 'reg_birthday' ] = __( 'תאריך לידה', 'gant' );
@@ -2527,15 +2846,39 @@ function disable_current_password_check( $args ) {
 }
 add_filter( 'woocommerce_save_account_details_args', 'disable_current_password_check' );
 
+add_action('woocommerce_checkout_before_terms_and_conditions', 'checkout_additional_checkboxes');
+function checkout_additional_checkboxes( ){
+    ?>
+    <?php if(!is_user_logged_in() || get_user_meta( get_current_user_id(), 'agree_business_owner', true ) == 'off'): ?>
+        <div class="newsletter_accept_wrapper">
+            <span class="woocommerce-input-wrapper checkbox_wrapper">
+                <input id="agree_business_owner_checkout" type="checkbox" name="agree_business_owner"   <?php  checked( get_user_meta( get_current_user_id(), 'agree_business_owner', true ), 'on' ); ?> >	
+                <label for="agree_business_owner_checkout">
+                    <?php echo get_field('checkbox_privacy','option');?>
+                </label>
+            </span>
+        </div>
+    <?php endif;
+}
+
+add_action('woocommerce_checkout_update_customer','custom_checkout_checkbox_update_customer', 100, 2 );
+function custom_checkout_checkbox_update_customer( $customer, $data ){
+    $value = isset( $_POST['agree_business_owner'] ) ? 'on' : 'off';
+    update_user_meta( $customer->get_id(), 'agree_business_owner', $value ); // Updated
+}
+
+add_action( 'woocommerce_checkout_update_order_meta', 'save_agree_business_owner_field' );
+  
+function save_agree_business_owner_field( $order_id ) { 
+    if ( $_POST['agree_business_owner'] == 'on' ) update_post_meta( $order_id, 'agree_business_owner', esc_attr( $_POST['agree_business_owner'] ) );
+}
 
 add_action( 'woocommerce_save_account_details', 'save_club_and_newsletter', 20, 1 );
 
 function save_club_and_newsletter($user_id){
 
-    //after editing user datails, update back user data form site to priority
+    //after editing user details, update back user data form site to priority
 
-    $accept_newsletter = get_user_meta($user_id, 'agree_business_owner', true);
-   
     $fname = $_POST["account_first_name"];
     $lname = $_POST["account_last_name"];
     $billing_email = $_POST["account_email"];
@@ -2544,14 +2887,8 @@ function save_club_and_newsletter($user_id){
     if(isset($_POST[ 'agree_business_owner' ])){
         if($_POST[ 'agree_business_owner' ] == 'on')
             $allow_email = true;
-    }
-    else{
-        if($accept_newsletter == 'on'){
-            $allow_email = true;
-        }
-        else{
+        else
             $allow_email = false;
-        }
     }
 
     if(isset($_POST[ 'reg_birthday' ])){
@@ -2559,7 +2896,12 @@ function save_club_and_newsletter($user_id){
     }
     else{
         $BirthDate = get_user_meta( $user_id, 'reg_birthday', true );
+        //if(strtotime($BirthDate) == false){
+            $BirthDate = str_replace('/', '-', $BirthDate);
+            $BirthDate = date('Y-m-d', strtotime($BirthDate));
+        //}
     }
+
 
     $data = [
         "CreateCustomer" => false,
@@ -2582,12 +2924,13 @@ function save_club_and_newsletter($user_id){
     $branch_num = $config->BranchNumber;
     $unique_id = $config->UniqueIdentifier;
     $pos_num = $config->POSNumber;
+    $ChannelCode = $config->ChannelCode;
 
     $data['UniquePOSIdentifier'] = [
         "BranchNumber" => $branch_num,
         "POSNumber" => $pos_num,
         "UniqueIdentifier" => $unique_id,
-        "ChannelCode" => "",
+        "ChannelCode" => $ChannelCode,
         "VendorCode" => "",
         "ExternalAccountID" => ""
     ];
@@ -2600,11 +2943,13 @@ function save_club_and_newsletter($user_id){
     $error_code = $body_array["ErrorCode"];
     if($error_code != 0){
         $message = $body_array['EdeaError']['DisplayErrorMessage'];
+        $error_msg = $body_array['EdeaError']['ErrorMessage'];
         $multiple_recipients = array(
-            get_bloginfo('admin_email')
+            get_bloginfo('admin_email'),
+            "elisheva.g@simplyct.co.il"
         );
-        $subj = 'Error sync user detail from site to priority in edit details page';
-        wp_mail( $multiple_recipients, $subj, $message );
+        $subj = 'Error sync user detail from site to priority in edit details page '.$user_id.' message:'.$message;
+        wp_mail( $multiple_recipients, $subj, $error_msg.' data:'.json_encode($data) );
     }
     
      //save user details of all user that accept to receive  newsletter and register to club to new table 
@@ -2615,10 +2960,9 @@ function save_club_and_newsletter($user_id){
 
    
     $id_number = get_user_meta( $user_id, 'account_id', true );
+    //$birthdate = get_user_meta($user_id, 'reg_birthday', true);
 
    
-
-
     // $user_data = get_userdata($user_id);
     // $user_phone =  $user_data->user_login;
     $current_user = wp_get_current_user();
@@ -2639,13 +2983,15 @@ function save_club_and_newsletter($user_id){
             'ip_address' => $ip_address,
             'user_agent' => $user_agent
         ]);
+        
         if ( $result === false ) {
-            wp_mail( 'elisheva.g@simplyct.co.il', 'insert into list error', $wpdb->last_error );
+            wp_mail( 'elisheva.g@simplyct.co.il', 'insert into list error', $wpdb->last_error.' in registration newsletter for user '.$user_id );
         }
     }
 
 
     if( isset($_POST[ 'want_club_registration' ]) && $_POST[ 'want_club_registration' ] == 'on'){
+
         $result = $wpdb->insert($table_club, [
             'priority_customer_number' => $priority_customer_number,
             'id_number' => $id_number,
@@ -2653,8 +2999,27 @@ function save_club_and_newsletter($user_id){
             'ip_address' => $ip_address,
             'user_agent' => $user_agent
         ]);
+        //update flashy club list
+        $flashy = flashy();
+       
+        //get into the after user register action and try to connect to flashy to update two fields
+        //one for accept marketing and the other for loyalty membership
+        //main contacts list
+        $list_id = get_option('flashy_list_id');
+    
+
+        $customer = [
+            "email" => $billing_email,
+            "first_name" => $fname,
+            "last_name" => $lname,
+            "loyalty_membership" => true 
+             //true or false depending on accept marketing checkbox
+        ];  
+        
+        $flashy->api->contacts->create($customer, 'email', false,true);
+
         if ( $result === false ) {
-            wp_mail( 'elisheva.g@simplyct.co.il', 'insert into list error', $wpdb->last_error );
+            wp_mail( 'elisheva.g@simplyct.co.il', 'insert into list error', $wpdb->last_error.' in registration club for user '.$user_id );
         }
 
         $redirect_to = home_url( '/overview/' ); // Replace with your custom page URL
@@ -2662,9 +3027,37 @@ function save_club_and_newsletter($user_id){
         exit;
     }
 
-  
 
+    //update flashy newsletter list
+    $flashy = flashy();
+    $list_id = get_option('flashy_list_id');
+    $meta = get_user_meta($user_id);
+    $user_phone = $meta['nickname'][0];
     
+    if($allow_email == true){
+        $customer = [
+            "email" => $billing_email,
+            "phone" => $user_phone,
+            "birthday" => strtotime($BirthDate),
+            "first_name" => $fname,
+            "last_name" => $lname,
+            "lists" => [ $list_id => true ], //true or false depending on accept marketing checkbox
+        ]; 
+    }
+    else{
+        $customer = [
+            "email" => $billing_email,
+            "phone" => $user_phone,
+            "birthday" => strtotime($BirthDate),
+            "first_name" => $fname,
+            "last_name" => $lname,
+            "lists" => [ $list_id => false ], //true or false depending on accept marketing checkbox
+        ]; 
+    }
+    
+    $flashy->api->contacts->create($customer, 'email', false,true);
+
+   
 }
 
 
@@ -2721,28 +3114,236 @@ function change_email_error( $message ) {
     return $message;
 }
 
-/**
- * Automatically add gift product to cart
- */
-function add_gift_product_to_cart() {
-    if(!is_admin()) {
-       
-        $gift_product_id = get_field('pdt_id_gift', 'option'); // Replace with the actual gift product ID
-        // Check if the gift product is not already in the cart
-        $gift_product_already_in_cart = false;
-        foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
-            echo 'enter'; die;
-            echo $cart_item['product_id'];
-            if ($cart_item['product_id'] == $gift_product_id) {
-                $gift_product_already_in_cart = true;
-                break;
-            }
-        }
+function check_users_not_sync_cron(){
+    $args = array(
+        'date_query' => array(
+            array(
+                'after' => '1 day ago',
+            ),
+        ),
+        'meta_query' => array(
+            array(
+                'key' => 'priority_customer_number',
+                'value' => '',
+                'compare' => '=',
+            ),
+        ),
+        'role__in' => array( 'customer' ),
+        'number' => -1,
+    );
+    
+    $users = get_users( $args );
+    
+    foreach ( $users as $user ) {
+        $user_id = $user->ID;
+        $user_login = $user->user_login;
+        $users_without_number[] = $user_login;
+    }
+    if(!empty($users_without_number)){
+        $users_without_number = implode(", ", $users_without_number);
 
-        // Add the gift product to the cart if it's not already present
-        // if (!$gift_product_already_in_cart) {
-        //     WC()->cart->add_to_cart($gift_product_id);
-        // }
+        $multiple_recipients = array(
+            'elisheva.g@simplyct.co.il',
+        );
+        $subj = 'New user that does not receive priority customer number';
+        $body = 'The users are:';
+        $body.= $users_without_number;
+        wp_mail( $multiple_recipients, $subj, $body );
     }
 }
-//add_action('woocommerce_init', 'add_gift_product_to_cart');
+add_action('check_users_not_sync_cron_hook', 'check_users_not_sync_cron');
+
+if (!wp_next_scheduled('check_users_not_sync_cron_hook')) {
+    $local_time_to_run = 'midnight';
+    $timestamp = strtotime( $local_time_to_run ) - ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
+    $res = wp_schedule_event(time(), 'daily', 'check_users_not_sync_cron_hook');
+
+}
+//change password requirement rules
+add_filter( 'woocommerce_get_script_data', 'pwd_strength_meter_settings', 20, 2 );
+function pwd_strength_meter_settings( $params, $handle  ) {
+
+   if( $handle === 'wc-password-strength-meter' ) {
+
+      $params = array_merge( $params, array(
+
+         'min_password_strength' => 2,
+         'i18n_password_error' => 'Do not you want to be protected? Make it stronger!',
+         'i18n_password_hint' => ' Please make your password <strong>at least 7 characters</strong> long and a mix of numbers and letters , For more security use a mix of <strong>UPPER</strong> and <strong>lowercase</strong> letters, <strong>numbers</strong>, and <strong>symbols</strong>'
+      ) );
+
+
+   }
+   return $params;
+}
+
+// Add stock column to product table
+add_filter('manage_product_posts_columns', 'add_stock_column');
+function add_stock_column($columns) {
+    $columns['product_stock'] = __('Stock');
+    $columns['product_stock_sold'] = __('Stock Sold');
+    return $columns;
+}
+
+// Populate stock column with data
+add_action('manage_product_posts_custom_column', 'populate_stock_column', 10, 999999999);
+function populate_stock_column($column, $post_id) {
+    if ($column == 'product_stock') {
+        $product = wc_get_product($post_id);
+        if ($product->is_type('variable')) {
+            $variations = $product->get_available_variations();
+            $stock = 0;
+            foreach ($variations as $variation) {
+                $variation_id = $variation['variation_id'];
+                $variation_product = wc_get_product($variation_id);
+                $stock += $variation_product->get_stock_quantity();
+                $stock_sold += $variation_product->get_total_sales();
+            }
+            echo $stock;
+        } else {
+            echo $product->get_stock_quantity();
+        }
+    }
+    if ($column == 'product_stock_sold') {
+        $product = wc_get_product($post_id);
+        echo $product->get_total_sales();
+    }
+    // if ($column == 'is_in_stock') {
+    //     $product = wc_get_product($post_id);
+    //     $product_id = $product->get_id();
+    //     if ($product->is_type('variable')) {
+    //         $variations = $product->get_available_variations();
+    //         $stock = 0;
+    //         foreach ($variations as $variation) {
+    //             $variation_id = $variation['variation_id'];
+    //             $variation_product = wc_get_product($variation_id);
+    //             $stock += $variation_product->get_stock_quantity();
+    //             //$stock_sold += $variation_product->get_total_sales();
+    //         }
+    //         //echo $stock;
+    //         // set stock status
+    //         if (intval($stock) > 0) {
+    //             //$product->set_stock_status('instock');
+    //             update_post_meta($product_id, '_stock_status', 'instock');
+                
+    //         } else {
+    //             //$product->set_stock_status('outofstock');
+    //             update_post_meta($product_id, '_stock_status', 'outofstock');
+                
+    //         }
+    //         $product->set_stock_quantity($stock);
+    //         //echo $product->get_stock_status();
+    //         $product->save();
+    //     }
+
+    // }
+    
+}
+
+
+
+// Set custom width for new column
+add_action('admin_head', 'set_column_width');
+function set_column_width() {
+    echo '<style>.column-product_stock { width: 3%; }</style>';
+    echo '<style>.column-product_stock_sold { width: 3%; }</style>';
+}
+
+function add_variation_sku_to_stock_error_message($has_not_stock, $product, $values) {
+    if($has_not_stock == true){
+
+        $sku = $product->get_sku();
+        $held_stock     = wc_get_held_stock_quantity( $product, $current_session_order_id );
+        $notice_message = sprintf( __( 'Sorry, we do not have enough "%1$s" in stock to fulfill your order (%2$s available). We apologize for any inconvenience caused.', 'woocommerce' ), $product->get_name().': '.$sku, wc_format_stock_quantity_for_display( $product->get_stock_quantity() - $held_stock, $product ) ) ;
+        wc_add_notice( $notice_message ,"error" );
+        
+    }
+}
+add_filter('woocommerce_cart_item_required_stock_is_not_enough', 'add_variation_sku_to_stock_error_message', 10, 3);
+
+function echo_sku_in_cart_items( $item_name, $cart_item, $cart_item_key ) {
+
+    $product = $cart_item['data'];
+    if( $product->get_type() == 'variation' ){
+        $variation_id = $product->get_id();
+        $variation = wc_get_product($variation_id);
+        $product = wc_get_product( $variation->get_parent_id() );
+    }
+    $sku = $product->get_sku();
+
+
+    if ( is_cart() || is_checkout()) {
+        $item_name = $item_name . '<br><medium class="product-sku">' . '<span class="sku-title">' . __( 'דגם צבע: ', "woocommerce") . '</span>' . $sku . '</medium><br>';
+    } else {
+		$item_name = '<medium class="product-sku">' . $sku . '</medium>' . $item_name;
+    }
+
+    return $item_name;
+}
+
+add_filter( 'woocommerce_cart_item_name', 'echo_sku_in_cart_items', 10, 3 );
+
+// Filter products in the admin area based on URL parameter
+add_filter('parse_query', 'filter_products_by_stock_status');
+function filter_products_by_stock_status($query) {
+    if (isset($_GET['stock_status']) && $_GET['stock_status'] === 'outofstock' && is_admin()) {
+        $meta_query = $query->get('meta_query');
+        if(is_array($meta_query)){
+            $meta_query[] = array(
+                'key'     => '_stock_status',
+                'value'   => 'outofstock',
+                'compare' => '=',
+            );
+        }
+        else{
+            $meta_query = array(
+                'key'     => '_stock_status',
+                'value'   => 'outofstock',
+                'compare' => '=',
+            );
+        }
+
+        $query->set('meta_query', $meta_query);
+    }
+    return $query;
+}
+
+add_action('init' ,'test_pdts');
+
+function test_pdts(){
+    // $order = wc_get_order(34202);
+    // $pelecard_transaction_data = get_post_meta( 34202, '_transaction_data' );
+    // echo '<div style="display:none">';
+    // echo "<pre style='direction:ltr'>";
+    // print_r( $pelecard_transaction_data);
+    // echo "</pre>";
+    // echo '</div>';
+    //echo '<div style="display:none">total:'.$order->get_total().'</div>';
+
+
+}
+
+
+add_filter('woocommerce_package_rates', 'custom_shipping_price_based_on_order_amount', 10, 2);
+function custom_shipping_price_based_on_order_amount($rates, $package) {
+    // Get the order total amount
+    $order_total = WC()->cart->cart_contents_total;
+
+    // Define the shipping rate based on the order amount
+    if ($order_total < 199) {
+        $shipping_cost = 19; // Set the shipping cost for orders under $50
+    } else {
+        $shipping_cost = 0; // Set free shipping for orders of $50 or more
+    }
+
+    // Loop through the shipping rates
+    foreach ($rates as $rate_key => $rate) {
+        // Update the shipping cost for the specific shipping method
+        if ($rate->method_id === 'flat_rate') {
+            $rates[$rate_key]->cost = $shipping_cost;
+        }
+    }
+
+    return $rates;
+}
+

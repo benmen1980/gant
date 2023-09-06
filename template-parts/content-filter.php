@@ -83,8 +83,10 @@ $max_page = $arr_posts->max_num_pages;
                                     <input class="checkbox_size" id="checkbox_size_<?php echo $counter_size?>" type="checkbox" name="checkbox_size" value="<?php echo $key ?>">	
                                     <label for="checkbox_size_<?php echo $counter_size?>">
                                         
-                                        <?php $term = get_term_by('slug', $key , 'pa_size');
-                                        if ( !empty( $term->description ) ){
+                                        <?php 
+                                        global $product;
+                                        $term = get_term_by('slug', $key , 'pa_size');
+                                        if ( !empty( $term->description ) && ($parent_tag_id == 2076 || $parent_tag_id == 2081)){
                                             echo $key.' -'.$term->description;
                                         }
                                         else{

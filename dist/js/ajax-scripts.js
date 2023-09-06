@@ -3,6 +3,7 @@
 var $=jQuery.noConflict();
 
 jQuery(document).ready(function($){
+
     
     function ValidateID(str){
         //INPUT VALIDATION
@@ -14,12 +15,14 @@ jQuery(document).ready(function($){
         if ((IDnum.length > 9) || (IDnum.length < 5) ){
             $('#reg_id').after('<span class="error">הכנס ת"ז תקין</span>');
             $('#validate_id').after('<span class="error">הכנס ת"ז תקין</span>');
+            $(".all_error_msg").append('<span class="error">הכנס ת"ז תקין</span>');
             check_validate_id = false;
         }
 
         if (isNaN(IDnum)){
             $('#reg_id').after('<span class="error">הכנס ת"ז תקין</span>');
             $('#validate_id').after('<span class="error">הכנס ת"ז תקין</span>');
+            $(".all_error_msg").append('<span class="error">הכנס ת"ז תקין</span>')
             check_validate_id = false;
         }
         // The number is too short - add leading 0000
@@ -42,6 +45,7 @@ jQuery(document).ready(function($){
         if (mone%10 != 0){
             $('#reg_id').after('<span class="error">הכנס ת"ז תקין</span>');
             $('#validate_id').after('<span class="error">הכנס ת"ז תקין</span>');
+            $(".all_error_msg").append('<span class="error">הכנס ת"ז תקין</span>')
             check_validate_id = false;
 
         }
@@ -56,32 +60,36 @@ jQuery(document).ready(function($){
         user_lname = $(this).closest('form').find('.form-row input#reg_last_name').val();
         user_email = $(this).closest('form').find('.form-row input#reg_email').val();
         user_id = $(this).closest('form').find('.form-row input#reg_id').val();
+        user_pswd_field = $(this).closest('form').find('.form-row input#reg_password');
+        user_pswd = $(this).closest('form').find('.form-row input#reg_password').val();
         user_birthday = $(this).closest('form').find('.form-row input#reg_birthday').val();
         user_site_condition = $(this).closest('form').find('.condition_accept_wrapper input#read_site_condition').is(":checked");
         console.log("🚀 ~ file: ajax-scripts.js:61 ~ $ ~ user_site_condition:", user_site_condition);
-        user_club_condition = $(this).closest('form').find('.condition_accept_wrapper input#read_club_condition').is(":checked");
-        console.log("🚀 ~ file: ajax-scripts.js:62 ~ $ ~ user_club_condition:", user_club_condition);
+        //user_club_condition = $(this).closest('form').find('.condition_accept_wrapper input#read_club_condition').is(":checked");
+        //console.log("🚀 ~ file: ajax-scripts.js:62 ~ $ ~ user_club_condition:", user_club_condition);
         want_club_registration = $(this).closest('form').find('.condition_accept_wrapper input#want_club_registration').is(":checked");
         console.log("🚀 ~ file: ajax-scripts.js:63 ~ $ ~ want_club_registration:", want_club_registration);
 
         $(".error").remove();
         if (user_site_condition == false) {
             $('#read_site_condition').next("label").after('<span class="error">אישור תקנון אתר שדה חובה</span>');
+            $(".all_error_msg").append('<span class="error">אישור תקנון אתר שדה חובה</span>');
             check_validate_site_condition = false;
         }
         else{
             check_validate_site_condition = true;
         }
 
-        if (user_club_condition == false) {
-            $('#read_club_condition').next("label").after('<span class="error">אישור תקנון מועדון שדה חובה</span>');
-            check_validate_club_condition = false;
-        }
-        else{
-            check_validate_club_condition = true;
-        }
+        // if (user_club_condition == false) {
+        //     $('#read_club_condition').next("label").after('<span class="error">אישור תקנון מועדון שדה חובה</span>');
+        //     check_validate_club_condition = false;
+        // }
+        // else{
+        //     check_validate_club_condition = true;
+        // }
         if (want_club_registration == false) {
             $('#want_club_registration').next("label").after('<span class="error"> הרשמה למועדון שדה חובה</span>');
+            $(".all_error_msg").append('<span class="error"> הרשמה למועדון שדה חובה</span>');
             check_want_club_registration = false;
         }
         else{
@@ -90,6 +98,7 @@ jQuery(document).ready(function($){
 
         if (user_fname.length == 0) {
             $('#reg_first_name').after('<span class="error">שם פרטי שדה חובה</span>');
+            $(".all_error_msg").append('<span class="error">שם פרטי שדה חובה</span>');
             check_validate_fname = false;
         }
         else{
@@ -97,13 +106,45 @@ jQuery(document).ready(function($){
         }
         if (user_birthday.length == 0) {
             $('#reg_birthday').after('<span class="error">תאריך לידה שדה חובה</span>');
+            $(".all_error_msg").append('<span class="error">תאריך לידה שדה חובה</span>')
             check_validate_birthday = false;
         }
         else{
-            check_validate_birthday = true;
+            var dateRegex = /^(0[1-9]|1[0-9]|2[0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/;
+            if(!dateRegex.test(user_birthday)){
+                $('#reg_birthday').after('<span class="error">הכנס פורמט תאריך תקין</span>');
+                $(".all_error_msg").append('<span class="error">הכנס פורמט תאריך תקין</span>');
+                check_validate_birthday = false;
+            }   
+            else{
+                check_validate_birthday = true;
+            }
         }
+        if(user_pswd_field.length > 0){
+            if (user_pswd.length == 0) {
+                $('#reg_password').after('<span class="error">סיסמה שדה חובה</span>');
+                $(".all_error_msg").append('<span class="error">סיסמה שדה חובה</span>');
+                check_validate_pswd = false;
+            }
+            else{
+                var pswdRegex = /^(?=.*[a-zA-Z])(?=.*\d).{7,}$/;
+                if(!pswdRegex.test(user_pswd)){
+                    $('#reg_password').after('<span class="error">נא להזין סיסמה עם לפחות 7 תווים ולפחות אות אחת ומספר אחד.</span>');
+                    $(".all_error_msg").append('<span class="error">נא להזין סיסמה עם לפחות 7 תווים ולפחות אות אחת ומספר אחד.</span>');
+                    check_validate_pswd = false;
+                }   
+                else{
+                    check_validate_pswd = true;
+                }
+            }
+        }
+        else{
+            check_validate_pswd = true;
+        }
+
         if (user_phone.length == 0) {
             $('#reg_username').after('<span class="error">טלפון שדה חובה</span>');
+            $(".all_error_msg").append('<span class="error">טלפון שדה חובה</span>');
             check_validate_phone = false;
         }
         else{
@@ -111,6 +152,7 @@ jQuery(document).ready(function($){
             var validPhone = regEx.test(user_phone);
             if(!validPhone){
                 $('#reg_username').after('<span class="error">הכנס טלפון תקין</span>');
+                $(".all_error_msg").append('<span class="error">הכנס טלפון תקין</span>');
                 check_validate_phone = false;
             }   
             else{
@@ -119,6 +161,7 @@ jQuery(document).ready(function($){
         }
         if (user_lname.length == 0) {
             $('#reg_last_name').after('<span class="error">שם משפחה שדה חובה</span>');
+            $(".all_error_msg").append('<span class="error">שם משפחה שדה חובה</span>');
             check_validate_lname = false;
         }
         else{
@@ -126,6 +169,7 @@ jQuery(document).ready(function($){
         }
         if (user_email.length == 0) {
             $('#reg_email').after('<span class="error">אימייל שדה חובה</span>');
+            $(".all_error_msg").append('<span class="error">אימייל שדה חובה</span>');
             check_validate_email = false;
         } 
         else {
@@ -134,6 +178,7 @@ jQuery(document).ready(function($){
             var validEmail = regExEmail.test(user_email);
             if (!validEmail) {
               $('#reg_email').after('<span class="error">הכנס אימייל תקין</span>');
+              $(".all_error_msg").append('<span class="error">הכנס אימייל תקין</span>');
               check_validate_email = false;
             }
             else{
@@ -142,8 +187,8 @@ jQuery(document).ready(function($){
         }
         if (user_id.length == 0) {
             $('#reg_id').after('<span class="error">ת"ז שדה חובה</span>');
+            $(".all_error_msg").append('<span class="error">ת"ז שדה חובה</span>');
             check_validate_id = false;
-            console.log('enter if');
         } 
         else {
             ValidateID(user_id);
@@ -154,11 +199,12 @@ jQuery(document).ready(function($){
         console.log("check_validate_fname", check_validate_fname);
         console.log("check_validate_lname", check_validate_lname);
         console.log("check_validate_phone", check_validate_phone);
-        console.log("check_validate_birthday", check_validate_birthday);
+        console.log("check_validate_birthday:", check_validate_birthday);
 
         if(check_validate_id == true && check_validate_email == true && check_validate_lname == true && 
             check_validate_fname == true && check_validate_phone == true && check_validate_birthday == true &&
-            check_want_club_registration == true && check_validate_club_condition == true && check_validate_site_condition == true){
+            check_want_club_registration == true && check_validate_site_condition == true && check_validate_pswd == true){
+            console.log("send sms");
             $.ajax({
                 url: ajax_obj.ajaxurl,
                 data: {
@@ -168,6 +214,9 @@ jQuery(document).ready(function($){
                 success: function (data) {
                     console.log('success1');
                     $('.input_wrapper_validation_code').show();
+                    $('.modal_content').animate({
+                        scrollTop: $(".input_wrapper_validation_code").offset().top
+                    }, 1000);
                 },
                 error: function (errorThrown) {
                     console.log('error');
@@ -310,9 +359,9 @@ jQuery(document).ready(function($){
             success: function (data) {
                 if($(".msg_after_validation").length)
                     $(".msg_after_validation").remove();
-                if($('.register_btn').length){
-                    $('.register_btn').remove();
-                }
+                // if($('.register_btn').length){
+                //     $('.register_btn').remove();
+                // }
                 //console.log('success');
                 console.log(data);
                 console.log(data.data);
@@ -321,11 +370,15 @@ jQuery(document).ready(function($){
                 $('.check_code_wrapper').after('<div class="msg_after_validation">'+ data.data.msg +'</div>');
                 if(data.data.response == true){
                     $("#register_modal input.validation_sms_code").val(data.data.code);
-                    $('.form-row-submit').append('<button type="submit" class="register_btn" name="register">הרשמה</button>');
+                    //$('.form-row-submit').append('<button type="submit" class="register_btn" name="register">הרשמה</button>');
                     //$('.woocommerce-form-register .register_btn').trigger('submit');
-                    $('.modal_content').animate({
-                        scrollTop: $(".register_btn").offset().top
-                    }, 1000);
+                    // $('.modal_content').animate({
+                    //     scrollTop: $(".register_btn").offset().top
+                    // }, 1000);
+                    $('header .main_menu_wrapper').addClass('loader_active');
+                    $("#register_modal").removeClass('is_modal_showing');
+                    $('body').removeClass('is_register_modal_open');
+                    $('.register_btn').trigger('click');
                 }
                 // else{
                 //     return;
@@ -689,12 +742,12 @@ jQuery(document).ready(function($){
                     if(parseInt(data.found_posts) - parseInt($('.current_number_pdt_in_page').text()) == 1){
                         $('.more_pdt_title').text('מוצר נוסף');
                     }
-                    if((parseInt(data.found_posts) - parseInt($('.current_number_pdt_in_page').text())) < parseInt(post_per_page)){
-                        $('.more_pdt_to_show').text(parseInt(data.found_posts) - parseInt($('.current_number_pdt_in_page').text()));
-                    }
-                    else{
-                        $('.more_pdt_to_show').text(post_per_page);
-                    }
+                    // if((parseInt(data.found_posts) - parseInt($('.current_number_pdt_in_page').text())) < parseInt(post_per_page)){
+                    //     $('.more_pdt_to_show').text(parseInt(data.found_posts) - parseInt($('.current_number_pdt_in_page').text()));
+                    // }
+                    // else{
+                    //     $('.more_pdt_to_show').text(post_per_page);
+                    // }
                 }
             },
             error : function( data ) {
@@ -979,21 +1032,61 @@ jQuery(document).ready(function($){
             type: 'post',
             url: ajax_obj.ajaxurl,
             data: data,
+            // beforeSend: function (response) {
+            //     $('body').trigger('wc_update_cart');
+            // },
             beforeSend: function (response) {
-                $('body').trigger('wc_update_cart');
+                $('header .main_menu_wrapper').addClass('loader_active');
             },
             complete: function (response) {
                 console.log( response );
-                $('body').trigger('wc_cart_button_updated');
-                console.log('complete');
+                //$('body').trigger('wc_cart_button_updated');
+                console.log('complete1');
+                $('header .main_menu_wrapper').removeClass('loader_active');
                 window.location.reload();
             },
-            success: function (response) {
-                //$(document.body).trigger('wc_fragment_refresh');
-                console.log( response );
-                console.log('success');
-                //window.location.reload();
+            // success: function (response) {
+            //     //$(document.body).trigger('wc_fragment_refresh');
+            //     console.log( response );
+            //     console.log('success');
+            //     //window.location.reload();
+            // },
+            error : function( data ) {
+                console.log( 'Error…' );
+            }
+        });
+    });
+
+    $("body").on("click", "#delete_all_cart", function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('click delete all cart');
+        var data = {
+            action: 'delete_all_cart',
+        };
+        $.ajax({
+            type: 'post',
+            url: ajax_obj.ajaxurl,
+            data: data,
+            // beforeSend: function (response) {
+            //     $('body').trigger('wc_update_cart');
+            // },
+            beforeSend: function (response) {
+                $('header .main_menu_wrapper').addClass('loader_active');
             },
+            complete: function (response) {
+                console.log( response );
+                //$('body').trigger('wc_cart_button_updated');
+                console.log('complete delete all cart');
+                $('header .main_menu_wrapper').removeClass('loader_active');
+                window.location.reload();
+            },
+            // success: function (response) {
+            //     //$(document.body).trigger('wc_fragment_refresh');
+            //     console.log( response );
+            //     console.log('success');
+            //     //window.location.reload();
+            // },
             error : function( data ) {
                 console.log( 'Error…' );
             }
@@ -1002,55 +1095,7 @@ jQuery(document).ready(function($){
 
   
 
-    $("body").on("click", ".apply_coupon", function(e){
-        console.log('enter coupon');
-        e.preventDefault();
-        e.stopPropagation();
-        $thisbutton = $(this),
-        $form = $thisbutton.closest('tr.coupon'),
-        coupon_code = $form.find('input[name=coupon_code]').val() || 0;
-        var data = {
-            action: 'apply_coupon_programatically',
-            coupon_code: coupon_code,
-        };
-        console.log(data);
-        $.ajax({
-            type: 'post',
-            url: ajax_obj.ajaxurl,
-            data: data,
-            // beforeSend: function (response) {
-            //     $('body').trigger('wc_update_cart');
-            //     //$thisbutton.addClass('loader_active');
-            // },
-            // complete: function (response) {
-            //     $thisbutton.removeClass('loader_active');
-            // },
-            success: function (response) {
-                console.log('success');
-                console.log(response);
-                //var desc_sale = response.desc_sale;
-                //var sale_sum = response.sale;
-            
-                //$('.fee').html( response );
-                // if ($("body").hasClass("woocommerce-cart")){
-                //     //$('body').trigger('wc_update_cart');
-                // }  
-                // if ($("body").hasClass("woocommerce-checkout")){
-                //     //$('body').trigger('update_checkout');
-                // }
-            //    if(desc_sale != null && sale_sum!= null) {
-            //     localStorage.setItem("desc_sale", JSON.stringify(desc_sale));
-            //     localStorage.setItem("sale_sum", JSON.stringify(sale_sum));
-            //    }
-               localStorage.setItem("transaction_update", JSON.stringify(response.result));
-               window.location.reload();
-                
-            },
-            error : function( data ) {
-                console.log( 'Error…' );
-            }
-        });
-    });
+
 
 
     $("body").on("click", ".fee .remove_coupon", function(e){

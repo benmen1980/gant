@@ -72,7 +72,7 @@ if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) : ?>
 			<?php do_action( 'woocommerce_login_form_end' ); ?>
 
 		</form>
-		<?php echo do_shortcode( '[TheChamp-Login title="התחבר דרך גוגל או פייסבוק" redirect_url="'.home_url( '/overview' ).'"]' ); ?>
+		<?//php echo do_shortcode( '[TheChamp-Login title="התחבר דרך גוגל או פייסבוק" redirect_url="'.home_url( '/overview' ).'"]' ); ?>
 		<div class="modal" id="password_reset_modal">
 			<div class="modal_container">
 				
@@ -89,7 +89,7 @@ if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) : ?>
 				<div class="modal_content" role="dialog">
 					<form method="post" class="woocommerce-ResetPassword lost_reset_password">
 						<p class="woocommerce-form-row woocommerce-form-row--first form-row form-row-first">
-							<label for="user_login"><?php esc_html_e( 'Username or email', 'woocommerce' ); ?></label>
+							<label for="user_login"><?php esc_html_e( 'אימייל', 'gant' ); ?></label>
 							<input class="woocommerce-Input woocommerce-Input--text input-text" type="text" name="user_login" id="user_login" autocomplete="username" />
 						</p>
 

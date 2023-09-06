@@ -25,6 +25,17 @@ $categories = get_the_terms( get_the_ID(), 'product_cat' );
 		while ( have_posts() ) :
 			the_post();
 			global $product;
+			if ( $product->is_type( 'variable' ) ) {
+				$regular_price = $product->get_variation_regular_price();
+            	$sale_price = ($regular_price != $product->get_variation_sale_price()) ? $product->get_variation_sale_price() : '';
+				if(!empty($sale_price)){
+					$percent = round((($regular_price - $sale_price) * 100) / $regular_price) ;
+				}
+			}
+			else{
+				$regular_price = $product->get_regular_price();
+				$sale_price = $product->get_sale_price();
+			}
             $parent_cat_id = wdo_get_product_top_level_category($product->ID); // 1966
 			$term = get_term_by( 'id', $parent_cat_id, 'product_cat' );
 			
@@ -111,8 +122,24 @@ $categories = get_the_terms( get_the_ID(), 'product_cat' );
 							<?php  endif;?>
 							<div class="slider_gallery_wrapper">
 								<div class="gallery-thumbnail-slider">
+									<?php 
+									$badge_from_excel = get_field('badge_from_file',$product->get_id());
+									$badge_from_excel_no_club = get_field('badge_from_file_no_club',$product->get_id());
+									$sale_bage_excel = (is_user_logged_in() ? $badge_from_excel : $badge_from_excel_no_club);
+										
+									?>
 									<div class="gallery-thumbnail" id="main_slider_1">
 										<a href="<?php echo get_permalink( $product->ID ).'#zoom_1'?>">
+											<?php if(strlen(trim($sale_bage_excel)) != 0 ){ ?>
+												<div class="sale_tag">
+													<?php echo $sale_bage_excel; ?>
+												</div>
+											<?php } ?>
+											<?php if(!empty($sale_price) && false){ ?>
+												<div class="sale_tag">
+													<?php echo $percent.'% off'; ?>
+												</div>
+											<?php } ?>
 											<img src="<?php echo wp_get_attachment_url( $product->get_image_id() ); ?>" data-slide="1" alt="<?php echo $product->get_title();?>">
 										</a>
 									</div> 
@@ -123,6 +150,16 @@ $categories = get_the_terms( get_the_ID(), 'product_cat' );
 										if(strpos( $attach_url, 'thumb-fv-1') == false){?>
 											<div class="gallery-thumbnail" id="main_slider_<?php echo $attimages_key; ?>">
 												<a href="<?php echo get_permalink( $product->ID ).'#zoom_'.$attimages_key;?>">
+													<?php if(strlen(trim($sale_bage_excel)) != 0){ ?>
+														<div class="sale_tag">
+															<?php echo $sale_bage_excel; ?>
+														</div>
+													<?php } ?>
+													<?php if(!empty($sale_price) && false){ ?>
+														<div class="sale_tag">
+															<?php echo $percent.'% off'; ?>
+														</div>
+													<?php } ?>
 													<img src="<?php echo  wp_get_attachment_url( $image_id ); ?>" data-slide="<?php echo $attimages_key;?>" alt="<?php echo $product->get_title();?>">
 												</a>
 											</div>
@@ -319,11 +356,15 @@ $categories = get_the_terms( get_the_ID(), 'product_cat' );
 											<?php echo get_field('fabric_content',$product->ID); ?>
 										</div>
 									<?php } ?>
-									<?php if(get_field('made_in',$product->ID)){ ?>
-										<div class="fabric_material">
-											<b><?php echo __('ארץ יצור:','gant'); ?></b>
-											<?php echo get_field('made_in',$product->ID); ?>
-										</div>
+									<?php if (false) { ?>
+										<?php
+										if(get_field('made_in',$product->ID)){ ?>
+											<div class="fabric_material">
+												<b><?php echo __('ארץ יצור:','gant'); ?></b>
+												<?php echo get_field('made_in',$product->ID); ?>
+											</div>
+										<?php } 
+										?>
 									<?php } ?>
 									<?php if(has_term( '29', 'product_tag' )){ ?>
 										<div id="sustainable-choice">
@@ -373,53 +414,67 @@ $categories = get_the_terms( get_the_ID(), 'product_cat' );
 					</div>
 					<div class="pdts_related_wrapper">
 						<?php 
-						$related_categories = get_field('related_pdt',$term->taxonomy . '_' . $term->term_id);
+						//$related_categories = get_field('related_pdt',$term->taxonomy . '_' . $term->term_id);
 						//print_r($related_categories );
-						$categorie_title = $related_categories['title'];
-						$radio_selected = $related_categories['select_cat_or_pdt'];
-						?>
-						<section class="slider_section section_wrap">
-							<?php if(!empty($radio_selected)): ?>
-								<div class="section_header">
-									<h3><?php echo $categorie_title; ?></h3>
-								</div>
-							<?php endif; ?>
-							<?php 
-							if($radio_selected == 'select_pdts'):
-								$featured_pdts =  $related_categories['select_products'];
-							else:
-								$selected_cat =  $related_categories['select_category'];
-								
-								$term = get_term( $selected_cat, 'product_cat' );
-								$slug = $term->slug;
-		
-								$args_cat = array(
-									'post_type' =>  array('product', 'product_variation'),
-									'post_status' => array('publish'),
-									'product_cat' => $slug,
-									'posts_per_page' => 10,
-									// 'meta_query' => array(
-									// 	array(
-									// 		'key' => '_stock_status',
-									// 		'value' => 'instock',
-									// 		'compare' => '=',
-									// 	)
-									// )
-								);
-								$featured_pdts = get_posts( $args_cat );
-							endif;
-							if( $featured_pdts ):?>
-								<div class="slider_pdts slider_wrap">
-									<?php 
-									foreach( $featured_pdts as $product ):
-										setup_postdata( $product );
-										get_template_part('page-templates/box-product'); 
-										wp_reset_postdata(); 
-									endforeach;
-									?>
-								</div>
-							<?php endif; ?>
-						</section>		
+
+						$product_cat  = get_field('sub_cat',$product->ID);
+						//echo $product_cat;
+						$terms = get_the_terms( $product->ID, 'product_cat' );
+						foreach($terms as $term){
+							$term_id = $term->term_id;
+							$term_name = $term->name;
+							if($term_name == $product_cat){
+								$related_categories = get_field('related_pdt',$term->taxonomy . '_' . $term->term_id);
+								break;
+							}
+						}
+						if(!empty($related_categories['select_products']) || !empty($related_categories['select_category'])){
+							$categorie_title = $related_categories['title'];
+							$radio_selected = $related_categories['select_cat_or_pdt'];
+							?>
+							<section class="slider_section section_wrap">
+								<?php if(!empty($radio_selected)): ?>
+									<div class="section_header">
+										<h3><?php echo $categorie_title; ?></h3>
+									</div>
+								<?php endif; ?>
+								<?php 
+								if($radio_selected == 'select_pdts'):
+									$featured_pdts =  $related_categories['select_products'];
+								else:
+									$selected_cat =  $related_categories['select_category'];
+									
+									$term = get_term( $selected_cat, 'product_cat' );
+									$slug = $term->slug;
+			
+									$args_cat = array(
+										'post_type' =>  array('product', 'product_variation'),
+										'post_status' => array('publish'),
+										'product_cat' => $slug,
+										'posts_per_page' => 10,
+										// 'meta_query' => array(
+										// 	array(
+										// 		'key' => '_stock_status',
+										// 		'value' => 'instock',
+										// 		'compare' => '=',
+										// 	)
+										// )
+									);
+									$featured_pdts = get_posts( $args_cat );
+								endif;
+								if( $featured_pdts ):?>
+									<div class="slider_pdts slider_wrap">
+										<?php 
+										foreach( $featured_pdts as $product ):
+											setup_postdata( $product );
+											get_template_part('page-templates/box-product'); 
+											wp_reset_postdata(); 
+										endforeach;
+										?>
+									</div>
+								<?php endif; ?>
+							</section>
+						<?php } ?>
 					</div>
 				</div>
 			</div>
