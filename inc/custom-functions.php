@@ -927,6 +927,47 @@ function get_colors_filter($cat_id){
     write_custom_log('updating filter colors for cat: '.$cat_id);
 }
 
+function get_sleeves_filter($cat_id){
+    $sleeves = array();
+    $term = get_term_by('id', $cat_id , 'product_cat' );
+    $product_cat = $term->slug;
+    $args_cat = array(
+        'post_type' => 'product',
+        'product_cat' => $product_cat,
+        'posts_per_page' => -1,
+        'meta_query' => array(
+            array(
+                'key' => '_stock_status',
+                'value' => 'instock',
+                'compare' => '=',
+            ),
+            // array(
+            //     'key' => '_thumbnail_id',
+            //     'compare' => 'EXISTS',
+            // )
+        )
+    );
+    $arr_posts = new WP_Query( $args_cat );
+    $count = 0;
+    while ( $arr_posts->have_posts() ) :
+        $count++;
+        if ($count % 50 == 0) {
+            // Pause for 1 second (1,000,000 microseconds)
+            usleep(1000000);
+        }
+        $arr_posts->the_post();
+        //$_product = wc_get_product( get_the_id() );
+        $post_id = get_the_id();
+        $sleeve = get_field('sleeve_type', $post_id );
+        //echo $color.',';
+        if(!empty($sleeve))
+            array_push($sleeves, $sleeve );
+            
+    endwhile; 
+    update_term_meta($cat_id, 'sleeve_filter',array_count_values($sleeves));
+    write_custom_log('updating filter sleeve type for cat: '.$cat_id);
+}
+
 
 function  get_substainable_filter($cat_id){
     
@@ -1180,8 +1221,10 @@ function syncCatFilterAndPdtFilter(){
         get_colors_filter( $cat_id);
         get_sizes_filter($cat_id);
         get_cuts_filter($cat_id);
+        get_sleeves_filter( $cat_id);
         get_prices_filter($cat_id);
         get_substainable_filter($cat_id);
+
     }
    
 }
@@ -3240,6 +3283,34 @@ function populate_stock_column($column, $post_id) {
     
 }
 
+add_filter( 'manage_edit-product_sortable_columns', 'bbloomer_admin_products_product_stock_column_sortable' );
+ 
+function bbloomer_admin_products_product_stock_column_sortable( $columns ){
+   $columns['product_stock'] = 'product_stock';
+   return $columns;
+}
+
+
+function custom_column_sorting( $vars ) {
+    if ( isset( $vars['orderby'] ) && 'product_stock' === $vars['orderby'] ) {
+        $vars = array_merge( $vars, array(
+            'meta_key' => 'product_stock',
+            'orderby' => 'meta_value_num', // Sort as numeric
+        ) );
+    }
+    return $vars;
+}
+add_filter( 'request', 'custom_column_sorting' );
+
+// Change the default sorting order for the custom column to ascending
+function custom_change_default_sorting_order( $query ) {
+    if ( is_admin() && $query->is_main_query() && $query->get( 'post_type' ) === 'product' ) {
+        if ( $query->get( 'orderby' ) === 'product_stock' ) {
+            $query->set( 'order', 'asc' );
+        }
+    }
+}
+add_action( 'pre_get_posts', 'custom_change_default_sorting_order' );
 
 
 // Set custom width for new column
@@ -3330,7 +3401,7 @@ function custom_shipping_price_based_on_order_amount($rates, $package) {
     $order_total = WC()->cart->cart_contents_total;
 
     // Define the shipping rate based on the order amount
-    if ($order_total < 199) {
+    if ($order_total <= 199) {
         $shipping_cost = 19; // Set the shipping cost for orders under $50
     } else {
         $shipping_cost = 0; // Set free shipping for orders of $50 or more
@@ -3342,8 +3413,65 @@ function custom_shipping_price_based_on_order_amount($rates, $package) {
         if ($rate->method_id === 'flat_rate') {
             $rates[$rate_key]->cost = $shipping_cost;
         }
+        if ( $rate->cost == 0 ) {
+            $rates[ $rate_key ]->label .= ' (חינם)';
+        }
     }
 
     return $rates;
 }
+
+// Add a custom filter dropdown to the product listing page
+function custom_filter_by_custom_field() {
+    global $typenow;
+    
+    // Make sure this code only runs on the product listing page
+    if ($typenow == 'product') {
+        $custom_field_name = 'year'; // Replace with your custom field name
+        $selected_value = isset($_GET['year_filter']) ? $_GET['year_filter'] : '';
+
+        // Query to get distinct values of the custom field
+        $values = get_posts(array(
+            'post_type' => 'product',
+            'posts_per_page' => -1,
+            'meta_key' => $custom_field_name,
+            'fields' => 'ids',
+            'orderby' => 'meta_value',
+            'order' => 'ASC',
+            'distinct' => true, 
+        ));
+
+        // Create a dropdown filter
+        echo '<select name="year_filter">';
+        echo '<option value="">סינון לפי שנה</option>';
+        
+        foreach ($values as $value) {
+            $field_value = get_post_meta($value, $custom_field_name, true);
+            $selected = ($selected_value == $field_value) ? 'selected' : '';
+            echo '<option value="' . esc_attr($field_value) . '" ' . $selected . '>' . esc_html($field_value) . '</option>';
+        }
+
+        echo '</select>';
+    }
+}
+
+// Hook the custom filter into the WooCommerce product list
+function custom_filter_products_by_custom_field_query($query) {
+    global $typenow;
+
+    if ($typenow == 'product' && isset($_GET['year_filter']) && !empty($_GET['year_filter'])) {
+        $custom_field_name = 'year'; // Replace with your custom field name
+        $custom_field_value = sanitize_text_field($_GET['year_filter']);
+        
+        // Add a meta query to filter by the custom field
+        $query->query_vars['meta_key'] = $custom_field_name;
+        $query->query_vars['meta_value'] = $custom_field_value;
+    }
+}
+
+// Add the filter dropdown and filter query
+add_action('restrict_manage_posts', 'custom_filter_by_custom_field');
+add_filter('parse_query', 'custom_filter_products_by_custom_field_query');
+
+
 

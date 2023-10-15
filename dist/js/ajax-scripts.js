@@ -544,11 +544,11 @@ jQuery(document).ready(function($){
             $('.filter_reset > button').show();
         }
         //remove page variable from url if exist
-        var uri = window.location.toString();
-        if (uri.indexOf("?") > 0) {
-            var clean_uri = uri.substring(0, uri.indexOf("?"));
-            window.history.replaceState({}, document.title, clean_uri);
-        }
+        // var uri = window.location.toString();
+        // if (uri.indexOf("?") > 0) {
+        //     var clean_uri = uri.substring(0, uri.indexOf("?"));
+        //     window.history.replaceState({}, document.title, clean_uri);
+        // }
     });
 
     function filter_product(query_type){
@@ -568,6 +568,7 @@ jQuery(document).ready(function($){
         var colors = [];
         var sizes = [];
         var cuts = [];
+        var sleeves = [];
         var substainility ;
         var categories = [];
         var prices;
@@ -582,12 +583,17 @@ jQuery(document).ready(function($){
         //var page = $(this).attr('data-paged');
 
 
-        
+        // Get the current URL
+        var currentURL = window.location.href;
+        // Create an array to store the checked values
+        var checkedValues = [];
+
         $("input[type=checkbox].checkbox_size").each(function(){
             var elem = $(this);
             if(elem.prop("checked") )  {
                 //$( '.reset_btn' ).show();
                 sizes.push(elem.val());
+                checkedValues.push($(this).val());
                 if(sizes.length  == 1){
                     $('#select_size').text(elem.val());
                 }
@@ -596,6 +602,14 @@ jQuery(document).ready(function($){
                 }
             }
         });
+
+        var newURL = currentURL.split('?')[0]; // Remove any existing query parameters
+        if (checkedValues.length > 0) {
+        newURL += '?filter=' + checkedValues.join('+');
+        console.log("🚀 ~ file: ajax-scripts.js:609 ~ filter_product ~ newURL:", newURL);
+        window.history.pushState({ path: newURL }, '', newURL);
+
+        }
 
        
         if($("input[type=radio].radio_price").is(":checked") )  {
@@ -628,6 +642,20 @@ jQuery(document).ready(function($){
                 }
                 else if(cuts.length  > 1){
                     $('#select_cut').text(cuts.length  + ' נבחרו');
+                }
+            }
+        });
+
+        $("input[type=checkbox].checkbox_sleeve").each(function(){
+            var elem = $(this);
+            if(elem.prop("checked") )  {
+                //$( '.reset_btn' ).show();
+                sleeves.push(elem.val());
+                if(sleeves.length  == 1){
+                    $('#select_sleeve').text(elem.val());
+                }
+                else if(sleeves.length  > 1){
+                    $('#select_sleeve').text(sleeves.length  + ' נבחרו');
                 }
             }
         });
@@ -675,6 +703,7 @@ jQuery(document).ready(function($){
             data : {
                 'action' : 'filter_products',
                 'cuts' : cuts,
+                'sleeves' : sleeves,
                 'colors' : colors,
                 'sizes' : sizes,   
                 'categories' : categories,  
@@ -689,7 +718,8 @@ jQuery(document).ready(function($){
             dataType: "json",
             //type : "POST",
             success : function( data ) {
-            console.log("🚀 ~ file: ajax-scripts.js ~ line 205 ~ filter_product ~ data", data);
+              
+                console.log("🚀 ~ file: ajax-scripts.js ~ line 205 ~ filter_product ~ data", data);
                 $('button.load_more_pdts').removeClass('loader_active');
                 $('.search_suggestions_products_wrapper').removeClass('loader_active');
                 $('#filter_modal .modal_content').removeClass('loader_active');
@@ -759,6 +789,8 @@ jQuery(document).ready(function($){
             }
             
         });
+
+      
     }
     
     // reset filter
@@ -815,6 +847,7 @@ jQuery(document).ready(function($){
                     //window.location = response.product_url;
                     return;
                 } else {
+                    console.log('enter heree');
                     console.log(response);
                     $('.woocommerce-notices-wrapper').html(response);
                     $(document.body).trigger('added_to_cart', [response.fragments, response.cart_hash, $thisbutton]);

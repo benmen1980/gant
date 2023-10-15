@@ -198,6 +198,50 @@ $max_page = $arr_posts->max_num_pages;
 
         </div>
     <?php endif; ?>
+    <?php if(!empty(get_term_meta($current_term_id, 'sleeve_filter', true))): ?>
+        <div class="dropdown">
+            <button class="dropbtn">
+                <span aria-label="<?php echo get_field('title_filter_sleeve','option') ?>" ><?php echo get_field('title_filter_sleeve','option') ?></span>
+                <span class="selected_choices" id="select_sleeve"></span>
+                <span class="btn_icon">
+                    <svg focusable="false" class="c-icon icon--chevron-down" viewBox="0 0 14 9" width="10px" height="6px">
+                        <g fill="currentColor"><polygon points="0 1.89221557 1.977 0 6.987 5.05489022 12.024 8.86405608e-16 14 1.89221557 6.986 9"></polygon></g>
+                    </svg>
+                </span>
+            </button>
+            <div class="dropdown_wrapper">
+                <div class="dropdown_box">
+                    <div class="dropdown_header">
+                        <span aria-label="<?php echo get_field('title_filter_sleeve','option') ?>" ><?php echo get_field('title_filter_sleeve','option') ?></span>
+                        <button type="button" tabindex="0" aria-label="סגור" class="close">
+                            <svg focusable="false" class="c-icon icon--close" viewBox="0 0 26 27" width="12" height="12">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M13 14.348l11.445 11.685L26 24.445 14.555 12.761 25.5 1.588 23.944 0 13 11.173 2.056 0 .501 1.588 11.445 12.76 0 24.444l1.555 1.588L13 14.348z" fill="currentColor"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="dropdown_content">
+                        <?php  $sleeves = get_term_meta($current_term_id, 'sleeve_filter', true);?>
+                        <?php $counter_sleeve = 0;foreach($sleeves as $key=>$sleeve): ?>
+                            <button role="menuitemcheckbox" class="menu_item_checkbox checkbox_sleeve_wrapper" aria-checked="false" data-section="size" aria-label="שרוול: <?php echo $key;?>">
+                                <p class="row_checkbox_wrapper">
+                                    <span class=" checkbox_wrapper">
+                                        <input class="checkbox_sleeve" id="checkbox_sleeve_<?php echo $counter_sleeve;?>" type="checkbox" name="checkbox_sleeve" value="<?php echo $key ?>">	
+                                        <label for="checkbox_sleeve_<?php echo $counter_sleeve;?>">
+                                            <?//php echo $key ?>
+                                            <?php esc_html_e( $key, 'gant' ); ?>
+                                        </label>
+                                    </span>
+                                </p>
+                                <span class="checkbox_count">(<?php echo $sleeve; ?>)</span>
+                            </button>
+                        <?php $counter_sleeve++; endforeach; ?>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    <?php endif; ?>
     <?php if(!empty(get_term_meta($current_term_id, 'price_filter', true))): ?>
         <div class="dropdown">
             <button class="dropbtn">

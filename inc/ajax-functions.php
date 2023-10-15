@@ -488,7 +488,16 @@ function filter_products(){
             //'compare' 	=> '=',
         );    
     }
-   
+    
+    $sleeves = $_REQUEST["sleeves"];
+    if (isset( $_REQUEST['sleeves'] )  && $_REQUEST['sleeves'] != ''){  
+        $meta_qry[] =            array(
+            'key'	 	=> 'sleeve_type',
+            'value'	  	=> $sleeves ,
+            //'compare' 	=> '=',
+        );    
+    }
+
     if (isset( $_REQUEST['categories'] )  && $_REQUEST['categories'] != ''){ 
         $cat = $_REQUEST["categories"];
         foreach($cat as $item){

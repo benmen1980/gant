@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2022-02-22 07:38+0000\n"
-"PO-Revision-Date: 2022-05-29 08:55+0000\n"
+"PO-Revision-Date: 2023-03-14 08:35+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: _s\n"
 "Language: he_IL\n"
@@ -46,6 +46,9 @@ msgstr ""
 
 msgid "black"
 msgstr "שחור"
+
+msgid "blue"
+msgstr "כחול"
 
 msgid "brown"
 msgstr "חום"
@@ -131,6 +134,9 @@ msgstr ""
 msgid "Most Used Categories"
 msgstr ""
 
+msgid "multi color"
+msgstr "צבעוני"
+
 #: single.php:24
 msgid "Next:"
 msgstr ""
@@ -147,6 +153,9 @@ msgstr ""
 #: 404.php:18
 msgid "Oops! That page can&rsquo;t be found."
 msgstr ""
+
+msgid "orange"
+msgstr "כתום"
 
 #: template-parts/content-page.php:25 template-parts/content.php:53
 msgid "Pages:"
@@ -189,11 +198,17 @@ msgstr ""
 msgid "Proudly powered by %s"
 msgstr ""
 
+msgid "purple"
+msgstr "סגול"
+
 #. translators: 1: link to WP admin new post page.
 #: template-parts/content-none.php:24
 msgid ""
 "Ready to publish your first post? <a href=\"%1$s\">Get started here</a>."
 msgstr ""
+
+msgid "red"
+msgstr "אדום"
 
 #. translators: %s: search query.
 #: search.php:22
@@ -238,3 +253,9 @@ msgstr "לבן"
 
 msgid "yellow"
 msgstr "צהוב"
+
+msgid "Long sleeve"
+msgstr "שרוול ארוך"
+
+msgid "Short sleeve"
+msgstr שרוול קצר"

@@ -1,6 +1,8 @@
 var $=jQuery.noConflict();
 jQuery(document).on("ready", function(){
 
+    $('img').attr('loading', 'lazy');
+
     $( ".showlogin" ).on("click", function(event){
         event.preventDefault();
         var getUrl = window.location;
