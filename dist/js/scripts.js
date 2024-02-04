@@ -1,8 +1,6 @@
 var $=jQuery.noConflict();
 jQuery(document).on("ready", function(){
 
-    $('img').attr('loading', 'lazy');
-
     $( ".showlogin" ).on("click", function(event){
         event.preventDefault();
         var getUrl = window.location;
@@ -222,7 +220,9 @@ jQuery(document).on("ready", function(){
                         $('.hero_wrapper').css("height", "100vh");
                     }
                     if($('.hero_type_1').length){
-                        $('.hero_type_1').css("height", "100vh");
+                        if(!$('.banner_with_txt').length){
+                            $('.hero_type_1').css("height", "100vh");
+                        }
                     }
                 }
                 else{
@@ -231,7 +231,9 @@ jQuery(document).on("ready", function(){
                         $('.hero_wrapper').css("height", "calc(100vh - "+$('header').height()+"px)");
                     }
                     if($('.hero_type_1').length){
-                        $('.hero_type_1').css("height", "calc(100vh - "+$('header').height()+"px)");
+                        if(!$('.banner_with_txt').length){
+                            $('.hero_type_1').css("height", "calc(100vh - "+$('header').height()+"px)");
+                        }
                     }
                 }
             }
@@ -249,13 +251,21 @@ jQuery(document).on("ready", function(){
 
       if($('.hero_type_1').length){
         if (!$('.hero_type_1').hasClass("header_hidden")) {
-            $('.hero_type_1').css("height", "calc(100vh - "+$('header').height()+"px)");
+            if(!$('.banner_with_txt').length){
+                $('.hero_type_1').css("height", "calc(100vh - "+$('header').height()+"px)");
+            }
         }
         else{
-            $('.hero_type_1').css("height", "100vh");
+            if(!$('.banner_with_txt').length){
+                $('.hero_type_1').css("height", "100vh");
+            }
         }
     }
- 
+    
+    if($('.single_product_wrapper .top_details .r_side .slider_gallery_wrapper').length){
+        console.log('enter single pdt');
+        $('.single_product_wrapper .top_details .r_side .slider_gallery_wrapper').css("max-height", "calc(100vh - "+$('header').height()+"px)");
+    }
 
     if($('.search_popup_wrapper').length){
         if($('.promotion_banner').length){
@@ -938,6 +948,22 @@ jQuery(document).on("ready", function(){
 
     $( "#register_modal .close" ).on("click", function(event){
         $('body').removeClass('is_register_modal_open');
+    });
+
+
+    //set menu color for parent_sale_menu with color from backend
+    $('.menu-item.parent_sale_menu').each(function() {
+        var $menuItem = $(this);
+        var colorClass = $menuItem.attr('class').split(' ').find(function(cls) {
+            return cls.startsWith('color-'); // Assumes the color class starts with 'color-'
+        });
+
+        if (colorClass) {
+            var colorName = colorClass.split('-')[1]; // Extract color name from the class
+            console.log("🚀 ~ file: scripts.js:985 ~ $ ~ colorName:", colorName);
+            //var $menuLink = $menuItem.find('a:first-child'); // Find the anchor tag within the menu item
+            $('.menu-item.parent_sale_menu > a').css('color', colorName); // Apply color to the menu item text
+        }
     });
     
     

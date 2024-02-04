@@ -18,6 +18,9 @@ if($choose_module):
             case 'banner_1':
                 get_template_part('modules/section','banner_1');
                 break;
+            case 'design_banner':
+                get_template_part('modules/section','design_banner');
+                break;
             case 'banner_2':
                 get_template_part('modules/section','banner_2');
                 break;

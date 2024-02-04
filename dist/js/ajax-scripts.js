@@ -3,7 +3,7 @@
 var $=jQuery.noConflict();
 
 jQuery(document).ready(function($){
-
+    console.log('enter ajax js script');
     
     function ValidateID(str){
         //INPUT VALIDATION
@@ -544,11 +544,11 @@ jQuery(document).ready(function($){
             $('.filter_reset > button').show();
         }
         //remove page variable from url if exist
-        // var uri = window.location.toString();
-        // if (uri.indexOf("?") > 0) {
-        //     var clean_uri = uri.substring(0, uri.indexOf("?"));
-        //     window.history.replaceState({}, document.title, clean_uri);
-        // }
+        var uri = window.location.toString();
+        if (uri.indexOf("?") > 0) {
+            var clean_uri = uri.substring(0, uri.indexOf("?"));
+            window.history.replaceState({}, document.title, clean_uri);
+        }
     });
 
     function filter_product(query_type){
@@ -583,17 +583,12 @@ jQuery(document).ready(function($){
         //var page = $(this).attr('data-paged');
 
 
-        // Get the current URL
-        var currentURL = window.location.href;
-        // Create an array to store the checked values
-        var checkedValues = [];
-
+        
         $("input[type=checkbox].checkbox_size").each(function(){
             var elem = $(this);
             if(elem.prop("checked") )  {
                 //$( '.reset_btn' ).show();
                 sizes.push(elem.val());
-                checkedValues.push($(this).val());
                 if(sizes.length  == 1){
                     $('#select_size').text(elem.val());
                 }
@@ -602,14 +597,6 @@ jQuery(document).ready(function($){
                 }
             }
         });
-
-        var newURL = currentURL.split('?')[0]; // Remove any existing query parameters
-        if (checkedValues.length > 0) {
-        newURL += '?filter=' + checkedValues.join('+');
-        console.log("🚀 ~ file: ajax-scripts.js:609 ~ filter_product ~ newURL:", newURL);
-        window.history.pushState({ path: newURL }, '', newURL);
-
-        }
 
        
         if($("input[type=radio].radio_price").is(":checked") )  {
@@ -652,7 +639,8 @@ jQuery(document).ready(function($){
                 //$( '.reset_btn' ).show();
                 sleeves.push(elem.val());
                 if(sleeves.length  == 1){
-                    $('#select_sleeve').text(elem.val());
+                    //$('#select_sleeve').text(elem.val());
+                    $('#select_sleeve').text(elem.data("hebrew-name"));
                 }
                 else if(sleeves.length  > 1){
                     $('#select_sleeve').text(sleeves.length  + ' נבחרו');
@@ -718,8 +706,7 @@ jQuery(document).ready(function($){
             dataType: "json",
             //type : "POST",
             success : function( data ) {
-              
-                console.log("🚀 ~ file: ajax-scripts.js ~ line 205 ~ filter_product ~ data", data);
+            console.log("🚀 ~ file: ajax-scripts.js ~ line 205 ~ filter_product ~ data", data);
                 $('button.load_more_pdts').removeClass('loader_active');
                 $('.search_suggestions_products_wrapper').removeClass('loader_active');
                 $('#filter_modal .modal_content').removeClass('loader_active');
@@ -789,8 +776,6 @@ jQuery(document).ready(function($){
             }
             
         });
-
-      
     }
     
     // reset filter
@@ -804,7 +789,8 @@ jQuery(document).ready(function($){
             $('.menu_item_checkbox .checkbox_wrapper input[type="checkbox"]').prop("checked", false);
             $('.menu_item_checkbox .checkbox_wrapper input[type="checkbox"]').closest('.menu_item_checkbox').attr('aria-checked','false');
         }
-        $("input[id=radio_sort_popularity]").trigger('change');
+        $('.selected_order').text('מיין לפי');
+        //$("input[id=radio_sort_popularity]").trigger('change');
         filter_product('clean_query');
         $(this).hide();
  
@@ -847,7 +833,6 @@ jQuery(document).ready(function($){
                     //window.location = response.product_url;
                     return;
                 } else {
-                    console.log('enter heree');
                     console.log(response);
                     $('.woocommerce-notices-wrapper').html(response);
                     $(document.body).trigger('added_to_cart', [response.fragments, response.cart_hash, $thisbutton]);
@@ -867,7 +852,7 @@ jQuery(document).ready(function($){
             
     $('.woocommerce-cart-form').submit(function(event) {
         event.preventDefault(); // prevent the form from submitting normally
-      
+        console.log('enter submit2');
         // perform the update to the cart using AJAX or other means
         var customFieldInputs = $('form.woocommerce-cart-form .cart_item .product-quantity');
         var cartItemArray = [];
@@ -895,14 +880,20 @@ jQuery(document).ready(function($){
                 $('header .main_menu_wrapper').addClass('loader_active');
             },
             complete: function (response) {
+               
+                //$('.bag_button a').trigger('click');
                 $('header .main_menu_wrapper').removeClass('loader_active');
                 $('html, body').animate({ scrollTop: 0 }, 'slow');
+
             },
             success: function (response) {
                 console.log( 'AJAX success:', response );  
                 localStorage.setItem("transaction_update", JSON.stringify(response));
+                location.reload();
+                //$('body').trigger('wc_update_cart');
                 //if (!$("body").hasClass("woocommerce-cart")) {
-                location.href = ajax_obj.woo_shop_url; 
+                //location.href = ajax_obj.woo_shop_url; 
+                
             },
             error: function( xhr, status, error ) {
                 console.log( 'AJAX error:', status, error );
@@ -984,8 +975,8 @@ jQuery(document).ready(function($){
         //     $('.bag_button a').trigger('click');
         // },6000);
         // Retrieve data from local storage
-        var transaction_data = JSON.parse(localStorage.getItem("transaction_update"));
-        console.log("🚀 ~ file: ajax-scripts.js:902 ~ $ ~ transaction_data:", transaction_data);
+        //var transaction_data = JSON.parse(localStorage.getItem("transaction_update"));
+        //console.log("🚀 ~ file: ajax-scripts.js:902 ~ $ ~ transaction_data:", transaction_data);
 
         // if (localStorage.getItem('desc_sale') != undefined) {
         //     var desc_sale = localStorage.getItem("desc_sale");
@@ -1009,19 +1000,19 @@ jQuery(document).ready(function($){
         // Do something with the data
         //console.log(transaction_data);
         // console.log(transaction_data.OrderItems);
-        jQuery.each(transaction_data.OrderItems, function(index, item) {
-           item_sale_desc = item.FirstSaleDescription;
-           console.log("🚀 ~ file: ajax-scripts.js:673 ~ jQuery.each ~ item_sale_desc:", item_sale_desc);
+        // jQuery.each(transaction_data.OrderItems, function(index, item) {
+        //    item_sale_desc = item.FirstSaleDescription;
+        //    console.log("🚀 ~ file: ajax-scripts.js:673 ~ jQuery.each ~ item_sale_desc:", item_sale_desc);
            
-           item_code  = item.ItemCode;
-           item_sale_price = item.TotalPrice;
-           $(".product-sale-desc[data-sku='"+item_code+"']").text(item_sale_desc);
-        });
+        //    item_code  = item.ItemCode;
+        //    item_sale_price = item.TotalPrice;
+        //    $(".product-sale-desc[data-sku='"+item_code+"']").text(item_sale_desc);
+        // });
 
     }
     jQuery(document).on('updated_checkout', function() {
-        var transaction_data = JSON.parse(localStorage.getItem("transaction_update"));
-        console.log("🚀 ~ file: ajax-scripts.js:946 ~ jQuery ~ transaction_data:", transaction_data);
+       //var transaction_data = JSON.parse(localStorage.getItem("transaction_update"));
+        //console.log("🚀 ~ file: ajax-scripts.js:946 ~ jQuery ~ transaction_data:", transaction_data);
 
         // if (localStorage.getItem('desc_sale') != undefined) {
         //     var desc_sale = localStorage.getItem("desc_sale");
@@ -1035,16 +1026,16 @@ jQuery(document).ready(function($){
         
        
         // Do something with the data
-        console.log(transaction_data);
-        // console.log(transaction_data.OrderItems);
-        jQuery.each(transaction_data.OrderItems, function(index, item) {
-           item_sale_desc = item.FirstSaleDescription;
-           console.log("🚀 ~ file: ajax-scripts.js:673 ~ jQuery.each ~ item_sale_desc:", item_sale_desc);
+        // console.log(transaction_data);
+        // // console.log(transaction_data.OrderItems);
+        // jQuery.each(transaction_data.OrderItems, function(index, item) {
+        //    item_sale_desc = item.FirstSaleDescription;
+        //    console.log("🚀 ~ file: ajax-scripts.js:673 ~ jQuery.each ~ item_sale_desc:", item_sale_desc);
            
-           item_code  = item.ItemCode;
-           item_sale_price = item.TotalPrice;
-           $(".product-sale-desc[data-sku='"+item_code+"']").text(item_sale_desc);
-        });
+        //    item_code  = item.ItemCode;
+        //    item_sale_price = item.TotalPrice;
+        //    $(".product-sale-desc[data-sku='"+item_code+"']").text(item_sale_desc);
+        // });
     });
 
    

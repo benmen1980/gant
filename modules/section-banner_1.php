@@ -26,6 +26,7 @@
         $subtitle_font = get_sub_field('select_subtitle_font');
         
         $img = get_sub_field('Image');
+        $mobile_image = get_sub_field('mobile_image');
         $vid_file = get_sub_field('video');
         $vid_url = get_sub_field('video_iframe');
         if(get_sub_field('bg_color')){
@@ -46,11 +47,13 @@
        
         $banner_height = get_sub_field('banner_height');
 
+        $banner_with_txt = get_sub_field('banner_with_text');
+
         $btn_font_family = get_sub_field('select_btn_font');
             
         
         ?>
-        <div class="hero_type_1  <?php echo ($banner_height == 1) ? 'half_height': ''; ?>">
+        <div class="hero_type_1  <?php echo ($banner_height == 1) ? 'half_height': '';  echo ($banner_with_txt == 1) ? 'banner_with_txt': ''; ?>">
             <div class="hero_background">
                 <?php if($vid_file):?>
                     <video playsinline muted autoplay loop preload="<?php !empty(the_sub_field('Image')) ? the_sub_field('Image') : '' ;?>" poster="<?php !empty(the_sub_field('Image')) ? the_sub_field('Image') : '' ;?>" > 
@@ -59,9 +62,15 @@
                 <?php elseif($vid_url):?>
                     <iframe width="100%" height="auto" src="//www.youtube.com/embed/<?php echo $vid_url;?>?autoplay=1&loop=1&controls=0"> </iframe>
                 <?php else: ?>
-                    <div class="img_wrapper"  style="background-image:url('<?php echo $img; ?>')">
-                        <img src="<?php echo $img; ?>" alt="<?php echo $title; ?>">
-                    </div> 
+                    <?php if(!wp_is_mobile()): ?>
+                        <div class="img_wrapper"  style="background-image:url('<?php echo $img; ?>')">
+                            <img src="<?php echo $img; ?>" alt="<?php echo $title; ?>">
+                        </div> 
+                    <?php else: ?>
+                        <div class="img_wrapper"  style="background-image:url('<?php echo ($mobile_image) ? $mobile_image : $img; ?>')">
+                            <img src="<?php echo $mobile_image; ?>" alt="<?php echo $title; ?>">
+                        </div>
+                    <?php endif;?>
                 <?php endif;?>
 
                 <?php ?>

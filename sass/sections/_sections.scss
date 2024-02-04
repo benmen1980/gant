@@ -104,7 +104,7 @@
                 font-size: 22px;
                 @media screen and (max-width: 1440px){
                     width: 100%;
-                    margin-left: 10px;
+                    margin-left: 15px;
                 }
                 @media screen and (max-width: 768px){
                     width: calc(50% - 10px);
@@ -121,6 +121,25 @@
         }
     }
 }
+
+.hero_type_1.banner_with_txt{
+    & > a{
+        display: block;
+        width: 100%;
+        height: 100%;
+        &.no_link{
+            cursor: default;
+        }
+    }
+    height: calc(100vw * 1080/1920);
+    .hero_background .img_wrapper{
+        height: auto;
+    }
+    @media screen and (max-width: 1023px) {
+        height: calc(100vw * 1920/1080);
+    }
+}
+
 
 .hero_type_2{
     display: flex;
@@ -491,10 +510,10 @@
                     line-height: 1;
                 }
                 h5{
-                    font-size: 53px;
+                    font-size: 40px;
                     line-height: 1;
-                    @media screen and (max-width: 1023px) {
-                        font-size: 40px;
+                    @media screen and (max-width: 1440px) {
+                        font-size: 30px;
                     }
                 }
             }
@@ -866,7 +885,7 @@
                     button.dropbtn{
                         display: flex;
                         justify-content: space-between;
-                        padding: 10px 10px;
+                        padding: 10px 10px!important;
                         width: 100%;
                         text-align: right;
                         font-size: 18px;
@@ -883,7 +902,7 @@
                     .dropdown_wrapper{
                         width: 100%;
                         height: fit-content;
-                        max-height: none;
+                        // max-height: none;
                         position: static;
                         z-index: 0;
                         .dropdown_box{
@@ -976,6 +995,8 @@
         .dropdown_box{
             border: 1px solid #000;
             display: none;
+            overflow-y: auto;
+            max-height: 484px;
         }
         .dropdown_header{
             padding: 20px;
@@ -2301,7 +2322,55 @@ nav.breadcrumb{
     }
 }
 
+.woocommerce-account.woocommerce-payment-methods{
+    .entry-content{
+        margin: 40px auto;
+        .woocommerce{
+            .woocommerce-MyAccount-content{
+                float: none;
+                width: auto;
+                a.button{
+                    @include button_underline;
+                    padding: 0 0px 0 5px;
+                }
+                table.woocommerce-MyAccount-paymentMethods.shop_table{
+                    border-color: #000;
+                    border-radius: 0;
+                    border-collapse: collapse;
+                    th{
+                        font-size: 20px;
+                    }
+                    .payment-method{
+                        a.button{
+                            @include button_underline;
+                        }
+                    }
+                    &  + a.button{
+                        font-size: 20px;
+                        padding: 0;
+                    }
+                }
+            }
 
+        }
+
+    }  
+}
+
+.page-template-default{
+    article{
+        padding: 0 40px;
+        @media screen and (max-width: 1440px){
+            padding: 0 34px;
+        }
+        @media screen and (max-width: 1023px){
+            padding: 0 26px;
+        }
+        @media screen and (max-width: 767px){
+            padding: 0 9px;
+        }
+    }
+}
 
 
 

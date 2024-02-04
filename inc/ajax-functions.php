@@ -6,12 +6,12 @@ use PriorityWoocommerceAPI\WooAPI;
 function gant_ajax_enqueue() {
     global $wp_query; 
 	// Enqueue javascript on the frontend.
-    wp_enqueue_script('gant-ajax-scripts', get_stylesheet_directory_uri() . '/dist/js/ajax-scripts.js', array('jquery'));
+    wp_enqueue_script('gant-ajax-scripts', get_stylesheet_directory_uri() . '/dist/js/ajax-scripts.js', array('jquery'), '6.3.11');
     // The wp_localize_script allows us to output the ajax_url path for our script to use.
 	wp_localize_script('gant-ajax-scripts', 'ajax_obj', array( 
         'ajaxurl' => admin_url( 'admin-ajax.php' ),
         'current_page' => get_query_var( 'paged' ) ? get_query_var('paged') : 1,
-        'woo_shop_url' => wc_get_cart_url()
+        'woo_shop_url' => get_permalink( wc_get_page_id( 'cart' ) )
     ));
 }
 
@@ -211,7 +211,8 @@ function check_user_data_and_club(){
                 else{
                     $message = $body_array['EdeaError']['DisplayErrorMessage'];
                     $multiple_recipients = array(
-                        get_bloginfo('admin_email')
+                        get_bloginfo('admin_email'),
+                        'elisheva.g@simplyct.co.il'
                     );
                     $subj = 'Error sync user with extended details1: '.$user_id;
                     wp_mail( $multiple_recipients, $subj, $message );
@@ -256,7 +257,8 @@ function check_user_data_and_club(){
                     else{
                         $message = $result['EdeaError']['DisplayErrorMessage'];
                         $multiple_recipients = array(
-                            get_bloginfo('admin_email')
+                            get_bloginfo('admin_email'),
+                            'elisheva.g@simplyct.co.il'
                         );
                         $subj = 'Error check user exist with id number in priority';
                         wp_mail( $multiple_recipients, $subj, $message );
@@ -272,7 +274,8 @@ function check_user_data_and_club(){
             else{
                 $message = $result['EdeaError']['DisplayErrorMessage'];
                 $multiple_recipients = array(
-                    get_bloginfo('admin_email')
+                    get_bloginfo('admin_email'),
+                    'elisheva.g@simplyct.co.il'
                 );
                 $subj = 'Error check user exist with mobile phone in priority';
                 wp_mail( $multiple_recipients, $subj, $message );
@@ -284,7 +287,8 @@ function check_user_data_and_club(){
     else{
         $message = $result['EdeaError']['DisplayErrorMessage'];
         $multiple_recipients = array(
-            get_bloginfo('admin_email')
+            get_bloginfo('admin_email'),
+            'elisheva.g@simplyct.co.il'
         );
         $subj = 'Error check user exist with phone and id in priority';
         wp_mail( $multiple_recipients, $subj, $message );
@@ -488,7 +492,7 @@ function filter_products(){
             //'compare' 	=> '=',
         );    
     }
-    
+
     $sleeves = $_REQUEST["sleeves"];
     if (isset( $_REQUEST['sleeves'] )  && $_REQUEST['sleeves'] != ''){  
         $meta_qry[] =            array(
@@ -497,7 +501,7 @@ function filter_products(){
             //'compare' 	=> '=',
         );    
     }
-
+   
     if (isset( $_REQUEST['categories'] )  && $_REQUEST['categories'] != ''){ 
         $cat = $_REQUEST["categories"];
         foreach($cat as $item){
@@ -523,8 +527,18 @@ function filter_products(){
             'operator' => 'IN',
         );
     }
+
+    if (isset( $_REQUEST['sizes'] )  && $_REQUEST['sizes'] != ''){
+        $size = $_REQUEST["sizes"];
+        $tax_qry[] = array(
+            'taxonomy' => 'pa_size', // Taxonomy for size attribute (replace with your attribute slug)
+            'field'    => 'slug',
+            'terms'    => $size, // Replace with the size term you want
+            'operator' => 'IN',
+        );
+    }
     
-    if (isset( $_REQUEST['sizes'] )  && $_REQUEST['sizes'] != ''){  
+    if (isset( $_REQUEST['sizes'] )  && $_REQUEST['sizes'] != '' && false){  
         $size = $_REQUEST["sizes"];
         $tax_qry = array();
         unset($tax_qry);
@@ -601,7 +615,7 @@ function filter_products(){
         ),
         //'orderby' => $order_by. ' menu_order',
         //'order' => $order,
-        'post_parent__in' => (!empty($post_parent_in)) ? $post_parent_in : null,
+        //'post_parent__in' => (!empty($post_parent_in)) ? $post_parent_in : null,
         'meta_query'	=> array(
             'relation'		=> 'AND',
             $meta_qry
@@ -943,6 +957,7 @@ function update_bag() {
         $branch_num = $config->BranchNumber;
         $unique_id = $config->UniqueIdentifier;
         $pos_num = $config->POSNumber;
+        $ChannelCode = $config->ChannelCode;
 
         $priority_customer_number = get_user_meta($user_id, 'priority_customer_number', true);
 
@@ -952,7 +967,7 @@ function update_bag() {
             "BranchNumber" => $branch_num,
             "POSNumber" => $pos_num,
             "UniqueIdentifier" => $unique_id,
-            "ChannelCode" => "",
+            "ChannelCode" => $ChannelCode,
             "VendorCode" => "",
             "ExternalAccountID" => ""
         ];
@@ -985,10 +1000,13 @@ function update_bag() {
             $message = $body_array['EdeaError']['DisplayErrorMessage'];
             $multiple_recipients = array(
                 get_bloginfo('admin_email'),
-                'elisheva.g@simplyct.co.il'
+                'elisheva.g@simplyct.co.il',
+                'amos@edea.co.il'
             );
             $subj = 'Error sync user with extended details when update bag: '.$user_id;
-            wp_mail( $multiple_recipients, $subj, $message );
+            if(!user_can( $user_id, 'manage_options' )){
+                wp_mail( $multiple_recipients, $subj, json_encode($data).'</br>'.$message );
+            }
         }
     }
 
@@ -1113,7 +1131,7 @@ function update_transaction_from_cart(){
     foreach($cart_item_array as  $cart_item){
         $quantity = $cart_item['quantity'];
         $variation_id = $cart_item['product_id'];
-        $price = get_post_meta($variation_id, '_price', true);
+        $price = get_post_meta($variation_id, '_regular_price', true);
         $sku = get_post_meta( $variation_id, '_sku', true );
         if($quantity == 0) continue;
         $items_in_bag [] = [
@@ -1526,20 +1544,6 @@ function apply_coupon_programatically() {
                         $i ++;
                     }
                 }
-                // $total_before_general_discount = $last_update_transaction["TotalBeforeGeneralDiscountIncludingVAT"];
-                // $total_after_general_discount = $last_update_transaction["TotalAfterGeneralDiscountIncludingVAT"];
-                // $general_discount_sum = $last_update_transaction["GeneralDiscountSum"];
-                // if(($total_after_general_discount < $total_before_general_discount) ){
-                //     $desc_sale = $last_update_transaction["FirstSaleDescription"];
-                //     if($last_update_transaction["SecondSaleDescription"] != ''){
-                //         $desc_sale = $last_update_transaction["FirstSaleDescription"].', '.$last_update_transaction["SecondSaleDescription"];
-                //     }
-                //     //$sale = $total_before_general_discount - $total_after_general_discount;
-                //     $sale = $general_discount_sum;
-                // }else{
-                //     unset($_SESSION['coupon_code']);
-                // }
-                //print_r($total_before_general_discount); die;
                 echo wp_send_json(array(
                     'result' => $last_update_transaction,
                     //'desc_sale' => $desc_sale,
@@ -1565,10 +1569,20 @@ function apply_coupon_programatically() {
                     wc_add_notice( $response, 'error' );
                                 
                     $multiple_recipients = array(
-                        get_bloginfo('admin_email')
+                        get_bloginfo('admin_email'),
+                        'elisheva.g@simplyct.co.il'
                     );
                     $subj = 'Error set coupon from priority';
-                    wp_mail( $multiple_recipients, $subj, $message );
+                    $i = 0;
+                    if ( WC()->cart->get_cart_contents_count() > 0 ) {
+                        foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+                            if($i == 0){
+                                $last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+                                $i ++;
+                            }
+                        }
+                    }
+                    wp_mail( $multiple_recipients, $subj, json_encode($last_update_transaction).'</br>'.$response );
                 }
             }
 
@@ -1587,67 +1601,74 @@ function apply_coupon_birthday_programatically() {
         $coupon_code = $_POST['coupon_code'];
         $result =  CardPOS::instance()->getCoupons($coupon_code );
         $error_code = $result["ErrorCode"];
-    if ($error_code == 0) {
-        //get coupon value and set it in session to add it in fee
-        $_SESSION['coupon_birthday_code'] = $coupon_code;
-        $msg = __( 'Coupon code applied successfully.'.$_SESSION['coupon_birthday_code'], 'woocommerce' );
-        wc_add_notice( $msg ); 
+        if ($error_code == 0) {
+            //get coupon value and set it in session to add it in fee
+            $_SESSION['coupon_birthday_code'] = $coupon_code;
+            $msg = __( 'Coupon code applied successfully.'.$_SESSION['coupon_birthday_code'], 'woocommerce' );
+            wc_add_notice( $msg ); 
 
-        $product_status = 'publish';
-        $passed_validation = true;
-    
-        update_bag_after_sync($passed_validation,$product_status,$result);
-        $i = 0;
-        if ( WC()->cart->get_cart_contents_count() > 0 ) {
-            foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
-                if($i == 0){
-                    $last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
-                    $i ++;
+            $product_status = 'publish';
+            $passed_validation = true;
+        
+            update_bag_after_sync($passed_validation,$product_status,$result);
+            $i = 0;
+            if ( WC()->cart->get_cart_contents_count() > 0 ) {
+                foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+                    if($i == 0){
+                        $last_update_transaction = $cart_item['lastupdate_transaction']['Transaction'];
+                        $i ++;
+                    }
+                }
+                // $total_before_general_discount = $last_update_transaction["TotalBeforeGeneralDiscountIncludingVAT"];
+                // $total_after_general_discount = $last_update_transaction["TotalAfterGeneralDiscountIncludingVAT"];
+                // $general_discount_sum = $last_update_transaction["GeneralDiscountSum"];
+                // if(($total_after_general_discount < $total_before_general_discount) ){
+                //     $desc_sale = $last_update_transaction["FirstSaleDescription"];
+                //     if($last_update_transaction["SecondSaleDescription"] != ''){
+                //         $desc_sale = $last_update_transaction["FirstSaleDescription"].', '.$last_update_transaction["SecondSaleDescription"];
+                //     }
+                //     //$sale = $total_before_general_discount - $total_after_general_discount;
+                //     $sale = $general_discount_sum;
+                // }
+                // else{
+                //     unset($_SESSION['coupon_birthday_code']);
+                // }
+                //print_r($total_before_general_discount); die;
+                echo wp_send_json(array(
+                    'result' => $last_update_transaction,
+                    //'desc_sale' => $desc_sale,
+                    //'sale' => $sale
+                ));
+            }
+
+        }
+        //coupon code not valid or error
+        else {
+            if($error_code == 59){
+                CardPOS::instance()->cancel_transaction();   
+            }
+            else{
+                $response = $result['EdeaError']['DisplayErrorMessage'];
+                if(!empty($result["FailedCoupons"]["FailedCouponsToAdd"])){
+                    $failedCouponMsg = $result["FailedCoupons"]["FailedCouponsToAdd"][0]["CouponError"]["DisplayErrorMessage"];
+                    wc_add_notice( $failedCouponMsg, 'error' );
+                }
+                // שגיאה כללית
+                else{
+                    wc_add_notice( $response, 'error' );
+                                
+                    $multiple_recipients = array(
+                        get_bloginfo('admin_email'),
+                        'elisheva.g@simplyct.co.il'
+                    );
+                    $subj = 'Error set coupon birthday from priority';
+                    //wp_mail( $multiple_recipients, $subj, $message );
+                    wp_mail( $multiple_recipients, $subj, json_encode($last_update_transaction).'</br>'.$response );
                 }
             }
-            // $total_before_general_discount = $last_update_transaction["TotalBeforeGeneralDiscountIncludingVAT"];
-            // $total_after_general_discount = $last_update_transaction["TotalAfterGeneralDiscountIncludingVAT"];
-            // $general_discount_sum = $last_update_transaction["GeneralDiscountSum"];
-            // if(($total_after_general_discount < $total_before_general_discount) ){
-            //     $desc_sale = $last_update_transaction["FirstSaleDescription"];
-            //     if($last_update_transaction["SecondSaleDescription"] != ''){
-            //         $desc_sale = $last_update_transaction["FirstSaleDescription"].', '.$last_update_transaction["SecondSaleDescription"];
-            //     }
-            //     //$sale = $total_before_general_discount - $total_after_general_discount;
-            //     $sale = $general_discount_sum;
-            // }
-            // else{
-            //     unset($_SESSION['coupon_birthday_code']);
-            // }
-            //print_r($total_before_general_discount); die;
-            echo wp_send_json(array(
-                'result' => $last_update_transaction,
-                //'desc_sale' => $desc_sale,
-                //'sale' => $sale
-            ));
         }
-
-    }
-    //coupon code not valid or error
-    else {
-        $response = $result['EdeaError']['DisplayErrorMessage'];
-        if(!empty($result["FailedCoupons"]["FailedCouponsToAdd"])){
-            $failedCouponMsg = $result["FailedCoupons"]["FailedCouponsToAdd"][0]["CouponError"]["DisplayErrorMessage"];
-            wc_add_notice( $failedCouponMsg, 'error' );
-        }
-        // שגיאה כללית
-        else{
-            wc_add_notice( $response, 'error' );
-                        
-            $multiple_recipients = array(
-                get_bloginfo('admin_email')
-            );
-            $subj = 'Error set coupon from priority';
-            wp_mail( $multiple_recipients, $subj, $message );
-        }
-    }
-    //$_SESSION['api_fee'] = $_POST['coupon_code'];
-    wp_die();
+        //$_SESSION['api_fee'] = $_POST['coupon_code'];
+        wp_die();
     }
 
 }
@@ -1710,7 +1731,8 @@ function remove_coupon_programatically() {
                 $error_msg = $result['EdeaError']['DisplayErrorMessage'];
                 wc_add_notice( 'error in update transaction when removing coupon: '.$error_msg, 'error' );
                 $multiple_recipients = array(
-                    get_bloginfo('admin_email')
+                    get_bloginfo('admin_email'),
+                    'elisheva.g@simplyct.co.il'
                 );
                 $subj = 'Error set coupon from priority';
                 wp_mail( $multiple_recipients, $subj, $error_msg );
@@ -1719,21 +1741,28 @@ function remove_coupon_programatically() {
         }
         //coupon code not valid
         else {
-            $response = $result['EdeaError']['DisplayErrorMessage'];
-            if(!empty($result["FailedCoupons"]["FailedCouponsToRemove"])){
-                $failedCouponMsg = $result["FailedCoupons"]["FailedCouponsToRemove"][0]["CouponError"]["DisplayErrorMessage"];
-                wc_add_notice( $failedCouponMsg, 'error' );
+            if($error_code == 59){
+                CardPOS::instance()->cancel_transaction();   
             }
-            // שגיאה כללית
             else{
-                wc_add_notice( $response, 'error' );
-                
-                $multiple_recipients = array(
-                    get_bloginfo('admin_email')
-                );
-                $subj = 'Error remove coupon from priority';
-                wp_mail( $multiple_recipients, $subj, $message );
+                $response = $result['EdeaError']['DisplayErrorMessage'];
+                if(!empty($result["FailedCoupons"]["FailedCouponsToRemove"])){
+                    $failedCouponMsg = $result["FailedCoupons"]["FailedCouponsToRemove"][0]["CouponError"]["DisplayErrorMessage"];
+                    wc_add_notice( $failedCouponMsg, 'error' );
                 }
+                // שגיאה כללית
+                else{
+                    wc_add_notice( $response, 'error' );
+                    
+                    $multiple_recipients = array(
+                        get_bloginfo('admin_email'),
+                        'elisheva.g@simplyct.co.il'
+                    );
+                    $subj = 'Error remove coupon from priority';
+                    wp_mail( $multiple_recipients, $subj, $response );
+                }
+            }
+            
         }
         //unset($_SESSION['coupon_code']);
     }
@@ -1827,7 +1856,8 @@ function remove_coupon_programatically1() {
                 $error_msg = $result['EdeaError']['DisplayErrorMessage'];
                 wc_add_notice( 'error in update transaction when removing coupon: '.$error_msg, 'error' );
                 $multiple_recipients = array(
-                    get_bloginfo('admin_email')
+                    get_bloginfo('admin_email'),
+                    'elisheva.g@simplyct.co.il'
                 );
                 $subj = 'Error set coupon from priority';
                 wp_mail( $multiple_recipients, $subj, $error_msg );
@@ -1846,7 +1876,8 @@ function remove_coupon_programatically1() {
                 wc_add_notice( $response, 'error' );
                 
                 $multiple_recipients = array(
-                    get_bloginfo('admin_email')
+                    get_bloginfo('admin_email'),
+                    'elisheva.g@simplyct.co.il'
                 );
                 $subj = 'Error remove coupon from priority';
                 wp_mail( $multiple_recipients, $subj, $message );
@@ -1935,7 +1966,8 @@ function remove_coupon_programatically1() {
                 $error_msg = $result['EdeaError']['DisplayErrorMessage'];
                 wc_add_notice( 'error in update transaction when removing coupon: '.$error_msg, 'error' );
                 $multiple_recipients = array(
-                    get_bloginfo('admin_email')
+                    get_bloginfo('admin_email'),
+                    'elisheva.g@simplyct.co.il'
                 );
                 $subj = 'Error set coupon from priority';
                 wp_mail( $multiple_recipients, $subj, $error_msg );
@@ -1955,7 +1987,8 @@ function remove_coupon_programatically1() {
                 wc_add_notice( $response, 'error' );
                 
                 $multiple_recipients = array(
-                    get_bloginfo('admin_email')
+                    get_bloginfo('admin_email'),
+                    'elisheva.g@simplyct.co.il'
                 );
                 $subj = 'Error remove coupon from priority';
                 wp_mail( $multiple_recipients, $subj, $message );
@@ -2038,10 +2071,12 @@ function woo_add_cart_fee() {
         $error_msg = $result['EdeaError']['DisplayErrorMessage'];
         wc_add_notice( 'error in update transaction when adding general discount: '.$error_msg, 'error' );
         $multiple_recipients = array(
-         get_bloginfo('admin_email')
+         get_bloginfo('admin_email'),
+         'elisheva.g@simplyct.co.il'
          );
-         $subj = 'Error set coupon from priority';
-         wp_mail( $multiple_recipients, $subj, $error_msg );
+         $subj = 'Error in update transaction when adding general discount';
+         //wp_mail( $multiple_recipients, $subj, $error_msg );
+         wp_mail( $multiple_recipients, $subj, $data.'</br>'.$error_msg );
     }
    
        //exit;

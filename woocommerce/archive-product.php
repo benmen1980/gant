@@ -131,7 +131,7 @@ $current_term_id = $current_term->term_id;
     </div>
     <?php if(!wp_is_mobile()): ?>
     <div class="filter_wrapper">
-        <?php  ?>
+        <?php get_template_part( 'template-parts/content', 'filter' ); ?>
     </div>
 
     <?php else: ?>

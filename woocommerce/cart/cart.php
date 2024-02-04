@@ -129,11 +129,33 @@ $count = $woocommerce->cart->cart_contents_count;
 							$price = $cart_item['data']->get_price() * $quantity;
 							//echo $_product->get_sale_price();
 							$pdt_regular_price = $_product->get_regular_price();
-			
-							
-							echo apply_filters( 'woocommerce_cart_item_price', wc_price($price), $cart_item, $cart_item_key ); // PHPCS: XSS ok.
-							
-							
+
+							$update_result = $cart_item['lastupdate_transaction']['Transaction'];
+							$cart_items = $update_result['OrderItems'];
+							foreach ($cart_items as $cart_single_item){
+								$item_sku = $cart_single_item['ItemCode'];
+								$qtty = $cart_single_item['ItemQuantity'];
+								$price_per_item = $cart_single_item['PricePerItem'];
+								$tot_price = $cart_single_item['TotalPrice']; // price after discount for all quantity 
+								$final_price = $cart_single_item['FinalPrice']; //price after discount for one product
+								if($item_sku == $_product->get_sku()){
+									if($final_price != $price_per_item){ ?>
+										<div class="prices_wrapper">
+											<span class="original_price"><?php echo wc_price($price_per_item * $qtty); ?></span>
+											<span class="sale_price"><?php echo wc_price($tot_price); ?></span>
+										</div>
+										<div  class="product-sale-desc">
+											<?php echo $cart_single_item['FirstSaleDescription']; ?>
+										</div>
+										
+									<?php }
+									else{
+										echo apply_filters( 'woocommerce_cart_item_price', wc_price($price), $cart_item, $cart_item_key ); // PHPCS: XSS ok.
+									}
+									break;
+								}
+								
+							}
 							?>
 						</div>
 						
@@ -223,7 +245,6 @@ $count = $woocommerce->cart->cart_contents_count;
 
 <?php do_action( 'woocommerce_after_cart' ); ?>
 
-<?php if(false): ?>
 <div class="pdts_related_wrapper">
 	<?php 
 	$related_categories = get_field('related_pdt');
@@ -236,10 +257,9 @@ $count = $woocommerce->cart->cart_contents_count;
 				<h3><?php echo $categorie_title; ?></h3>
 			</div>
 		<?php endif; ?>
-		<?php if($radio_selected == 'select_pdts'){
+		<?php if($radio_selected == 'select_pdts'):
 			$featured_pdts =  $related_categories['select_products'];
-		}
-		else{
+		else:
 			$selected_cat =  $related_categories['select_category'];
 			$term = get_term( $selected_cat, 'product_cat' );
 			$slug = $term->slug;
@@ -258,7 +278,7 @@ $count = $woocommerce->cart->cart_contents_count;
 				)
 			);
 			$featured_pdts = get_posts( $args_cat );
-		}
+		endif;
 		if( $featured_pdts ): ?>
 			<div class="slider_pdts slider_wrap">
 				<?php 
@@ -272,4 +292,3 @@ $count = $woocommerce->cart->cart_contents_count;
 		<?php endif; ?>
 	</section>		
 </div>
-<?php endif; ?>

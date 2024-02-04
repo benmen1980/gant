@@ -114,6 +114,7 @@ if ( ! function_exists( 'gant_setup' ) ) :
 endif;
 add_action( 'after_setup_theme', 'gant_setup' );
 
+
 /**
  * Set the content width in pixels, based on the theme's design and stylesheet.
  *
@@ -449,50 +450,6 @@ function filename_filter_wpse_28439( $name )
 
 
 
-//add this function for test only 
-//add_action( 'init', 'check_filter' );
-function check_filter() {
-
-    $sleeves = array();
-    $term = get_term_by('id', 1957 , 'product_cat' );
-    $product_cat = $term->slug;
-    $args_cat = array(
-        'post_type' => 'product',
-        'product_cat' => $product_cat,
-        'posts_per_page' => -1,
-        'meta_query' => array(
-            array(
-                'key' => '_stock_status',
-                'value' => 'instock',
-                'compare' => '=',
-            ),
-            // array(
-            //     'key' => '_thumbnail_id',
-            //     'compare' => 'EXISTS',
-            // )
-        )
-    );
-    $arr_posts = new WP_Query( $args_cat );
-    $count = 0;
-    while ( $arr_posts->have_posts() ) :
-        $count++;
-        if ($count % 50 == 0) {
-            // Pause for 1 second (1,000,000 microseconds)
-            usleep(1000000);
-        }
-        $arr_posts->the_post();
-        //$_product = wc_get_product( get_the_id() );
-        $post_id = get_the_id();
-        $sleeve = get_field('sleeve_type', $post_id );
-        if(!empty($sleeve))
-            array_push($sleeves, $sleeve );
-            
-    endwhile; 
-    echo "<pre>";
-    print_r(array_count_values($sleeves));
-    echo "</pre>";
-
-}
 
 
 

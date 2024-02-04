@@ -503,7 +503,16 @@ body.gallery_open{
                             z-index: 1;
                         }
                     }
-
+                    .custom_bage {
+                        position: absolute;
+                        left: 0;
+                        background-color: #000;
+                        color: #fff;
+                        line-height: 1;
+                        padding: 10px 10px;
+                        font-size: 18px;
+                        bottom: 20px;
+                    }
                 }
             }
             .slider_gallery_wrapper{

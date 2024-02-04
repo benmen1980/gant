@@ -27,7 +27,7 @@ $args_cat = array(
     'meta_key'       => 'total_sales',
     //'orderby'        => 'meta_value_num menu_order',
     'orderby'  => array(
-		'meta_value_num' => 'DESC',
+		//'meta_value_num' => 'DESC',
 		'menu_order'      => 'ASC',
         'ID'   => 'DESC'
 	),

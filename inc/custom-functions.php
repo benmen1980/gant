@@ -357,6 +357,12 @@ function add_extra_fields( $user )
                     <input type="checkbox" name="read_site_condition"  <?php  checked( get_user_meta( $user->ID, 'read_site_condition', true ), '1' ); ?> value = '1'  />
                 </td>   
             </tr>
+            <!-- <tr>
+                <th><label for="read_club_condition"><?//php echo __('סמן קריאת תקנון מועדון','gant')?></label></th>
+                <td> 
+                    <input type="checkbox" name="read_club_condition"  <?//php  checked( get_user_meta( $user->ID, 'read_club_condition', true ), '1' ); ?> value = '1' />
+                </td>   
+            </tr> -->
             <tr>
                 <th><label for="want_club_registration"><?php echo __('סמן חבר מועדון בהרשמה','gant')?></label></th>
                 <td> 
@@ -968,7 +974,6 @@ function get_sleeves_filter($cat_id){
     write_custom_log('updating filter sleeve type for cat: '.$cat_id);
 }
 
-
 function  get_substainable_filter($cat_id){
     
     $term = get_term_by('id', $cat_id , 'product_cat' );
@@ -1026,6 +1031,17 @@ function getOrderedBySize($data) {
 function getOrderedBySizeChild($data) {
     $result = [];
     foreach (["56", "62", "68", "74", "80", "86","92" ,"98", "104", "110", "122", "134", "146", "158", "170"] as $key) {
+        if (array_key_exists($key, $data)) {
+            $result[$key] = $data[$key];
+        }
+    }
+    return $result;
+}
+
+//reorder all size
+function getOrderedAllSize($data) {
+    $result = [];
+    foreach (["10x18","13x18","16x20","18x20","20x20","20x21","20x22","21x21","22x22","30x30","50x50","50x70","50x80","60x90","70x14","90x20","26","27","28","29","29-32","29-30","29-34","30","30-30","30-32","30-34","31","31-30","31-32","31-34","32","32-30","32-32","32-34","33","33-30","33-32","33-34","34","34-30","34-32","34-34","35","35-30","35-32","35-34","36","36-30","36-32","36-34","36-38","37","38","38-30","38-32","38-34","39","39-41","40","40-30","40-32","40-34","40-42","41","42","42-30","42-32","42-34","43","43-45","44","44-5","44-34","45","46","48","50","52","54","56","62","68","74","75","80","85","86","90","92","95","98","100","105","110","115","122","134","146","158","170","176","xxs","xs","s","m","s-m","l","l-xl","xl","2xl","3xl","4xl","5xl","one"] as $key) {
         if (array_key_exists($key, $data)) {
             $result[$key] = $data[$key];
         }
@@ -1224,7 +1240,6 @@ function syncCatFilterAndPdtFilter(){
         get_sleeves_filter( $cat_id);
         get_prices_filter($cat_id);
         get_substainable_filter($cat_id);
-
     }
    
 }
@@ -1464,12 +1479,12 @@ add_filter('woocommerce_dropdown_variation_attribute_options_html', 'variation_r
  
 
 function variation_check($active, $variation) {
-    if($variation->get_stock_quantity() == 0) {
+    if($variation->get_stock_quantity() <= 0) {
         return false;
     }
     return $active;
 }
-add_filter('woocommerce_variation_is_active', 'variation_check', 9999999, 2);
+add_filter('woocommerce_variation_is_active', 'variation_check', 999999999999, 2);
 
 // change order of description
 remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_excerpt', 20 );
@@ -1508,9 +1523,8 @@ function check_if_variable_first()
                     //     $price = '<del>' . $saleprice . $product->get_price_suffix() . '</del> <ins>' . $price . $product->get_price_suffix() . '</ins>';
                     // }
                     // ?>
-                    <?php if(false):
-                        echo '<p class="price">' . $price . '</p>';
-                    endif;
+                    <?//php
+                    // echo '<p class="price">' . $price . '</p>';
 
                     $regular_price = $product->get_variation_regular_price();
                     $sale_price = ($regular_price != $product->get_variation_sale_price())? $product->get_variation_sale_price() : '';
@@ -1788,6 +1802,13 @@ function validate_pickup_store() {
     if ( false !== strpos( $chosen_shipping_rate_id, 'local_pickup:3' )
     && isset($_POST['storelist']) && empty($_POST['storelist']) ) {
         wc_add_notice( __( 'אנא בחר סניף', 'gant' ), 'error' );
+    }
+
+    if (isset($_POST['billing_phone']) && !preg_match('/^05\d{8}$/', $_POST['billing_phone'])) {
+        wc_add_notice(  __( 'נא להזין מספר טלפון חוקי שמתחיל ב-05 ואחריו 8 ספרות.', 'gant' ), 'error' );
+    }
+    if (isset($_POST['shipping_phone']) && !empty($_POST['shipping_phone']) && !preg_match('/^05\d{8}$/', $_POST['shipping_phone'])) {
+       wc_add_notice(  __( 'נא להזין מספר טלפון של משלוח חוקי שמתחיל ב-05 ואחריו 8 ספרות.', 'gant' ), 'error' );
     }
 }
 
@@ -2639,7 +2660,8 @@ function custom_checkout_field_update_order_meta( $order, $data ) {
     // }
 
 }
-add_action('woocommerce_thankyou',  'update_user_club_payment',999,1);
+//add_action('woocommerce_thankyou',  'update_user_club_payment',999,1);
+add_action('woocommerce_order_status_processing',  'update_user_club_payment',999,1);
 
 function update_user_club_payment($order_id){
  
@@ -2647,111 +2669,112 @@ function update_user_club_payment($order_id){
 
     //check if order has club checked
     //$value = get_post_meta( $order_id, '_checkbox_club' , true );
+    if ( 'processing' === $order->get_status() ) {
+        foreach ( $order->get_fees() as $fee ) {
+            $fee_name = $fee->get_name();
+            if ( $fee_name === 'הצטרפות לחבר מועדון' ){
+                $user_id = $order->get_user_id();
+                if ( $user_id != 0 ) {
+                    global $current_user;
+                    
+                    
+                    //update_user_meta( get_current_user_id(), 'is_club', $value );
+                    update_user_meta( $user_id, 'club_fee_paid', 1 );
+                    update_user_meta( $user_id, 'is_club', 1 );
+                    //wp_mail( 'elisheva.g@simplyct.co.il', 'check user after club registration',  $user_id );
+                    
+                    // we need now to  update the list_user_club with this user, because just after this order he became club member
+                    global $wpdb;
+                    $table_club = $wpdb->prefix . 'list_user_club';
 
-    foreach ( $order->get_fees() as $fee ) {
-        $fee_name = $fee->get_name();
-        if ( $fee_name === 'הצטרפות לחבר מועדון' ){
-            $user_id = $order->get_user_id();
-            if ( $user_id != 0 ) {
-                global $current_user;
-                
-                
-                //update_user_meta( get_current_user_id(), 'is_club', $value );
-                update_user_meta( $user_id, 'club_fee_paid', 1 );
-                update_user_meta( $user_id, 'is_club', 1 );
-                //wp_mail( 'elisheva.g@simplyct.co.il', 'check user after club registration',  $user_id );
-                
-                // we need now to  update the list_user_club with this user, because just after this order he became club member
-                global $wpdb;
-                $table_club = $wpdb->prefix . 'list_user_club';
+                    $priority_customer_number = get_user_meta($user_id, 'priority_customer_number', true );
+                    $id_number = get_user_meta( $user_id, 'account_id', true );
+                    $user_phone = wp_get_current_user()->user_login;
+                    $ip_address = $_SERVER['REMOTE_ADDR'];
+                    $user_agent = $_SERVER['HTTP_USER_AGENT'];
 
-                $priority_customer_number = get_user_meta($user_id, 'priority_customer_number', true );
-                $id_number = get_user_meta( $user_id, 'account_id', true );
-                $user_phone = wp_get_current_user()->user_login;
-                $ip_address = $_SERVER['REMOTE_ADDR'];
-                $user_agent = $_SERVER['HTTP_USER_AGENT'];
+                    $result = $wpdb->insert($table_club, [
+                        'priority_customer_number' => $priority_customer_number,
+                        'id_number' => $id_number,
+                        'customer_phone' =>  $user_phone,
+                        'ip_address' => $ip_address,
+                        'user_agent' => $user_agent
+                    ]);
+                    if ( $result === false ) {
+                        wp_mail( 'elisheva.g@simplyct.co.il', 'insert into list error when pay club', $wpdb->last_error.' in registration club for user:'.$user_id );
+                    }
 
-                $result = $wpdb->insert($table_club, [
-                    'priority_customer_number' => $priority_customer_number,
-                    'id_number' => $id_number,
-                    'customer_phone' =>  $user_phone,
-                    'ip_address' => $ip_address,
-                    'user_agent' => $user_agent
-                ]);
-                if ( $result === false ) {
-                    wp_mail( 'elisheva.g@simplyct.co.il', 'insert into list error', $wpdb->last_error.' in registration club for user:'.$user_id );
+                    //flashy
+                    $flashy = flashy();
+        
+                    //get into the after user register action and try to connect to flashy to update two fields
+                    //one for accept marketing and the other for loyalty membership
+                    //main contacts list
+                    $list_id = get_option('flashy_list_id');
+                
+
+                    $customer = [
+                        "email" => $current_user->user_email,
+                        "loyalty_membership" => true 
+                        ];  
+                    
+                    $flashy->api->contacts->create($customer, 'email', false,true);
                 }
-
-                //flashy
-                $flashy = flashy();
-       
-                //get into the after user register action and try to connect to flashy to update two fields
-                //one for accept marketing and the other for loyalty membership
-                //main contacts list
-                $list_id = get_option('flashy_list_id');
-            
-
-                $customer = [
-                    "email" => $current_user->user_email,
-                    "loyalty_membership" => true 
-                    ];  
-                
-                $flashy->api->contacts->create($customer, 'email', false,true);
             }
         }
-    }
 
-    //update newsletter registration from checkout to table
-    $accept_newsletter = get_post_meta( $order_id, 'agree_business_owner', true );
-    //update flashy list
-    $billing_email  = $order->get_billing_email();
-    $billing_phone = $order->get_billing_phone();
-    $flashy = flashy();
-    $list_id = get_option('flashy_list_id');
-    if($accept_newsletter == 'on'){
-        global $wpdb;
-        $table = $wpdb->prefix . 'list_user_subscribe_newsletter';
-        // Get user agent data
-        $ip_address = $_SERVER['REMOTE_ADDR'];
-        $user_agent = $_SERVER['HTTP_USER_AGENT'];
+        //update newsletter registration from checkout to table
+        $accept_newsletter = get_post_meta( $order_id, 'agree_business_owner', true );
+        //update flashy list
+        $billing_email  = $order->get_billing_email();
+        $billing_phone = $order->get_billing_phone();
+        $flashy = flashy();
+        $list_id = get_option('flashy_list_id');
+        if($accept_newsletter == 'on'){
+            global $wpdb;
+            $table = $wpdb->prefix . 'list_user_subscribe_newsletter';
+            // Get user agent data
+            $ip_address = $_SERVER['REMOTE_ADDR'];
+            $user_agent = $_SERVER['HTTP_USER_AGENT'];
 
-        if ( get_current_user_id() > 0 ) {
-            $current_user = wp_get_current_user();
-            $user_id = get_current_user_id(); 
-            $user_phone = $current_user->user_login;
-            $id_number = get_user_meta( $user_id, 'account_id', true );
-            $priority_customer_number = get_user_meta( $user_id, 'priority_customer_number', true );
+            if ( get_current_user_id() > 0 ) {
+                $current_user = wp_get_current_user();
+                $user_id = get_current_user_id(); 
+                $user_phone = $current_user->user_login;
+                $id_number = get_user_meta( $user_id, 'account_id', true );
+                $priority_customer_number = get_user_meta( $user_id, 'priority_customer_number', true );
+            }
+            else{
+                $user_phone = $billing_phone;
+                $id_number = "";
+                $priority_customer_number = "";
+            }   
+
+            $result = $wpdb->insert($table, [
+                'priority_customer_number' => $priority_customer_number,
+                'id_number' => $id_number,
+                'customer_phone' =>  $user_phone,
+                'ip_address' => $ip_address,
+                'user_agent' => $user_agent
+            ]);
+
+            $customer = [
+                "email" => $billing_email,
+                "lists" => [ $list_id => true ], //true or false depending on accept marketing checkbox
+            ];
+
+
+        
         }
         else{
-            $user_phone = $billing_phone;
-            $id_number = "";
-            $priority_customer_number = "";
-        }   
+            $customer = [
+                "email" => $billing_email,
+                //"lists" => [ $list_id => false ], //true or false depending on accept marketing checkbox
+            ];
 
-        $result = $wpdb->insert($table, [
-            'priority_customer_number' => $priority_customer_number,
-            'id_number' => $id_number,
-            'customer_phone' =>  $user_phone,
-            'ip_address' => $ip_address,
-            'user_agent' => $user_agent
-        ]);
-
-        $customer = [
-            "email" => $billing_email,
-            "lists" => [ $list_id => true ], //true or false depending on accept marketing checkbox
-        ];
-
-
-       
+        }
+        $flashy->api->contacts->create($customer, 'email', false,true);
     }
-    else{
-        $customer = [
-            "email" => $billing_email,
-            "lists" => [ $list_id => false ], //true or false depending on accept marketing checkbox
-        ];
-
-    }
-    $flashy->api->contacts->create($customer, 'email', false,true);
 
 }
 
@@ -2799,7 +2822,6 @@ function load_variation_settings_fields( $variation ) {
 
 
 //remove Shipping from a WooCommerce cart
-//<!-- dana ask to hide shiiping method on cart page
 function disable_shipping_calc_on_cart( $show_shipping ) {
     if( is_cart() ) {
         return false;
@@ -2996,7 +3018,7 @@ function save_club_and_newsletter($user_id){
     }
     
      //save user details of all user that accept to receive  newsletter and register to club to new table 
-     //this is for user that not make registration process and only edait details
+     //this is for user that not make registration process and only edit details
      global $wpdb;
      $table = $wpdb->prefix . 'list_user_subscribe_newsletter';
      $table_club = $wpdb->prefix . 'list_user_club';
@@ -3016,7 +3038,7 @@ function save_club_and_newsletter($user_id){
     
     // Get user agent data
     $ip_address = $_SERVER['REMOTE_ADDR'];
-    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+    $user_agent = !empty($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : get_user_meta( $user_id, 'user_agent', true );
     
     if($_POST[ 'agree_business_owner' ] == 'on' && isset($_POST[ 'agree_business_owner' ])){
         $result = $wpdb->insert($table, [
@@ -3094,7 +3116,7 @@ function save_club_and_newsletter($user_id){
             "birthday" => strtotime($BirthDate),
             "first_name" => $fname,
             "last_name" => $lname,
-            "lists" => [ $list_id => false ], //true or false depending on accept marketing checkbox
+            //"lists" => [ $list_id => false ], //true or false depending on accept marketing checkbox
         ]; 
     }
     
@@ -3283,34 +3305,6 @@ function populate_stock_column($column, $post_id) {
     
 }
 
-add_filter( 'manage_edit-product_sortable_columns', 'bbloomer_admin_products_product_stock_column_sortable' );
- 
-function bbloomer_admin_products_product_stock_column_sortable( $columns ){
-   $columns['product_stock'] = 'product_stock';
-   return $columns;
-}
-
-
-function custom_column_sorting( $vars ) {
-    if ( isset( $vars['orderby'] ) && 'product_stock' === $vars['orderby'] ) {
-        $vars = array_merge( $vars, array(
-            'meta_key' => 'product_stock',
-            'orderby' => 'meta_value_num', // Sort as numeric
-        ) );
-    }
-    return $vars;
-}
-add_filter( 'request', 'custom_column_sorting' );
-
-// Change the default sorting order for the custom column to ascending
-function custom_change_default_sorting_order( $query ) {
-    if ( is_admin() && $query->is_main_query() && $query->get( 'post_type' ) === 'product' ) {
-        if ( $query->get( 'orderby' ) === 'product_stock' ) {
-            $query->set( 'order', 'asc' );
-        }
-    }
-}
-add_action( 'pre_get_posts', 'custom_change_default_sorting_order' );
 
 
 // Set custom width for new column
@@ -3379,50 +3373,86 @@ function filter_products_by_stock_status($query) {
     return $query;
 }
 
-add_action('init' ,'test_pdts');
+//add_action('init' ,'test_pdts');
 
 function test_pdts(){
-    // $order = wc_get_order(34202);
-    // $pelecard_transaction_data = get_post_meta( 34202, '_transaction_data' );
-    // echo '<div style="display:none">';
-    // echo "<pre style='direction:ltr'>";
-    // print_r( $pelecard_transaction_data);
-    // echo "</pre>";
-    // echo '</div>';
+
+    $order = wc_get_order(34202);
+    $pelecard_transaction_data = get_post_meta( 34202, '_transaction_data' );
+    echo '<div style="display:none">';
+    echo "<pre style='direction:ltr'>";
+    print_r( $pelecard_transaction_data);
+    echo "</pre>";
+    echo '</div>';
     //echo '<div style="display:none">total:'.$order->get_total().'</div>';
 
 
 }
 
+/**
+ * Append parent category name next to term name in ACF select2 field
+ */
+function append_parent_cat_name( $field ) {
+    // echo "<pre>";
+    // print_r($field);
+    // echo "</pre>";
+    if ( $field['type'] == 'taxonomy' ) {
+        $taxonomies = $field['taxonomy'];
+     
+        if ( ! is_array( $taxonomies ) ) {
+            $taxonomies = array( $taxonomies );
+        }
+
+        foreach ( $taxonomies as $taxonomy ) {
+            add_filter( 'acf/fields/taxonomy/result', function( $title, $term, $field, $post_id ) {
+                $term_id   = $term->term_id;
+                $parent_tag_id = $term->parent;
+                $parent_term = get_term_by( 'id', $parent_tag_id, 'product_cat' );
+                $parent_term_name = $parent_term->name;
+                
+                $title .= " ({$parent_term_name})"; // Append parent category name
+                //$title .= " ({$term_id})"; // Append ID
+
+                return $title;
+            }, 10, 4 );
+        }
+    }
+
+    return $field;
+}
+
+add_filter( 'acf/load_field', 'append_parent_cat_name' );
 
 add_filter('woocommerce_package_rates', 'custom_shipping_price_based_on_order_amount', 10, 2);
 function custom_shipping_price_based_on_order_amount($rates, $package) {
     // Get the order total amount
     $order_total = WC()->cart->cart_contents_total;
-
+    $shipping_amount  = get_field('shipping_cost','option');
+    $max_sum_shippping = get_field('max_sum_shippping', 'option');
     // Define the shipping rate based on the order amount
-    if ($order_total <= 199) {
-        $shipping_cost = 19; // Set the shipping cost for orders under $50
+    if ($order_total <= $max_sum_shippping) {
+        $shipping_cost = $shipping_amount; // Set the shipping cost for orders under $50
     } else {
         $shipping_cost = 0; // Set free shipping for orders of $50 or more
     }
-
     // Loop through the shipping rates
     foreach ($rates as $rate_key => $rate) {
         // Update the shipping cost for the specific shipping method
         if ($rate->method_id === 'flat_rate') {
             $rates[$rate_key]->cost = $shipping_cost;
-        }
-        if ( $rate->cost == 0 ) {
-            $rates[ $rate_key ]->label .= ' (חינם)';
+            if($rates[$rate_key]->cost == 0){
+                $rates[ $rate_key ]->label .= ' (חינם)';
+            }
         }
     }
 
     return $rates;
 }
 
-// Add a custom filter dropdown to the product listing page
-function custom_filter_by_custom_field() {
+
+
+// Add year filter dropdown to the product listing page
+function custom_filter_by_year_field() {
     global $typenow;
     
     // Make sure this code only runs on the product listing page
@@ -3438,25 +3468,27 @@ function custom_filter_by_custom_field() {
             'fields' => 'ids',
             'orderby' => 'meta_value',
             'order' => 'ASC',
-            'distinct' => true, 
         ));
-
         // Create a dropdown filter
         echo '<select name="year_filter">';
         echo '<option value="">סינון לפי שנה</option>';
-        
+        $unique_values = [];
         foreach ($values as $value) {
             $field_value = get_post_meta($value, $custom_field_name, true);
-            $selected = ($selected_value == $field_value) ? 'selected' : '';
-            echo '<option value="' . esc_attr($field_value) . '" ' . $selected . '>' . esc_html($field_value) . '</option>';
+            if(! in_array($field_value, $unique_values)) {
+                $unique_values[] = $field_value;
+                $selected = ($selected_value == $field_value) ? 'selected' : '';
+                echo '<option value="' . esc_attr($field_value) . '" ' . $selected . '>' . esc_html($field_value) . '</option>';
+            }
+            
         }
 
         echo '</select>';
     }
 }
 
-// Hook the custom filter into the WooCommerce product list
-function custom_filter_products_by_custom_field_query($query) {
+// Hook the year filter into the WooCommerce product list
+function custom_filter_products_by_year_field_query($query) {
     global $typenow;
 
     if ($typenow == 'product' && isset($_GET['year_filter']) && !empty($_GET['year_filter'])) {
@@ -3470,8 +3502,141 @@ function custom_filter_products_by_custom_field_query($query) {
 }
 
 // Add the filter dropdown and filter query
-add_action('restrict_manage_posts', 'custom_filter_by_custom_field');
-add_filter('parse_query', 'custom_filter_products_by_custom_field_query');
+add_action('restrict_manage_posts', 'custom_filter_by_year_field');
+add_filter('parse_query', 'custom_filter_products_by_year_field_query');
 
 
+// Add season filter dropdown to the product listing page
+function custom_filter_by_season_field() {
+    global $typenow;
+    
+    // Make sure this code only runs on the product listing page
+    if ($typenow == 'product') {
+        $custom_field_name = 'season'; // Replace with your custom field name
+        $selected_value = isset($_GET['season_filter']) ? $_GET['season_filter'] : '';
 
+        // Query to get distinct values of the custom field
+        $values = get_posts(array(
+            'post_type' => 'product',
+            'posts_per_page' => -1,
+            'meta_key' => $custom_field_name,
+            'fields' => 'ids',
+            'orderby' => 'meta_value',
+            'order' => 'ASC',
+        ));
+        // Create a dropdown filter
+        echo '<select name="season_filter">';
+        echo '<option value="">סינון לפי עונה</option>';
+        $unique_values = [];
+        foreach ($values as $value) {
+            $field_value = get_post_meta($value, $custom_field_name, true);
+            if(! in_array($field_value, $unique_values)) {
+                $unique_values[] = $field_value;
+                $selected = ($selected_value == $field_value) ? 'selected' : '';
+                echo '<option value="' . esc_attr($field_value) . '" ' . $selected . '>' . esc_html($field_value) . '</option>';
+            }
+            
+        }
+
+        echo '</select>';
+    }
+}
+
+// Hook the season filter into the WooCommerce product list
+function custom_filter_products_by_season_field_query($query) {
+    global $typenow;
+
+    if ($typenow == 'product' && isset($_GET['season_filter']) && !empty($_GET['season_filter'])) {
+        $custom_field_name = 'season'; // Replace with your custom field name
+        $custom_field_value = sanitize_text_field($_GET['season_filter']);
+        
+        // Add a meta query to filter by the custom field
+        $query->query_vars['meta_key'] = $custom_field_name;
+        $query->query_vars['meta_value'] = $custom_field_value;
+    }
+}
+
+// Add the filter dropdown and filter query
+add_action('restrict_manage_posts', 'custom_filter_by_season_field');
+add_filter('parse_query', 'custom_filter_products_by_season_field_query');
+
+add_action('woocommerce_admin_order_item_headers', 'my_woocommerce_admin_order_item_headers');
+function my_woocommerce_admin_order_item_headers( $columns) {
+    $column_name = 'סה"כ מחיר לפני הנחה';  
+    echo '<th data-sort="float" style="text-align: right;" >' . $column_name . '</th>';
+}
+
+// Add custom column values to admin order pages
+add_action('woocommerce_admin_order_item_values', 'my_woocommerce_admin_order_item_values', 10, 3);
+function my_woocommerce_admin_order_item_values($product, $item, $item_id = null) {
+    if($product){
+        // get the product meta value from the associated product
+        $order_id = $item->get_order_id();
+        $variation_id = $item->get_variation_id();
+        $sku = $product->get_sku();
+        //echo 'sku:'.$sku;
+        $approve_result = get_post_meta($order_id, 'response_transaction_approve', true);
+        // echo "<pre>";
+        // print_r($approve_result['Transaction']['OrderItems']);
+        // echo "</pre>";
+        foreach($approve_result['Transaction']['OrderItems'] as $single_item){
+            $price_before_discount = '';
+            //echo 'item_sku:'.$item_sku;
+            $item_sku = $single_item['ItemCode'];
+            $qtty = $single_item['ItemQuantity'];
+            $price_per_item = $single_item['PricePerItem'];
+            $tot_price = $single_item['TotalPrice']; // price after discount for all quantity 
+            $final_price = $single_item['FinalPrice']; //price after discount for one product
+            $sale_desc = $single_item['FirstSaleDescription'];
+            if($item_sku == $sku){
+                if($final_price != $price_per_item){ 
+                    $price_before_discount = '<del>'.wc_price($price_per_item * $qtty).'</del><br/>'.$sale_desc;
+                    echo '<td>'.$price_before_discount.'</td>';
+                ?>
+                    
+                <?php }
+                else{   
+                    $price_before_discount = wc_price($final_price * $qtty);
+                    echo '<td>'.$price_before_discount.'</td>';
+                }
+                break;
+            }
+        }
+       
+    }
+}
+
+function custom_menu_color($item_output, $item) {
+    $color = get_field('menu_color', $item);
+    if ($color) {
+        $item_output = '<span style="color: ' . esc_attr($color) . ';">' . $item_output . '</span>';
+    }
+    return $item_output;
+}
+//add_filter('walker_nav_menu_start_el', 'custom_menu_color', 10, 2);
+
+// Hook to modify menu items
+function customize_menu_item_colors($items, $args) {
+    foreach ($items as $item) {
+        // Get ACF color field value for each menu item
+        $color = get_field('menu_color', $item);
+        // Add a class based on color to the menu item
+        if ($color) {
+            $item->classes[] = 'parent_sale_menu'; // Change this to your desired class name
+            $item->classes[] = 'color-' . $color; // Add color-specific class
+        }
+    }
+    return $items;
+}
+add_filter('wp_nav_menu_objects', 'customize_menu_item_colors', 10, 2);
+
+function custom_thankyou_order_received_text( $text, $order ) {
+    // Your custom text goes here
+    $custom_text = "הזמנתך תטופל לאחר השלמת אימות אשראי.";
+    $custom_text.= "</br>";
+    $custom_text.= "במידה וההזמנה עברה בהצלחה-יתקבל אישור הזמנה למייל.";
+
+    return $custom_text;
+}
+
+add_filter( 'woocommerce_thankyou_order_received_text', 'custom_thankyou_order_received_text', 10, 2 );

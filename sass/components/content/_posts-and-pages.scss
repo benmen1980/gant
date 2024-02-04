@@ -27,7 +27,7 @@
 body{
     font-family:'almoni-dl';
 	font-weight: 400;
-    color: #000;
+    color: rgb(0,0,0);
     font-size: calc( 14px + 2 * (100vw - 374px)/1826);
     height: 100vh;
 }
@@ -649,7 +649,8 @@ a, a:hover, a:focus,a:active{
         margin: 0;
         @media screen and (max-width: 1023px) {
             //justify-content: start;
-            padding-right: 0;
+            //padding-right: 0;
+            padding: 0 10px;
         }
         li{
             padding: 0 20px;
@@ -1709,6 +1710,9 @@ h3.sustainable_choice_title{
                                 border: 1px solid #000000;
                                 margin: 20px 10px;
                                 display: block;
+                                &:after{
+                                    content: none;
+                                }
                             }
                         }
                     }
@@ -1719,7 +1723,8 @@ h3.sustainable_choice_title{
                         margin-left:10px;
                         font-size: 20px;
                         background-color: #1C2B49;
-                        color: #1C2B49;   
+                        color: #1C2B49;  
+                        display: inline-block; 
                     }
                 }
             }

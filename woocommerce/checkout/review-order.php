@@ -39,6 +39,7 @@ defined( 'ABSPATH' ) || exit;
 						<?php echo apply_filters( 'woocommerce_checkout_cart_item_quantity', ' <strong class="product-quantity">' . sprintf( '&times;&nbsp;%s', $cart_item['quantity'] ) . '</strong>', $cart_item, $cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php echo wc_get_formatted_cart_item_data( $cart_item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</td>
+					<?php if(false): ?>
 					<td class="product-total">
 						<?php 
 						$pdt_regular_price = $_product->get_regular_price();
@@ -53,6 +54,35 @@ defined( 'ABSPATH' ) || exit;
 						else
 							$price = apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $_product, $cart_item['quantity'] ), $cart_item, $cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
 						echo $price; ?>
+					</td>
+					<?php endif; ?>
+					<td class="product-total jj">
+						<?php 
+						$pdt_regular_price = $_product->get_regular_price();
+						$update_result = $cart_item['lastupdate_transaction']['Transaction'];
+						$cart_items = $update_result['OrderItems'];
+						foreach ($cart_items as $cart_single_item){
+							$item_sku = $cart_single_item['ItemCode'];
+							$qtty = $cart_single_item['ItemQuantity'];
+							$price_per_item = $cart_single_item['PricePerItem'];
+							$tot_price = $cart_single_item['TotalPrice']; // price after discount for all quantity 
+							$final_price = $cart_single_item['FinalPrice']; //price after discount for one product
+							if($item_sku == $_product->get_sku()){
+								if($final_price != $price_per_item){
+									$price = '<del>' . wc_price($price_per_item * $qtty). '</del> <ins>' . wc_price($tot_price) . '</ins>'; 
+									?>
+									<div class="product-sale-desc">
+										<?php echo $cart_single_item['FirstSaleDescription']; ?>
+									</div>
+								<?php }
+								else{
+									$price = apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $_product, $cart_item['quantity'] ), $cart_item, $cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
+								}
+								echo $price;
+								break;
+							}
+							
+						} ?>
 					</td>
 				</tr>
 				<?php

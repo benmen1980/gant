@@ -126,7 +126,7 @@ $categories = get_the_terms( get_the_ID(), 'product_cat' );
 									$badge_from_excel = get_field('badge_from_file',$product->get_id());
 									$badge_from_excel_no_club = get_field('badge_from_file_no_club',$product->get_id());
 									$sale_bage_excel = (is_user_logged_in() ? $badge_from_excel : $badge_from_excel_no_club);
-										
+									$special_bage = get_field("special_badge_from_file", $product->get_id() );	
 									?>
 									<div class="gallery-thumbnail" id="main_slider_1">
 										<a href="<?php echo get_permalink( $product->ID ).'#zoom_1'?>">
@@ -138,6 +138,11 @@ $categories = get_the_terms( get_the_ID(), 'product_cat' );
 											<?php if(!empty($sale_price) && false){ ?>
 												<div class="sale_tag">
 													<?php echo $percent.'% off'; ?>
+												</div>
+											<?php } ?>
+											<?php if(!empty($special_bage)){ ?>
+												<div class="custom_bage">
+													<?php echo $special_bage; ?>
 												</div>
 											<?php } ?>
 											<img src="<?php echo wp_get_attachment_url( $product->get_image_id() ); ?>" data-slide="1" alt="<?php echo $product->get_title();?>">
@@ -158,6 +163,11 @@ $categories = get_the_terms( get_the_ID(), 'product_cat' );
 													<?php if(!empty($sale_price) && false){ ?>
 														<div class="sale_tag">
 															<?php echo $percent.'% off'; ?>
+														</div>
+													<?php } ?>
+													<?php if(!empty($special_bage)){ ?>
+														<div class="custom_bage">
+															<?php echo $special_bage; ?>
 														</div>
 													<?php } ?>
 													<img src="<?php echo  wp_get_attachment_url( $image_id ); ?>" data-slide="<?php echo $attimages_key;?>" alt="<?php echo $product->get_title();?>">

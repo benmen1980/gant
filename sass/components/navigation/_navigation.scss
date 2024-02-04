@@ -26,9 +26,15 @@
 				@media screen and (max-width: 1023px) {
 					padding: 0 20px;
 				}
+				@media screen and (max-width: 767px) {
+					padding: 0 5px;
+				}
                 a{
                     text-decoration: none;
 					background-color: transparent;
+					@media screen and (max-width: 1023px) {
+						font-size: 16px;
+					}
                     &:hover{
                         text-decoration: underline;
 						background-color: transparent;
@@ -83,9 +89,18 @@
 					position: static;
 					padding: 20px 0;
 					&.parent_sale_menu{
+						//display:none;
 						& > a{
-							color: red;
+							color: #9a2320;
 						}
+						// span{
+						// 	& > a{
+						// 		color: inherit;
+						// 	}
+						// }
+					}
+					&.temporary_hide{
+						display: none;
 					}
 					@media screen and (max-width: 1023px){
 						padding:  15px 0;
@@ -270,6 +285,11 @@
 								}
 							}
 						}
+						li.menu-item{
+							&.temporary_hide{
+								display: none;
+							}
+						}
 					}
 					&:hover{
 						&>ul.sub-menu{
@@ -326,6 +346,12 @@
 						color:#000;
 						font-size: 18px;
 						position: relative;
+						@media screen and (max-width: 1250px) {
+							font-size: 14px;
+						}
+						@media screen and (max-width: 1023px) {
+							font-size: 18px;
+						}
 					}
 					button{
 						background-color: transparent;
@@ -437,6 +463,20 @@
 .mobile_navigation_background{
 	display: none;
 }
+.site-header{
+	.main_menu_wrapper{
+		nav.main-navigation.right-navigation{
+			max-width: 45%;
+		}
+		.site-branding{
+			flex: 0.2;
+			@media screen and (max-width: 1023px) {
+				flex: 1;
+			}
+		}
+			
+	}
+}
 @media screen and (max-width: 1023px) {
 	.site-header{
 		.main_menu_wrapper{
@@ -445,7 +485,8 @@
 			nav.main-navigation.right-navigation{
 				display: flex;
     			align-items: center;
-
+				max-width: none;
+				width: auto;
 				.mobile_navigation_background{
 					background-image: linear-gradient(135deg,rgba(0,0,0,0.5) 25%,rgba(255,255,255,0.1) 25%,rgba(255,255,255,0.1) 50%,rgba(0,0,0,0.5) 50%,rgba(0,0,0,0.5) 75%,rgba(255,255,255,0.1) 75%,rgba(255,255,255,0.1) 100%);
 					background-repeat: repeat;
@@ -487,7 +528,7 @@
 						//max-height: 100vh;
     					transition: max-height 0.5s ease-in;
 						& > li{
-							& > a{
+							& > a, & > span > a{
 								width: 100%;
 								position: relative;
 								&:after{
@@ -501,6 +542,12 @@
 									left: 10px;
 								}
 							}
+							& > span > a{
+								&:after{
+									top: 7px;
+								}
+							}
+							
 						}
 					}
 					& > li{

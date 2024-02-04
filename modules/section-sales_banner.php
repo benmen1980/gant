@@ -5,9 +5,33 @@
         $sale_txt_align = $sale_banner['select_txt_direction'];
         $sale_txt_lang = $sale_banner['select_lang_direction'];
         $select_txt_font = $sale_banner['select_txt_font'];
+        if($select_txt_font == "hebrew "){
+            $font_family = "almoni-dl";
+        }
+        elseif($select_txt_font == "english "){
+            $font_family = "gantmodern";
+        }
+        else{
+            $font_family = "gantserif";
+        }
+        $select_sub_txt_font = $sale_banner['select_sub_txt_font'];
+        if($select_sub_txt_font == "hebrew "){
+            $font_family_subtxt = "almoni-dl";
+        }
+        elseif($select_sub_txt_font == "english"){
+            $font_family_subtxt = "gantmodern";
+        }
+        else{
+            $font_family_subtxt = "gantserif";
+        }
+
+        $font_size_title = $sale_banner['select_txt_font_size'];
+        $font_size_sub_title = $sale_banner['select_sub_txt_font_size'];
+
         $sale_title = $sale_banner['title_sale'];
         $sale_sub_title = $sale_banner['sub_title_sale'];
         $sale_bg = $sale_banner['bg_sale'];
+        $sale_img_bg = $sale_banner['bg_img_sale'];
         $sale_color = $sale_banner['bg_txt'];
         $sale_bg_btn = $sale_banner['bg_btn_color'];
         $sale_clr_txt = $sale_banner['btn_color_txt'];
@@ -29,7 +53,7 @@
         }
         ?>
     
-        <div class="sale_banner_content" style="text-align:<?php echo $sale_txt_align;?>; background-color:<?php echo $sale_bg; ?>; color : <?php echo $sale_color; ?>;">
+        <div class="sale_banner_content" style="text-align:<?php echo $sale_txt_align;?>; background-color:<?php echo $sale_bg; ?>; color : <?php echo $sale_color; ?>; background-image:url('<?php echo !empty($sale_img_bg) ? $sale_img_bg : '' ?>'); ">
             <?php if(!empty($term)): ?>
                 <nav class="breadcrumb">
                     <div class="arrow_btn">
@@ -46,8 +70,8 @@
                 </nav>
             <?php endif; ?>
             <div class="sale_titles_wrapper font_<?php echo $select_txt_font; ?>" style="direction:<?php echo ($sale_txt_lang == 'hebrew') ? 'rtl' : 'ltr'; ?>">
-                <h2 style="<?php echo ($select_txt_font == 'hebrew' ? 'font-family:almoni-dl' : 'font-family : gantmodern;  font-weight: normal; font-size: 48px;') ?>"><?php echo $sale_title; ?></h2>
-                <h3 style="<?php echo ($select_txt_font == 'hebrew' ? 'font-family:almoni-dl' : 'font-family : gantmodern;  font-weight: normal; font-size: 48px;') ?>"><?php echo $sale_sub_title; ?></h3>
+                <h2 style="font-family:<?php echo $font_family;?>; font-size:<?php echo  $font_size_title; ?>px; font-weight: normal;"><?php echo $sale_title; ?></h2>
+                <h3 style="font-family:<?php echo $font_family_subtxt;?>; font-size:<?php echo  $font_size_sub_title; ?>px; font-weight: normal;"><?php echo $sale_sub_title; ?></h3>
             </div>
             <?php 
             if($sale_txt_align == 'right'){

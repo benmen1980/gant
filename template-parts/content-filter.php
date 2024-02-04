@@ -20,9 +20,14 @@ $args_cat = array(
     'product_cat' => $current_term->slug,
     'posts_per_page' => $posts_per_page,
     'paged' => 1,
-    'meta_key'       => 'total_sales',
-    'orderby'        => 'meta_value_num',
-    'order'          => 'DESC',
+    // 'meta_key'       => 'total_sales',
+    // 'orderby'        => 'meta_value_num',
+    // 'order'          => 'DESC',
+    'orderby'  => array(
+		//'meta_value_num' => 'DESC',
+		'menu_order'      => 'ASC',
+        'ID'   => 'DESC'
+	),
     'meta_query' => array(
         array(
             'key' => '_stock_status',
@@ -67,14 +72,14 @@ $max_page = $arr_posts->max_num_pages;
                     </div>
                     <div class="dropdown_content">
                         <?php  $catSizes =  get_term_meta($current_term_id, 'size_filter', true); 
-                        $sizes = getOrderedBySize($catSizes);
-                        if(empty($sizes)){
-                            $sizes = getOrderedBySizeChild($catSizes);
-                            if(empty($sizes)){
-                                $sizes = $catSizes;
-                            }
-                        }
-                        
+                        // $sizes = getOrderedBySize($catSizes);
+                        // if(empty($sizes)){
+                        //     $sizes = getOrderedBySizeChild($catSizes);
+                        //     if(empty($sizes)){
+                        //         $sizes = $catSizes;
+                        //     }
+                        // }
+                        $sizes = getOrderedAllSize($catSizes);
                         ?>
                         <?php $counter_size = 0;foreach($sizes as $key=>$size): ?>
                         <button role="menuitemcheckbox" class="menu_item_checkbox" aria-checked="false" data-section="size" aria-label="מידה: <?php echo $key;?>">
@@ -225,7 +230,7 @@ $max_page = $arr_posts->max_num_pages;
                             <button role="menuitemcheckbox" class="menu_item_checkbox checkbox_sleeve_wrapper" aria-checked="false" data-section="size" aria-label="שרוול: <?php echo $key;?>">
                                 <p class="row_checkbox_wrapper">
                                     <span class=" checkbox_wrapper">
-                                        <input class="checkbox_sleeve" id="checkbox_sleeve_<?php echo $counter_sleeve;?>" type="checkbox" name="checkbox_sleeve" value="<?php echo $key ?>">	
+                                        <input class="checkbox_sleeve" id="checkbox_sleeve_<?php echo $counter_sleeve;?>" type="checkbox" name="checkbox_sleeve" value="<?php echo $key ?>" data-hebrew-name="<?php esc_html_e( $key, 'gant' ); ?>">	
                                         <label for="checkbox_sleeve_<?php echo $counter_sleeve;?>">
                                             <?//php echo $key ?>
                                             <?php esc_html_e( $key, 'gant' ); ?>
@@ -423,7 +428,7 @@ $max_page = $arr_posts->max_num_pages;
     <div class="sort_wrapper">
         <div class="dropdown">
             <button class="dropbtn">
-                <span class="selected_order" aria-label="<?php esc_html_e( 'פופולרי', 'gant' ); ?>" ><?php esc_html_e( 'פופולרי', 'gant' ); ?></span>
+                <span class="selected_order" aria-label="<?php esc_html_e( 'מיין לפי', 'gant' ); ?>" ><?php esc_html_e( 'מיין לפי', 'gant' ); ?></span>
                 <span class="btn_icon">
                     <svg focusable="false" class="c-icon icon--chevron-down" viewBox="0 0 14 9" width="10px" height="6px">
                         <g fill="currentColor"><polygon points="0 1.89221557 1.977 0 6.987 5.05489022 12.024 8.86405608e-16 14 1.89221557 6.986 9"></polygon></g>
@@ -443,7 +448,7 @@ $max_page = $arr_posts->max_num_pages;
                         <button  id="popularity" role="menuitemcheckbox" class="menu_item_checkbox" aria-checked="false"  aria-label="<?php esc_html_e( 'פופולרי', 'gant' ); ?>">
                             <p class="row_radio_wrapper">
                                 <span class="radio_wrapper">
-                                    <input checked class="radio_sort"  id="radio_sort_popularity" type="radio" name="radio_sort" value="popularity">	
+                                    <input class="radio_sort"  id="radio_sort_popularity" type="radio" name="radio_sort" value="popularity">	
                                     <label for="radio_sort_popularity"><?php esc_html_e( 'פופולרי', 'gant' ); ?></label>
                                 </span>
                             </p>  

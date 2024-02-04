@@ -253,9 +253,3 @@ msgstr ""
 
 msgid "multi color"
 msgstr ""
-
-msgid "Long sleeve"
-msgstr ""
-
-msgid "Short sleeve"
-msgstr ""

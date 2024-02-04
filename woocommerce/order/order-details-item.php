@@ -23,6 +23,12 @@ if ( ! apply_filters( 'woocommerce_order_item_visible', true, $item ) ) {
 	return;
 }
 ?>
+<?php 
+$order_id = $order->get_id();
+
+$update_result = get_post_meta($order_id, 'response_transaction_update', true); 
+$order_items = $update_result['Transaction']['OrderItems'];
+?>
 <tr class="<?php echo esc_attr( apply_filters( 'woocommerce_order_item_class', 'woocommerce-table__line-item order_item', $item, $order ) ); ?>">
 
 	<td class="woocommerce-table__product-name product-name">
@@ -81,7 +87,32 @@ if ( ! apply_filters( 'woocommerce_order_item_visible', true, $item ) ) {
 						<div class="detail_wrapper">
 							<dt class=""><?php esc_attr_e( 'סה"כ:', 'gant' ); ?></dt>
 							<dd class="">
-								<p><?php  echo $order->get_formatted_line_subtotal( $item );?></p>
+							<?php 
+								$order_id = $order->get_id();
+								$update_result = get_post_meta($order_id, 'response_transaction_update', true); 
+								$order_items = $update_result['Transaction']['OrderItems'];
+								if(!empty($order_items)){
+									foreach ($order_items as $order_item){
+										$item_sku = $order_item['ItemCode'];
+										if($item_sku == $product->get_sku()){
+											$tot_price = $order_item['TotalPrice']; // price after discount for all quantity);
+											if(wc_price($order_item['PricePerItem'] * $order_item['ItemQuantity'])  != $order->get_formatted_line_subtotal( $item )) { 
+												$price = '<del>' . wc_price($order_item['PricePerItem'] * $order_item['ItemQuantity']). '</del> <ins>' . $order->get_formatted_line_subtotal( $item ) . '</ins>'; ?>
+												
+											<?php }
+											else{
+												$price = $order->get_formatted_line_subtotal( $item );
+											}
+											?>
+											<p><?php  echo $price;?></p>
+											<div class="product-sale-desc">
+												<?php echo $order_item['FirstSaleDescription']; ?>
+											</div>
+											<?php break;
+										}
+										
+									}
+								}?>
 							</dd>
 						</div>
 					<?php endif; ?>
@@ -97,9 +128,37 @@ if ( ! apply_filters( 'woocommerce_order_item_visible', true, $item ) ) {
 		<td class="woocommerce-table__product-qtty product-qtty">
 			<?php echo  $qty_display; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</td>
-
+		<?php if(false): ?>
 		<td class="woocommerce-table__product-total product-total">
 			<?php echo $order->get_formatted_line_subtotal( $item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		</td>
+		<?php endif; ?>
+		
+		<td class="woocommerce-table__product-total product-total">
+			<?php
+				if(!empty($order_items)){
+					foreach ($order_items as $order_item){
+						$item_sku = $order_item['ItemCode'];
+						if($item_sku == $product->get_sku()){
+							$tot_price = $order_item['TotalPrice']; // price after discount for all quantity);
+							if(wc_price($order_item['PricePerItem'] * $order_item['ItemQuantity'])  != $order->get_formatted_line_subtotal( $item )) { 
+								$price = '<del>' . wc_price($order_item['PricePerItem'] * $order_item['ItemQuantity']). '</del> <ins>' . $order->get_formatted_line_subtotal( $item ) . '</ins>'; ?>
+								
+							<?php }
+							else{
+								$price = $order->get_formatted_line_subtotal( $item );
+							}
+							echo $price;?>
+							<div class="product-sale-desc">
+								<?php echo $order_item['FirstSaleDescription']; ?>
+							</div>
+							<?php break;
+						}
+						
+					}
+				} 
+			?>
+			<?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</td>
 	<?php endif; ?>
 </tr>
